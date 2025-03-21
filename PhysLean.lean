@@ -4,6 +4,9 @@ import PhysLean.ClassicalMechanics.HarmonicOscillator.Solution
 import PhysLean.CondensedMatter.Basic
 import PhysLean.Cosmology.Basic
 import PhysLean.Electromagnetism.Basic
+import PhysLean.Electromagnetism.FieldStrength.Basic
+import PhysLean.Electromagnetism.FieldStrength.Derivative
+import PhysLean.Electromagnetism.MaxwellEquations
 import PhysLean.Mathematics.Fin
 import PhysLean.Mathematics.Fin.Involutions
 import PhysLean.Mathematics.LinearMaps
@@ -14,7 +17,7 @@ import PhysLean.Mathematics.PiTensorProduct
 import PhysLean.Mathematics.RatComplexNum
 import PhysLean.Mathematics.SO3.Basic
 import PhysLean.Mathematics.SchurTriangulation
-import PhysLean.Mathematics.SpecialFunctions.PhyscisistsHermite
+import PhysLean.Mathematics.SpecialFunctions.PhysHermite
 import PhysLean.Meta.AllFilePaths
 import PhysLean.Meta.Basic
 import PhysLean.Meta.Informal.Basic
@@ -177,7 +180,8 @@ import PhysLean.Relativity.Lorentz.ComplexVector.Modules
 import PhysLean.Relativity.Lorentz.ComplexVector.Two
 import PhysLean.Relativity.Lorentz.ComplexVector.Unit
 import PhysLean.Relativity.Lorentz.Group.Basic
-import PhysLean.Relativity.Lorentz.Group.Boosts
+import PhysLean.Relativity.Lorentz.Group.Boosts.Basic
+import PhysLean.Relativity.Lorentz.Group.Boosts.Generalized
 import PhysLean.Relativity.Lorentz.Group.Orthochronous
 import PhysLean.Relativity.Lorentz.Group.Proper
 import PhysLean.Relativity.Lorentz.Group.Restricted
@@ -190,9 +194,14 @@ import PhysLean.Relativity.Lorentz.PauliMatrices.Matrix
 import PhysLean.Relativity.Lorentz.PauliMatrices.Relations
 import PhysLean.Relativity.Lorentz.PauliMatrices.SelfAdjoint
 import PhysLean.Relativity.Lorentz.RealTensor.Basic
+import PhysLean.Relativity.Lorentz.RealTensor.Derivative
 import PhysLean.Relativity.Lorentz.RealTensor.Matrix.Pre
+import PhysLean.Relativity.Lorentz.RealTensor.Metrics.Basic
 import PhysLean.Relativity.Lorentz.RealTensor.Metrics.Pre
 import PhysLean.Relativity.Lorentz.RealTensor.Units.Pre
+import PhysLean.Relativity.Lorentz.RealTensor.Vector.Basic
+import PhysLean.Relativity.Lorentz.RealTensor.Vector.Boosts
+import PhysLean.Relativity.Lorentz.RealTensor.Vector.Causality
 import PhysLean.Relativity.Lorentz.RealTensor.Vector.Pre.Basic
 import PhysLean.Relativity.Lorentz.RealTensor.Vector.Pre.Contraction
 import PhysLean.Relativity.Lorentz.RealTensor.Vector.Pre.Modules
@@ -207,6 +216,8 @@ import PhysLean.Relativity.Lorentz.Weyl.Two
 import PhysLean.Relativity.Lorentz.Weyl.Unit
 import PhysLean.Relativity.SpaceTime.Basic
 import PhysLean.Relativity.SpaceTime.CliffordAlgebra
+import PhysLean.Relativity.SpaceTime.ProperTime
+import PhysLean.Relativity.Special.TwinParadox.Basic
 import PhysLean.Relativity.Tensors.OverColor.Basic
 import PhysLean.Relativity.Tensors.OverColor.Discrete
 import PhysLean.Relativity.Tensors.OverColor.Functors

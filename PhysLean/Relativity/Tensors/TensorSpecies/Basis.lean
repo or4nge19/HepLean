@@ -3,7 +3,6 @@ Copyright (c) 2024 Joseph Tooby-Smith. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joseph Tooby-Smith
 -/
-import PhysLean.Relativity.Tensors.TensorSpecies.Basic
 import PhysLean.Relativity.Tensors.TensorSpecies.Contractions.ContrMap
 /-!
 
@@ -18,15 +17,15 @@ open MonoidalCategory
 namespace TensorSpecies
 open OverColor
 
-variable (S : TensorSpecies)
+variable {k : Type} [CommRing k] (S : TensorSpecies k)
 noncomputable section
 
 /--
-  The multi-linear map from `(fun i => S.FD.obj (Discrete.mk (c i)))` to `S.k` giving
+  The multi-linear map from `(fun i => S.FD.obj (Discrete.mk (c i)))` to `k` giving
   the coordinate with respect to the basis described by `b`.
 -/
 def coordinateMultiLinearSingle {n : ℕ} (c : Fin n → S.C) (b : Π j, Fin (S.repDim (c j))) :
-    MultilinearMap S.k (fun i => S.FD.obj (Discrete.mk (c i))) S.k where
+    MultilinearMap k (fun i => S.FD.obj (Discrete.mk (c i))) k where
   toFun := fun t => ∏ i, (S.basis (c i)).repr (t i) (b i)
   map_update_add' t i x y := by
     simp only
@@ -62,12 +61,12 @@ def coordinateMultiLinearSingle {n : ℕ} (c : Fin n → S.C) (b : Π j, Fin (S.
 
 /--
   The multi-linear map from `(fun i => S.FD.obj (Discrete.mk (c i)))` to
-  `((Π j, Fin (S.repDim (c j))) → S.k)` giving
+  `((Π j, Fin (S.repDim (c j))) → k)` giving
   the coordinates with respect to the basis defined in `S`.
 -/
 def coordinateMultiLinear {n : ℕ} (c : Fin n → S.C) :
-    MultilinearMap S.k (fun i => S.FD.obj (Discrete.mk (c i)))
-    ((Π j, Fin (S.repDim (c j))) → S.k) where
+    MultilinearMap k (fun i => S.FD.obj (Discrete.mk (c i)))
+    ((Π j, Fin (S.repDim (c j))) → k) where
   toFun t := fun b => coordinateMultiLinearSingle S c b t
   map_update_add' t i x y := by
     ext b
@@ -80,11 +79,11 @@ def coordinateMultiLinear {n : ℕ} (c : Fin n → S.C) :
 
 /-- The linear map from tensors to coordinates. -/
 def coordinate {n : ℕ} (c : Fin n → S.C) :
-    S.F.obj (OverColor.mk c) →ₗ[S.k] ((Π j, Fin (S.repDim (c j))) → S.k) :=
+    S.F.obj (OverColor.mk c) →ₗ[k] ((Π j, Fin (S.repDim (c j))) → k) :=
   (S.liftTensor (c := c)).toFun (S.coordinateMultiLinear c)
 
 lemma coordinate_tprod {n : ℕ} (c : Fin n → S.C) (x : (i : Fin n) → S.FD.obj (Discrete.mk (c i))) :
-    S.coordinate c (PiTensorProduct.tprod S.k x) = S.coordinateMultiLinear c x := by
+    S.coordinate c (PiTensorProduct.tprod k x) = S.coordinateMultiLinear c x := by
   simp only [coordinate, liftTensor, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
     LinearEquiv.coe_coe, mk_left, Functor.id_obj, mk_hom]
   erw [PiTensorProduct.lift.tprod]
@@ -92,7 +91,7 @@ lemma coordinate_tprod {n : ℕ} (c : Fin n → S.C) (x : (i : Fin n) → S.FD.o
 /-- The basis vector of tensors given a `b : Π j, Fin (S.repDim (c j))` . -/
 def basisVector {n : ℕ} (c : Fin n → S.C) (b : Π j, Fin (S.repDim (c j))) :
     S.F.obj (OverColor.mk c) :=
-  PiTensorProduct.tprod S.k (fun i => S.basis (c i) (b i))
+  PiTensorProduct.tprod k (fun i => S.basis (c i) (b i))
 
 lemma coordinate_basisVector {n : ℕ} (c : Fin n → S.C) (b1 b2 : Π j, Fin (S.repDim (c j))) :
     S.coordinate c (S.basisVector c b1) b2 = if b1 = b2 then 1 else 0 := by
@@ -110,10 +109,10 @@ lemma coordinate_basisVector {n : ℕ} (c : Fin n → S.C) (b1 b2 : Π j, Fin (S
     refine Finset.prod_eq_zero (Finset.mem_univ i) ?_
     rw [Finsupp.single_eq_of_ne hi]
 
-/-- The linear map taking a `((Π j, Fin (S.repDim (c j))) → S.k)` to a tensor, defined
+/-- The linear map taking a `((Π j, Fin (S.repDim (c j))) → k)` to a tensor, defined
   by summing over basis. -/
 def fromCoordinates {n : ℕ} (c : Fin n → S.C) :
-    ((Π j, Fin (S.repDim (c j))) → S.k) →ₗ[S.k] S.F.obj (OverColor.mk c) where
+    ((Π j, Fin (S.repDim (c j))) → k) →ₗ[k] S.F.obj (OverColor.mk c) where
   toFun fb := ∑ b, fb b • S.basisVector c b
   map_add' fb gb := by
     simp [add_smul, Finset.sum_add_distrib]
@@ -133,18 +132,18 @@ lemma coordinate_fromCoordinate_left_inv {n : ℕ} (c : Fin n → S.C) :
     coordinateMultiLinearSingle, MultilinearMap.coe_mk, LinearMap.coe_mk, AddHom.coe_mk]
   have h1 (x : (j : Fin n) → Fin (S.repDim (c j))) :
       (∏ i : Fin n, ((S.basis (c i)).repr (b i)) (x i)) •
-      ((PiTensorProduct.tprod S.k) fun i => (S.basis (c i) (x i)))
-      = (PiTensorProduct.tprod S.k) fun i => (((S.basis (c i)).repr (b i)) (x i))
+      ((PiTensorProduct.tprod k) fun i => (S.basis (c i) (x i)))
+      = (PiTensorProduct.tprod k) fun i => (((S.basis (c i)).repr (b i)) (x i))
         • (S.basis (c i) (x i)) :=
           Eq.symm
-            (MultilinearMap.map_smul_univ (PiTensorProduct.tprod S.k)
+            (MultilinearMap.map_smul_univ (PiTensorProduct.tprod k)
               (fun i => ((S.basis (c i)).repr (b i)) (x i)) fun i => (S.basis (c i)) (x i))
   conv_lhs =>
     enter [2, x]
     erw [h1]
-  trans (PiTensorProduct.tprod S.k) fun i =>
+  trans (PiTensorProduct.tprod k) fun i =>
     ∑ x, ((S.basis (c i)).repr (b i)) x • (S.basis (c i)) x
-  · exact (MultilinearMap.map_sum (PiTensorProduct.tprod S.k) fun i j =>
+  · exact (MultilinearMap.map_sum (PiTensorProduct.tprod k) fun i j =>
       ((S.basis (c i)).repr (b i)) j • (S.basis (c i)) j).symm
   congr
   funext i
@@ -166,10 +165,10 @@ lemma coordinate_fromCoordinate_right_inv {n : ℕ} (c : Fin n → S.C) :
 
 /-- The basis of tensors. -/
 def tensorBasis {n : ℕ} (c : Fin n → S.C) :
-    Basis (Π j, Fin (S.repDim (c j))) S.k (S.F.obj (OverColor.mk c)) where
+    Basis (Π j, Fin (S.repDim (c j))) k (S.F.obj (OverColor.mk c)) where
   repr := (LinearEquiv.mk (S.coordinate c) (S.fromCoordinates c)
     (S.coordinate_fromCoordinate_left_inv c) (S.coordinate_fromCoordinate_right_inv c)).trans
-    (Finsupp.linearEquivFunOnFinite S.k S.k ((j : Fin n) → Fin (S.repDim (c j)))).symm
+    (Finsupp.linearEquivFunOnFinite k k ((j : Fin n) → Fin (S.repDim (c j)))).symm
 
 lemma tensorBasis_eq_basisVector {n : ℕ} (c : Fin n → S.C) (b : Π j, Fin (S.repDim (c j))) :
     S.tensorBasis c b = S.basisVector c b := by
@@ -187,14 +186,14 @@ end
 
 namespace TensorBasis
 
-variable {S : TensorSpecies}
+variable {k : Type} [CommRing k] {S : TensorSpecies k}
 
 lemma tensorBasis_repr_tprod {n : ℕ} {c : Fin n → S.C}
     (x : (i : Fin n) → S.FD.obj (Discrete.mk (c i)))
     (b : Π j, Fin (S.repDim (c j))) :
-    (S.tensorBasis c).repr (PiTensorProduct.tprod S.k x) b =
+    (S.tensorBasis c).repr (PiTensorProduct.tprod k x) b =
     ∏ i, (S.basis (c i)).repr (x i) (b i) := by
-  change S.coordinate c (PiTensorProduct.tprod S.k x) b = _
+  change S.coordinate c (PiTensorProduct.tprod k x) b = _
   rw [coordinate_tprod]
   rfl
 
@@ -267,7 +266,7 @@ lemma tensorBasis_prod {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
     S.tensorBasis (Sum.elim c c1 ∘ finSumFinEquiv.symm) b =
     (S.F.map (OverColor.equivToIso finSumFinEquiv).hom).hom
     ((Functor.LaxMonoidal.μ S.F _ _).hom
-    (S.tensorBasis c (prodEquiv b).1 ⊗ₜ[S.k] S.tensorBasis c1 (prodEquiv b).2)) := by
+    (S.tensorBasis c (prodEquiv b).1 ⊗ₜ[k] S.tensorBasis c1 (prodEquiv b).2)) := by
   rw [tensorBasis_eq_basisVector, basisVector]
   rw [tensorBasis_eq_basisVector, basisVector]
   rw [tensorBasis_eq_basisVector, basisVector]
@@ -278,14 +277,18 @@ lemma tensorBasis_prod {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
   erw [lift.objMap'_tprod]
   congr
   funext i
-  simp [lift.discreteFunctorMapEqIso]
+  simp only [Function.comp_apply, mk_left, Functor.id_obj, mk_hom, equivToIso_homToEquiv,
+    lift.discreteFunctorMapEqIso, eqToIso_refl, Functor.mapIso_refl, Iso.refl_hom, Action.id_hom,
+    ModuleCat.hom_id, Iso.refl_inv, prodEquiv_apply_fst, prodEquiv_apply_snd,
+    LinearEquiv.ofLinear_apply, LinearMap.id_coe, id_eq]
   have hj (j : Fin n ⊕ Fin m) (hj : finSumFinEquiv.symm i = j) : (S.basis (Sum.elim c c1 j)) (b i) =
     (lift.discreteSumEquiv' S.FD j)
     (PhysLean.PiTensorProduct.elimPureTensor (fun i => (S.basis (c i)) ((prodEquiv b).1 i))
       (fun i => (S.basis (c1 i)) ((prodEquiv b).2 i)) j) := by
     match j with
     | Sum.inl j =>
-      simp [PhysLean.PiTensorProduct.elimPureTensor, lift.discreteSumEquiv']
+      simp only [Sum.elim_inl, lift.discreteSumEquiv', PhysLean.PiTensorProduct.elimPureTensor,
+        prodEquiv_apply_fst, LinearEquiv.refl_apply]
       have hi : i = finSumFinEquiv (Sum.inl j) :=
         (Equiv.symm_apply_eq finSumFinEquiv).mp hj
       subst hi
@@ -296,7 +299,8 @@ lemma tensorBasis_prod {n m : ℕ} {c : Fin n → S.C} {c1 : Fin m → S.C}
       refine Nat.mod_eq_of_lt ?_
       simpa using (b (Fin.castAdd m j)).2
     | Sum.inr j =>
-      simp [PhysLean.PiTensorProduct.elimPureTensor, lift.discreteSumEquiv']
+      simp only [Sum.elim_inr, lift.discreteSumEquiv', PhysLean.PiTensorProduct.elimPureTensor,
+        prodEquiv_apply_snd, LinearEquiv.refl_apply]
       have hi : i = finSumFinEquiv (Sum.inr j) :=
         (Equiv.symm_apply_eq finSumFinEquiv).mp hj
       subst hi
@@ -338,7 +342,7 @@ lemma contrMap_tensorBasis {n : ℕ} {c : Fin n.succ.succ → S.C}
     (b : Π j, Fin (S.repDim (c j))) :
     (S.contrMap c i j h).hom (S.tensorBasis c b) =
     (S.contr.app (Discrete.mk (c i))).hom
-    (S.basis (c i) (b i) ⊗ₜ[S.k] S.basis (S.τ (c i)) (Fin.cast (by rw [h]) (b (i.succAbove j)))) •
+    (S.basis (c i) (b i) ⊗ₜ[k] S.basis (S.τ (c i)) (Fin.cast (by rw [h]) (b (i.succAbove j)))) •
     (S.tensorBasis (c ∘ i.succAbove ∘ j.succAbove)
     (fun k => b ((i.succAbove ∘ j.succAbove) k))) := by
   rw [tensorBasis_eq_basisVector, basisVector, tensorBasis_eq_basisVector, basisVector]
@@ -407,7 +411,8 @@ def contrSectionEquiv {n : ℕ} {c : Fin n.succ.succ → S.C}
   invFun x := ⟨liftToContrSection b x, liftToContrSection_mem_ContrSection b x⟩
   left_inv b' := by
     ext y
-    simp [liftToContrSection]
+    simp only [liftToContrSection, Nat.succ_eq_add_one, Function.comp_apply,
+      Fin.insertNthEquiv_apply]
     rcases Fin.eq_self_or_eq_succAbove i y with rfl | h
     · simp
     · obtain ⟨y, rfl⟩ := h
@@ -445,7 +450,10 @@ lemma pairIsoSep_tensorBasis_repr {c c1 : S.C}
   apply TensorProduct.induction_on
   · simp [P]
   · intro x y
-    simp [P]
+    simp only [Action.instMonoidalCategory_tensorObj_V, Nat.succ_eq_add_one, Nat.reduceAdd,
+      Fin.isValue, Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
+      Action.FunctorCategoryEquivalence.functor_obj_obj, Basis.tensorProduct_repr_tmul_apply,
+      smul_eq_mul, P]
     conv_lhs =>
       left
       right

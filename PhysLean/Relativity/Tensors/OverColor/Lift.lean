@@ -102,6 +102,21 @@ lemma objObj'_ρ_empty (g : G) : (objObj' F (𝟙_ (OverColor C))).ρ g = Linear
   funext i
   exact Empty.elim i
 
+lemma objObj'_ρ_from_fin0 (c : Fin 0 → C) (g : G) :
+    (objObj' F (OverColor.mk c)).ρ g = LinearMap.id := by
+  rw [objObj'_ρ]
+  ext x
+  refine PiTensorProduct.induction_on' x (fun r x => ?_) <| fun x y hx hy => by
+    simp_all
+  simp only [OverColor.instMonoidalCategoryStruct_tensorUnit_left, Functor.id_obj,
+    OverColor.instMonoidalCategoryStruct_tensorUnit_hom, PiTensorProduct.tprodCoeff_eq_smul_tprod,
+    _root_.map_smul, PiTensorProduct.map_tprod, LinearMap.id_coe, id_eq]
+  apply congrArg
+  apply congrArg
+  funext i
+  simp only [mk_left] at i
+  exact Fin.elim0 i
+
 open TensorProduct in
 @[simp]
 lemma objObj'_V_carrier (f : OverColor C) :
