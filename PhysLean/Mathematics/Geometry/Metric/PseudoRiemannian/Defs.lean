@@ -58,6 +58,82 @@ noncomputable section
 open Bundle Set Finset Function Filter Module Topology ContinuousLinearMap
 open scoped Manifold Bundle LinearMap Dual
 
+/-! ## Bundle-level infrastructure (Mathlib-style) -/
+
+namespace Bundle
+
+/-! ### Fiberwise pseudo-Riemannian structures -/
+
+section PseudoRiemannianBundle
+
+variable
+  {B : Type*} [TopologicalSpace B]
+  {E : B → Type*} [∀ x, NormedAddCommGroup (E x)] [∀ x, NormedSpace ℝ (E x)]
+
+/-- A pseudo-Riemannian structure on a family of fibers `E x`: a symmetric, nondegenerate bilinear
+form on each fiber, expressed as a continuous bilinear map. -/
+class PseudoRiemannianBundle : Type _ where
+  metric : ∀ x : B, E x →L[ℝ] E x →L[ℝ] ℝ
+  symm : ∀ (x : B) (v w : E x), metric x v w = metric x w v
+  nondegenerate : ∀ (x : B) (v : E x), (∀ w : E x, metric x v w = 0) → v = 0
+
+variable [PseudoRiemannianBundle (B := B) (E := E)]
+
+/-- The fiberwise pseudo-inner-product \(g_x(v,w)\). -/
+abbrev pseudoInner (x : B) (v w : E x) : ℝ :=
+  (PseudoRiemannianBundle.metric (B := B) (E := E) x) v w
+
+end PseudoRiemannianBundle
+
+/-! ### Smoothness of pseudo-Riemannian structures on vector bundles -/
+
+section ContMDiff
+
+open scoped ENat
+
+variable
+  {EB : Type*} [NormedAddCommGroup EB] [NormedSpace ℝ EB]
+  {HB : Type*} [TopologicalSpace HB] {IB : ModelWithCorners ℝ EB HB} {n n' : WithTop ℕ∞}
+  {B : Type*} [TopologicalSpace B] [ChartedSpace HB B]
+  {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+  {E : B → Type*} [TopologicalSpace (TotalSpace F E)] [∀ x, NormedAddCommGroup (E x)]
+  [∀ x, NormedSpace ℝ (E x)]
+  [FiberBundle F E] [VectorBundle ℝ F E]
+  [PseudoRiemannianBundle (B := B) (E := E)]
+
+variable (IB n F E) in
+/-- A pseudo-Riemannian bundle is `C^n` if its fiberwise bilinear form depends `C^n`-smoothly on the
+base point, when seen as a section of the bundle of bilinear forms. -/
+class IsContMDiffPseudoRiemannianBundle : Prop where
+  exists_contMDiff :
+    ∃ g : Π x : B, E x →L[ℝ] E x →L[ℝ] ℝ,
+      ContMDiff IB (IB.prod 𝓘(ℝ, F →L[ℝ] F →L[ℝ] ℝ)) n
+        (fun b ↦ TotalSpace.mk' (F →L[ℝ] F →L[ℝ] ℝ) b (g b))
+      ∧ ∀ (x : B) (v w : E x), pseudoInner (B := B) (E := E) x v w = g x v w
+
+lemma IsContMDiffPseudoRiemannianBundle.of_le
+    [h : IsContMDiffPseudoRiemannianBundle (IB := IB) (n := n) (F := F) (E := E)] (h' : n' ≤ n) :
+    IsContMDiffPseudoRiemannianBundle (IB := IB) (n := n') (F := F) (E := E) := by
+  rcases h.exists_contMDiff with ⟨g, g_smooth, hg⟩
+  exact ⟨g, g_smooth.of_le h', hg⟩
+
+instance [IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (1 : WithTop ℕ∞)) (F := F) (E := E)] :
+    IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (0 : WithTop ℕ∞)) (F := F) (E := E) :=
+  IsContMDiffPseudoRiemannianBundle.of_le (IB := IB) (F := F) (E := E) zero_le_one
+
+instance [IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (2 : WithTop ℕ∞)) (F := F) (E := E)] :
+    IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (1 : WithTop ℕ∞)) (F := F) (E := E) :=
+  IsContMDiffPseudoRiemannianBundle.of_le (IB := IB) (F := F) (E := E) one_le_two
+
+instance [IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (3 : WithTop ℕ∞)) (F := F) (E := E)] :
+    IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (2 : WithTop ℕ∞)) (F := F) (E := E) :=
+  IsContMDiffPseudoRiemannianBundle.of_le (IB := IB) (n := (3 : WithTop ℕ∞)) (F := F) (E := E)
+    (by norm_cast)
+
+end ContMDiff
+
+end Bundle
+
 /-! ## Pseudo-Riemannian Metric -/
 
 /-!
@@ -340,7 +416,7 @@ lemma apply_vec_sharp (g : MetricTensor E H M n I) (x : M) (v : TangentSpace I x
 /-! ## Cotangent metric induced by `g` -/
 
 /-- The induced metric value on the cotangent space at `x`. -/
-noncomputable def cotangentMetricVal (g : MetricTensor E H M n I) (x : M)
+def cotangentMetricVal (g : MetricTensor E H M n I) (x : M)
     (ω₁ ω₂ : TangentSpace I x →L[ℝ] ℝ) : ℝ :=
   g.val x (g.sharpL x ω₁) (g.sharpL x ω₂)
 
@@ -356,7 +432,7 @@ lemma cotangentMetricVal_symm (g : MetricTensor E H M n I) (x : M)
   rw [g.symm x (g.sharpL x ω₁) (g.sharpL x ω₂)]
 
 /-- The induced cotangent metric as a bilinear form. -/
-noncomputable def cotangentToBilinForm (g : MetricTensor E H M n I) (x : M) :
+def cotangentToBilinForm (g : MetricTensor E H M n I) (x : M) :
     LinearMap.BilinForm ℝ (TangentSpace I x →L[ℝ] ℝ) where
   toFun ω₁ :=
     { toFun := fun ω₂ => cotangentMetricVal g x ω₁ ω₂
@@ -372,11 +448,11 @@ noncomputable def cotangentToBilinForm (g : MetricTensor E H M n I) (x : M) :
       LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
 
 /-- The induced cotangent metric as a quadratic form. -/
-noncomputable def cotangentToQuadraticForm (g : MetricTensor E H M n I) (x : M) :
+def cotangentToQuadraticForm (g : MetricTensor E H M n I) (x : M) :
     QuadraticForm ℝ (TangentSpace I x →L[ℝ] ℝ) where
   toFun ω := cotangentMetricVal g x ω ω
   toFun_smul a ω := by
-    simp [cotangentMetricVal, ContinuousLinearMap.map_smul, ContinuousLinearMap.smul_apply, smul_smul]
+    simp [cotangentMetricVal, ContinuousLinearMap.smul_apply]
     ring
   exists_companion' :=
     ⟨LinearMap.mk₂ ℝ (fun ω₁ ω₂ =>
@@ -395,19 +471,21 @@ noncomputable def cotangentToQuadraticForm (g : MetricTensor E H M n I) (x : M) 
           ContinuousLinearMap.add_apply]
         ring⟩
 
-@[simp] lemma cotangentToBilinForm_apply (g : MetricTensor E H M n I) (x : M)
+@[simp] 
+lemma cotangentToBilinForm_apply (g : MetricTensor E H M n I) (x : M)
     (ω₁ ω₂ : TangentSpace I x →L[ℝ] ℝ) :
     cotangentToBilinForm g x ω₁ ω₂ = cotangentMetricVal g x ω₁ ω₂ := rfl
 
-@[simp] lemma cotangentToQuadraticForm_apply (g : MetricTensor E H M n I) (x : M)
+@[simp] 
+lemma cotangentToQuadraticForm_apply (g : MetricTensor E H M n I) (x : M)
     (ω : TangentSpace I x →L[ℝ] ℝ) :
     cotangentToQuadraticForm g x ω = cotangentMetricVal g x ω ω := rfl
 
-@[simp] lemma cotangentToBilinForm_isSymm (g : MetricTensor E H M n I) (x : M) :
+@[simp] 
+lemma cotangentToBilinForm_isSymm (g : MetricTensor E H M n I) (x : M) :
     (cotangentToBilinForm g x).IsSymm := by
   refine { eq := ?_ }
   intro ω₁ ω₂
-  -- avoid rewriting `cotangentMetricVal` via its simp-lemma; use symmetry of `g` directly
   simp [cotangentToBilinForm_apply, cotangentMetricVal, g.symm]
 
 /-- Nondegeneracy of the cotangent metric. -/
@@ -453,8 +531,7 @@ theorem cotangentToQuadraticForm_equivalent_toQuadraticForm (g : MetricTensor E 
   refine
     { toLinearEquiv := (g.sharpEquiv x).toLinearEquiv
       map_app' := fun ω => ?_ }
-  simp [cotangentToQuadraticForm_apply, cotangentMetricVal, toQuadraticForm, toQuadraticForm_apply,
-    sharpEquiv, sharpL]
+  simp [cotangentToQuadraticForm_apply, cotangentMetricVal, toQuadraticForm, sharpEquiv, sharpL]
 
 end MetricTensor
 
@@ -493,7 +570,23 @@ variable [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M]
 variable {I : ModelWithCorners ℝ E H}
 variable [IsManifold I (n + 1) M] [IsManifold I 1 M]
 variable [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)]
-variable {g : PseudoRiemannianMetric E H M n I}
+
+/-! ## Predicate typeclass: pseudo-Riemannian manifolds -/
+
+/-- Prop-valued typeclass recording that the manifold carries *some* `C^n` pseudo-Riemannian metric.
+
+This mirrors the way one often uses `IsRiemannianManifold` as a Prop-valued predicate, but here
+we do not derive any distance structure (pseudo-metrics are indefinite). -/
+class IsPseudoRiemannianManifold : Prop where
+  exists_metric : ∃ _ : PseudoRiemannianMetric E H M n I, True
+
+noncomputable def pseudoRiemannianMetric [h : IsPseudoRiemannianManifold (E := E) (H := H) (M := M) (n := n) (I := I)] :
+    PseudoRiemannianMetric E H M n I :=
+  Classical.choose h.exists_metric
+
+instance (g : PseudoRiemannianMetric E H M n I) :
+    IsPseudoRiemannianManifold (E := E) (H := H) (M := M) (n := n) (I := I) :=
+  ⟨⟨g, trivial⟩⟩
 
 /-- Given a pseudo-Riemannian metric `g` on manifold `M` and a point `x : M`,
 this function constructs a bilinear form on the tangent space at `x`.
@@ -530,12 +623,12 @@ the associated quadratic form `v ↦ gₓ(v,v)`. -/
 def index (g : PseudoRiemannianMetric E H M n I) (x : M) : ℕ :=
   (g.toQuadraticForm x).negDim
 
-@[simp] lemma index_def (g : PseudoRiemannianMetric E H M n I) (x : M) :
-    g.index x = (g.toQuadraticForm x).negDim := rfl
+@[simp] 
+lemma index_def (g : PseudoRiemannianMetric E H M n I) (x : M) :
+  g.index x = (g.toQuadraticForm x).negDim := rfl
 
 lemma index_isLocallyConstant (g : PseudoRiemannianMetric E H M n I) :
     IsLocallyConstant (fun x : M => g.index x) := by
-  -- this is exactly the structure field, rewritten through `toQuadraticForm`
   simpa [index, toQuadraticForm] using g.negDim_isLocallyConstant
 
 lemma index_eq_of_isPreconnected (g : PseudoRiemannianMetric E H M n I) {s : Set M}
@@ -623,29 +716,8 @@ lemma flatL_inj (g : PseudoRiemannianMetric E H M n I) (x : M) :
 lemma flatL_surj
     (g : PseudoRiemannianMetric E H M n I) (x : M) :
     Function.Surjective (g.flatL x) := by
-  haveI : FiniteDimensional ℝ (TangentSpace I x) := inst_tangent_findim x
-  have h_finrank_eq : finrank ℝ (TangentSpace I x) = finrank ℝ (TangentSpace I x →L[ℝ] ℝ) := by
-    have h_dual_eq : finrank ℝ (TangentSpace I x →L[ℝ] ℝ) = finrank ℝ (Module.Dual ℝ
-    (TangentSpace I x)) := by
-      let to_dual : (TangentSpace I x →L[ℝ] ℝ) → Module.Dual ℝ (TangentSpace I x) :=
-        fun f => f.toLinearMap
-      let from_dual : Module.Dual ℝ (TangentSpace I x) → (TangentSpace I x →L[ℝ] ℝ) := fun f =>
-        ContinuousLinearMap.mk f (by
-          apply LinearMap.continuous_of_finiteDimensional)
-      let equiv : (TangentSpace I x →L[ℝ] ℝ) ≃ₗ[ℝ] Module.Dual ℝ (TangentSpace I x) :=
-      { toFun := to_dual,
-        invFun := from_dual,
-        map_add' := fun f g => by
-          ext v; unfold to_dual; simp only [LinearMap.add_apply]; rfl,
-        map_smul' := fun c f => by
-          ext v; unfold to_dual; simp only [LinearMap.smul_apply]; rfl,
-        left_inv := fun f => by
-          ext v; unfold to_dual from_dual; simp,
-        right_inv := fun f => by
-          ext v; unfold to_dual from_dual; simp }
-      exact LinearEquiv.finrank_eq equiv
-    rw [h_dual_eq, ← Subspace.dual_finrank_eq]
-  exact (LinearMap.injective_iff_surjective_of_finrank_eq_finrank h_finrank_eq).mp (flatL_inj g x)
+  simpa [PseudoRiemannianMetric.flatL] using
+    MetricTensor.flatL_surj (g := g.toMetricTensor) x
 
 /-- The "musical" isomorphism (index lowering) from `TₓM` to its dual,
 as a continuous linear equivalence. This equivalence is a direct result of `gₓ` being
@@ -654,10 +726,7 @@ def flatEquiv
     (g : PseudoRiemannianMetric E H M n I)
     (x : M) :
     TangentSpace I x ≃L[ℝ] (TangentSpace I x →L[ℝ] ℝ) :=
-  LinearEquiv.toContinuousLinearEquiv
-    (LinearEquiv.ofBijective
-      ((g.flatL x).toLinearMap)
-      ⟨g.flatL_inj x, g.flatL_surj x⟩)
+  MetricTensor.flatEquiv (g := g.toMetricTensor) x
 
 lemma coe_flatEquiv
     (g : PseudoRiemannianMetric E H M n I) (x : M) :
@@ -680,12 +749,13 @@ guaranteed by the non-degeneracy of `gₓ` (O'Neill, Lemma 19, p. 47). -/
 def sharpEquiv
     (g : PseudoRiemannianMetric E H M n I) (x : M) :
     (TangentSpace I x →L[ℝ] ℝ) ≃L[ℝ] TangentSpace I x :=
-  (g.flatEquiv x).symm
+  MetricTensor.sharpEquiv (g := g.toMetricTensor) x
 
 /-- The index raising map `sharp` as a continuous linear map. -/
 def sharpL
     (g : PseudoRiemannianMetric E H M n I) (x : M) :
-    (TangentSpace I x →L[ℝ] ℝ) →L[ℝ] TangentSpace I x := (g.sharpEquiv x).toContinuousLinearMap
+    (TangentSpace I x →L[ℝ] ℝ) →L[ℝ] TangentSpace I x :=
+  MetricTensor.sharpL (g := g.toMetricTensor) x
 
 lemma sharpL_eq_toContinuousLinearMap
     (g : PseudoRiemannianMetric E H M n I) (x : M) :
@@ -698,52 +768,54 @@ lemma coe_sharpEquiv
 /-- The index raising map `sharp` as a linear map. -/
 noncomputable def sharp
     (g : PseudoRiemannianMetric E H M n I) (x : M) :
-    (TangentSpace I x →L[ℝ] ℝ) →ₗ[ℝ] TangentSpace I x := (g.sharpEquiv x).toLinearEquiv.toLinearMap
+    (TangentSpace I x →L[ℝ] ℝ) →ₗ[ℝ] TangentSpace I x :=
+  MetricTensor.sharp (g := g.toMetricTensor) x
 
 @[simp]
 lemma sharpL_apply_flatL
     (g : PseudoRiemannianMetric E H M n I) (x : M) (v : TangentSpace I x) :
     g.sharpL x (g.flatL x v) = v :=
-  (g.flatEquiv x).left_inv v
+  by
+    simp [PseudoRiemannianMetric.sharpL, PseudoRiemannianMetric.flatL,
+      MetricTensor.sharpL_apply_flatL (g := g.toMetricTensor) x v]
 
 @[simp]
 lemma flatL_apply_sharpL
     (g : PseudoRiemannianMetric E H M n I) (x : M) (ω : TangentSpace I x →L[ℝ] ℝ) :
-    g.flatL x (g.sharpL x ω) = ω := (g.flatEquiv x).right_inv ω
+    g.flatL x (g.sharpL x ω) = ω := by
+  simp [PseudoRiemannianMetric.sharpL, PseudoRiemannianMetric.flatL,
+    MetricTensor.flatL_apply_sharpL (g := g.toMetricTensor) x ω]
 
 /-- Applying `sharp` then `flat` recovers the original covector. -/
 @[simp]
 lemma flat_sharp_apply
     (g : PseudoRiemannianMetric E H M n I) (x : M) (ω : TangentSpace I x →L[ℝ] ℝ) :
     g.flat x (g.sharp x ω) = ω := by
-  have := flatL_apply_sharpL g x ω
-  simp only [flat, sharp]; simp only [LinearEquiv.coe_coe] at this ⊢
-  exact this
+  simp [PseudoRiemannianMetric.flat, PseudoRiemannianMetric.sharp,
+    MetricTensor.flat_sharp_apply (g := g.toMetricTensor) x ω]
 
 @[simp]
 lemma sharp_flat_apply
     (g : PseudoRiemannianMetric E H M n I) (x : M) (v : TangentSpace I x) :
     g.sharp x (g.flat x v) = v := by
-  have := sharpL_apply_flatL g x v
-  simp only [sharp, flat]; simp only [LinearEquiv.coe_coe] at this ⊢
-  exact this
+  simp [PseudoRiemannianMetric.flat, PseudoRiemannianMetric.sharp,
+    MetricTensor.sharp_flat_apply (g := g.toMetricTensor) x v]
 
 /-- The metric evaluated at `sharp ω₁` and `sharp ω₂`. -/
 @[simp]
 lemma apply_sharp_sharp
     (g : PseudoRiemannianMetric E H M n I) (x : M) (ω₁ ω₂ : TangentSpace I x →L[ℝ] ℝ) :
     g.val x (g.sharpL x ω₁) (g.sharpL x ω₂) = ω₁ (g.sharpL x ω₂) := by
-  rw [← flatL_apply g x (g.sharpL x ω₁)]
-  rw [flatL_apply_sharpL g x ω₁]
+  simp [PseudoRiemannianMetric.sharpL,
+    MetricTensor.apply_sharp_sharp (g := g.toMetricTensor) x ω₁ ω₂]
 
 /-- The metric evaluated at `v` and `sharp ω`. -/
 lemma apply_vec_sharp
     (g : PseudoRiemannianMetric E H M n I) (x : M) (v : TangentSpace I x)
     (ω : TangentSpace I x →L[ℝ] ℝ) :
     g.val x v (g.sharpL x ω) = ω v := by
-  rw [g.symm x v (g.sharpL x ω)]
-  rw [← flatL_apply g x (g.sharpL x ω)]
-  rw [flatL_apply_sharpL g x ω]
+  simp [PseudoRiemannianMetric.sharpL,
+    MetricTensor.apply_vec_sharp (g := g.toMetricTensor) x v ω]
 
 end Sharp
 
@@ -758,7 +830,7 @@ variable [IsManifold I (n + 1) M] [IsManifold I 1 M]
 variable [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)]
 
 /-- The value of the induced metric on the cotangent space at point `x`. -/
-noncomputable def cotangentMetricVal (g : PseudoRiemannianMetric E H M n I) (x : M)
+def cotangentMetricVal (g : PseudoRiemannianMetric E H M n I) (x : M)
     (ω₁ ω₂ : TangentSpace I x →L[ℝ] ℝ) : ℝ :=
   g.val x (g.sharpL x ω₁) (g.sharpL x ω₂)
 
@@ -777,7 +849,7 @@ lemma cotangentMetricVal_symm (g : PseudoRiemannianMetric E H M n I) (x : M)
 /-- The induced metric on the cotangent space at point `x` as a bilinear form.
 For covectors `ω₁` and `ω₂`, this gives `g(ω₁^#, ω₂^#)`, where `ω^#` is
 the "sharp" musical isomorphism raising indices. -/
-noncomputable def cotangentToBilinForm (g : PseudoRiemannianMetric E H M n I) (x : M) :
+def cotangentToBilinForm (g : PseudoRiemannianMetric E H M n I) (x : M) :
     LinearMap.BilinForm ℝ (TangentSpace I x →L[ℝ] ℝ) where
   toFun ω₁ := { toFun := λ ω₂ => cotangentMetricVal g x ω₁ ω₂,
                 map_add' := λ ω₂ ω₃ => by
@@ -802,7 +874,7 @@ noncomputable def cotangentToBilinForm (g : PseudoRiemannianMetric E H M n I) (x
 
 /-- The cometric on the cotangent space T_x*M at `x`, expressed as a quadratic form.
 It is induced by the pseudo-Riemannian metric on the tangent space T_xM. -/
-noncomputable def cotangentToQuadraticForm (g : PseudoRiemannianMetric E H M n I) (x : M) :
+def cotangentToQuadraticForm (g : PseudoRiemannianMetric E H M n I) (x : M) :
     QuadraticForm ℝ (TangentSpace I x →L[ℝ] ℝ) where
   toFun ω := cotangentMetricVal g x ω ω
   toFun_smul a ω := by
@@ -891,9 +963,10 @@ theorem cotangentToQuadraticForm_equivalent_toQuadraticForm
   refine
     { toLinearEquiv := (g.sharpEquiv x).toLinearEquiv
       map_app' := fun ω => ?_ }
-  -- unfold through the simp lemmas for both quadratic forms
-  simp [cotangentToQuadraticForm_apply, cotangentMetricVal, toQuadraticForm, toQuadraticForm_apply,
-    sharpEquiv, sharpL, coe_sharpEquiv]
+  have hsh : g.sharpL x ω = g.sharpEquiv x ω := rfl
+  -- unfold through the simp lemmas for both quadratic forms, but keep `cotangentMetricVal` as `g.val _ _ _`
+  -- (avoids rewriting to `ω (sharpL ω)`).
+  simp [cotangentToQuadraticForm_apply, cotangentMetricVal, toQuadraticForm, hsh]
 
 theorem cotangent_signature_eq (g : PseudoRiemannianMetric E H M n I) (x : M) :
     (g.cotangentToQuadraticForm x).signature = (g.toQuadraticForm x).signature :=
