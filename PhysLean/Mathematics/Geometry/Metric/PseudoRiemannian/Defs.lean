@@ -5,11 +5,12 @@ Authors: Matteo Cipollina
 -/
 
 import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.RCLike.Lemmas
 import Mathlib.Geometry.Manifold.MFDeriv.Defs
+import Mathlib.Geometry.Manifold.VectorBundle.Hom
+import Mathlib.Geometry.Manifold.VectorBundle.Tangent
 import Mathlib.LinearAlgebra.BilinearForm.Properties
-import Mathlib.LinearAlgebra.QuadraticForm.Real
 import Mathlib.Topology.LocallyConstant.Basic
+import PhysLean.Mathematics.Geometry.Metric.QuadraticForm.NegDim
 
 /-!
 # Pseudo-Riemannian Metrics on Smooth Manifolds
@@ -39,10 +40,9 @@ of a maximal negative definite subspace.
 * `PseudoRiemannianMetric.toQuadraticForm g x`: The quadratic form `v ↦ gₓ(v, v)` associated
   with the metric at point `x`.
 
-This formalization adopts a direct approach, defining the metric as a family of bilinear forms
-on tangent spaces, varying smoothly over the manifold. This pragmatic choice allows for foundational
-development while acknowledging that a more abstract ideal would involve defining metrics as
-sections of a tensor bundle (e.g., `Hom(TM ⊗ TM, ℝ)` or `TM →L[ℝ] TM →L[ℝ] ℝ`.
+This formalization packages smoothness in the same style as the modern Mathlib Riemannian API:
+the metric is a section of the (vector-bundle) bundle of bilinear forms, and the smoothness
+assumption is a `ContMDiff` statement for this section (instead of being phrased chartwise).
 
 ## Reference
 
@@ -58,122 +58,9 @@ noncomputable section
 open Bundle Set Finset Function Filter Module Topology ContinuousLinearMap
 open scoped Manifold Bundle LinearMap Dual
 
-namespace QuadraticForm
-
-variable {K : Type*} [Field K]
-
-/-! ## Negative Index -/
-
-/-- The negative dimension (often called the index or negative index of inertia) of a
-quadratic form `q` on a finite-dimensional real vector space.
-
-This value is defined by diagonalizing the quadratic form into an equivalent
-`QuadraticMap.weightedSumSquares ℝ s`, where `s : Fin (finrank ℝ E) → SignType`
-assigns `1`, `0`, or `-1` to each component. The `negDim` is the count of
-components `i` for which `s i = SignType.neg`.
-
-By Sylvester's Law of Inertia, this count is an invariant of the quadratic form.
-Geometrically, `negDim q` represents the dimension of any maximal vector subspace
-on which `q` is negative definite. This corresponds to O'Neill's Definition 18 (p. 47)
-of the index `ν` of a symmetric bilinear form `b` on `V`, which is "the largest integer
-that is the dimension of a subspace `W ⊂ V` on which `b|W` is negative
-definite." -/
-noncomputable def negDim {E : Type*} [AddCommGroup E]
-    [Module ℝ E] [FiniteDimensional ℝ E]
-    (q : QuadraticForm ℝ E) : ℕ := by classical
-  let P : (Fin (finrank ℝ E) → SignType) → Prop := fun w =>
-      QuadraticMap.Equivalent q (QuadraticMap.weightedSumSquares ℝ fun i => (w i : ℝ))
-  let h_exists : ∃ w, P w := QuadraticForm.equivalent_signType_weighted_sum_squared q
-  let w := Classical.choose h_exists
-  exact Finset.card (Finset.filter (fun i => w i = SignType.neg) Finset.univ)
-
-/-- For a standard basis vector in a weighted sum of squares, only one term in the sum
-    is nonzero. -/
-lemma QuadraticMap.weightedSumSquares_basis_vector {E : Type*} [AddCommGroup E]
-    [Module ℝ E] {weights : Fin (finrank ℝ E) → ℝ}
-    {i : Fin (finrank ℝ E)} (v : Fin (finrank ℝ E) → ℝ)
-    (hv : ∀ j, v j = if j = i then 1 else 0) :
-    QuadraticMap.weightedSumSquares ℝ weights v = weights i := by
-  simp only [QuadraticMap.weightedSumSquares_apply]
-  rw [Finset.sum_eq_single i]
-  · simp only [hv i, ↓reduceIte, mul_one, smul_eq_mul]
-  · intro j _ hj
-    simp only [hv j, if_neg hj, mul_zero, smul_eq_mul]
-  · simp only [Finset.mem_univ, not_true_eq_false, smul_eq_mul, mul_eq_zero, or_self,
-    IsEmpty.forall_iff]
-
-/-- When a quadratic form is equivalent to a weighted sum of squares,
-    negative weights correspond to vectors where the form takes negative values.
-    This is a concrete realization of a 1-dimensional negative definite subspace,
-    contributing to O'Neill's index `ν` (Definition 18, p. 47). -/
-lemma neg_weight_implies_neg_value {E : Type*} [AddCommGroup E] [Module ℝ E]
-    {q : QuadraticForm ℝ E} {w : Fin (finrank ℝ E) → SignType}
-    (h_equiv : QuadraticMap.Equivalent q (QuadraticMap.weightedSumSquares ℝ fun i => (w i : ℝ)))
-    {i : Fin (finrank ℝ E)} (hi : w i = SignType.neg) :
-    ∃ v : E, v ≠ 0 ∧ q v < 0 := by
-  let f := Classical.choice h_equiv
-  let v_std : Fin (finrank ℝ E) → ℝ := fun j => if j = i then 1 else 0
-  let v := f.symm v_std
-  have hv_ne_zero : v ≠ 0 := by
-    intro h
-    have : f v = f 0 := by rw [h]
-    have : f (f.symm v_std) = f 0 := by rw [← this]
-    have : v_std = 0 := by
-      rw [← f.apply_symm_apply v_std]
-      exact Eq.trans this (map_zero f)
-    have : v_std i = 0 := by rw [this]; rfl
-    simp only [↓reduceIte, one_ne_zero, v_std] at this
-  have hq_neg : q v < 0 := by
-    have heq : q v = QuadraticMap.weightedSumSquares ℝ (fun j => (w j : ℝ)) v_std :=
-      QuadraticMap.IsometryEquiv.map_app f.symm v_std
-    have hw : QuadraticMap.weightedSumSquares ℝ (fun j => (w j : ℝ)) v_std = (w i : ℝ) := by
-      apply QuadraticMap.weightedSumSquares_basis_vector v_std
-      intro j; simp only [v_std]
-    rw [heq, hw]
-    have : (w i : ℝ) = -1 := by simp only [hi, SignType.neg_eq_neg_one, SignType.coe_neg,
-      SignType.coe_one]
-    rw [this]
-    exact neg_one_lt_zero
-  exact ⟨v, hv_ne_zero, hq_neg⟩
-
-/-- A positive definite quadratic form cannot have any negative weights
-    in its diagonal representation. A quadratic form `q` derived from a bilinear form `b`
-    is positive definite if `b(v,v) > 0` for `v ≠ 0` (O'Neill, Definition 17 (1), p. 46).
-    The existence of a negative weight would imply `q(v) < 0` for some `v ≠ 0`, a contradiction. -/
-lemma posDef_no_neg_weights {E : Type*} [AddCommGroup E] [Module ℝ E]
-    {q : QuadraticForm ℝ E} (hq : q.PosDef)
-    {w : Fin (finrank ℝ E) → SignType}
-    (h_equiv : QuadraticMap.Equivalent q (QuadraticMap.weightedSumSquares ℝ fun i => (w i : ℝ))) :
-    ∀ i, w i ≠ SignType.neg := by
-  intro i hi
-  obtain ⟨v, hv_ne_zero, hq_neg⟩ := QuadraticForm.neg_weight_implies_neg_value h_equiv hi
-  have hq_pos : 0 < q v := hq v hv_ne_zero
-  exact lt_asymm hq_neg hq_pos
-
-/-- For a positive definite quadratic form, the negative dimension (index) is zero.
-    O'Neill states (p. 47) that "ν = 0 if and only if b is positive semidefinite."
-    Since positive definite implies positive semidefinite (Definitions 17 (1) and (2), p. 46),
-    a positive definite form must have index `ν = 0`. -/
-theorem rankNeg_eq_zero {E : Type*} [AddCommGroup E]
-    [Module ℝ E] [FiniteDimensional ℝ E] {q : QuadraticForm ℝ E} (hq : q.PosDef) :
-    q.negDim = 0 := by
-  haveI : Invertible (2 : ℝ) := inferInstance
-  unfold QuadraticForm.negDim
-  have h_exists := equivalent_signType_weighted_sum_squared q
-  let w := Classical.choose h_exists
-  have h_equiv : QuadraticMap.Equivalent q
-      (QuadraticMap.weightedSumSquares ℝ fun i => (w i : ℝ)) :=
-    Classical.choose_spec h_exists
-  have h_no_neg : ∀ i, w i ≠ SignType.neg :=
-    QuadraticForm.posDef_no_neg_weights hq h_equiv
-  simp [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-  exact fun ⦃x⦄ => h_no_neg x
-
-end QuadraticForm
-
 /-! ## Pseudo-Riemannian Metric -/
 
-/--
+/-!
 Constructs a `QuadraticForm` on the tangent space `TₓM` at a point `x` from the
 value of a pseudo-Riemannian metric at that point.
 (O'Neill, p. 47, "The function q: V → R given by q(v) = b(v,v) is the associated quadratic
@@ -184,7 +71,16 @@ The quadratic form `Qₓ` at `x` is defined as `Qₓ(v) = gₓ(v,v)`.
 The associated symmetric bilinear form required by `QuadraticForm.exists_companion'`
 is `Bₓ(v,w) = gₓ(v,w) + gₓ(w,v)`. Given the symmetry `symm`, this is `2 * gₓ(v,w)`.
 -/
-private def pseudoRiemannianMetricValToQuadraticForm
+namespace PseudoRiemannianMetric
+
+/--
+Turn a (curried) bilinear form `val` on each tangent space into the associated quadratic form
+`v ↦ val x v v`.
+
+This helper is intentionally public: it is the bridge between a bundled description of a metric
+(`val` + symmetry) and quadratic-form invariants such as `QuadraticForm.negDim`.
+-/
+def valToQuadraticForm
     {E : Type v} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type w} [TopologicalSpace H]
     {M : Type w} [TopologicalSpace M] [ChartedSpace H M]
@@ -207,6 +103,43 @@ private def pseudoRiemannianMetricValToQuadraticForm
                 ContinuousLinearMap.add_apply, symm x]
               ring⟩
 
+end PseudoRiemannianMetric
+
+/-- A general (pseudo-)metric tensor of smoothness class `C^n` on a manifold `M`.
+
+This is the common core shared by Riemannian and pseudo-Riemannian metrics:
+a smoothly varying symmetric, nondegenerate bilinear form on each tangent space.
+
+The pseudo-Riemannian notion will extend this with an index/signature constancy condition. -/
+@[ext]
+structure MetricTensor
+    (E : Type v) (H : Type w) (M : Type w) (n : WithTop ℕ∞)
+    [inst_norm_grp_E : NormedAddCommGroup E]
+    [inst_norm_sp_E : NormedSpace ℝ E]
+    [inst_top_H : TopologicalSpace H]
+    [inst_top_M : TopologicalSpace M]
+    [inst_chart_M : ChartedSpace H M]
+    (I : ModelWithCorners ℝ E H)
+    [inst_mani : IsManifold I (n + 1) M]
+    [inst_mani1 : IsManifold I 1 M]
+    [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)] :
+      Type (max u v w) where
+  /-- The metric tensor at each point `x : M`, represented as a continuous linear map
+      `TₓM →L[ℝ] (TₓM →L[ℝ] ℝ)`. Applying it twice, `(val x v) w`, yields `gₓ(v, w)`. -/
+  val : ∀ (x : M), TangentSpace I x →L[ℝ] (TangentSpace I x →L[ℝ] ℝ)
+  /-- Symmetry: `gₓ(v, w) = gₓ(w, v)`. -/
+  symm : ∀ (x : M) (v w : TangentSpace I x), (val x v) w = (val x w) v
+  /-- Non-degeneracy: if `gₓ(v, w) = 0` for all `w`, then `v = 0`. -/
+  nondegenerate : ∀ (x : M) (v : TangentSpace I x), (∀ w : TangentSpace I x,
+    (val x v) w = 0) → v = 0
+  /-- Smoothness of the metric tensor as a smooth section of the bundle of bilinear forms.
+
+  This packaging follows the same pattern as Mathlib's Riemannian metric API, using `TotalSpace.mk'`
+  for the bundled map. -/
+  contMDiff : ContMDiff I (I.prod 𝓘(ℝ, E →L[ℝ] E →L[ℝ] ℝ)) n
+    (fun x ↦
+      TotalSpace.mk' (E →L[ℝ] E →L[ℝ] ℝ) x (val x))
+
 /-- A pseudo-Riemannian metric of smoothness class `C^n` on a manifold `M` modelled on `(E, H)`
 with model `I`. This structure defines a smoothly varying, non-degenerate, symmetric,
 continuous bilinear form `gₓ` of constant negative dimension on the tangent space `TₓM`
@@ -215,49 +148,32 @@ This structure formalizes O'Neill's Definition 3.1 (p. 54) of a metric tensor `g
 as a "symmetric non-degenerate (0,2) tensor field on M of constant index."
 Each `gₓ` is a scalar product (O'Neill, Definition 20, p. 47) on `TₓM`. -/
 @[ext]
-structure PseudoRiemannianMetric
+structure PseudoRiemannianMetric extends MetricTensor E H M n I
     (E : Type v) (H : Type w) (M : Type w) (n : WithTop ℕ∞)
     [inst_norm_grp_E : NormedAddCommGroup E]
     [inst_norm_sp_E : NormedSpace ℝ E]
     [inst_top_H : TopologicalSpace H]
     [inst_top_M : TopologicalSpace M]
     [inst_chart_M : ChartedSpace H M]
-    [inst_chart_E : ChartedSpace H E]
     (I : ModelWithCorners ℝ E H)
     [inst_mani : IsManifold I (n + 1) M]
+    [inst_mani1 : IsManifold I 1 M]
     [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)] :
       Type (max u v w) where
-  /-- The metric tensor at each point `x : M`, represented as a continuous linear map
-      `TₓM →L[ℝ] (TₓM →L[ℝ] ℝ)`. Applying it twice, `(val x v) w`, yields `gₓ(v, w)`. -/
-  val : ∀ (x : M), TangentSpace I x →L[ℝ] (TangentSpace I x →L[ℝ] ℝ)
-  /-- The metric is symmetric: `gₓ(v, w) = gₓ(w, v)`. -/
-  symm : ∀ (x : M) (v w : TangentSpace I x), (val x v) w = (val x w) v
-  /-- The metric is non-degenerate: if `gₓ(v, w) = 0` for all `w`, then `v = 0`. -/
-  nondegenerate : ∀ (x : M) (v : TangentSpace I x), (∀ w : TangentSpace I x,
-    (val x v) w = 0) → v = 0
-  /-- The metric varies smoothly: Expressed in local coordinates via the chart
-      `e := extChartAt I x₀`, the function
-      `y ↦ g_{e.symm y}(mfderiv I I e.symm y v, mfderiv I I e.symm y w)` is `C^n` smooth on the
-      chart's target `e.target` for any constant vectors `v, w` in the model space `E`. -/
-  smooth_in_charts' : ∀ (x₀ : M) (v w : E),
-    let e := extChartAt I x₀
-    ContDiffWithinAt ℝ n
-      (fun y => val (e.symm y) (mfderiv I I e.symm y v) (mfderiv I I e.symm y w))
-      (e.target) (e x₀)
   /-- The negative dimension (`QuadraticForm.negDim`) of the metric's quadratic form is
       locally constant. On a connected manifold, this implies it is constant globally. -/
   negDim_isLocallyConstant :
     IsLocallyConstant (fun x : M =>
       have : FiniteDimensional ℝ (TangentSpace I x) := inferInstance
-      (pseudoRiemannianMetricValToQuadraticForm val symm x).negDim)
+      (PseudoRiemannianMetric.valToQuadraticForm val symm x).negDim)
 
 namespace PseudoRiemannianMetric
 
 variable {E : Type v} {H : Type w} {M : Type w} {n : WithTop ℕ∞}
 variable [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M] [ChartedSpace H E]
+variable [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M]
 variable {I : ModelWithCorners ℝ E H}
-variable [IsManifold I (n + 1) M]
+variable [IsManifold I (n + 1) M] [IsManifold I 1 M]
 variable [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)]
 variable {g : PseudoRiemannianMetric E H M n I}
 
@@ -283,7 +199,7 @@ def toBilinForm (g : PseudoRiemannianMetric E H M n I) (x : M) :
 /-- Convert a pseudo-Riemannian metric at a point `x` to a quadratic form `v ↦ gₓ(v, v)`. -/
 abbrev toQuadraticForm (g : PseudoRiemannianMetric E H M n I) (x : M) :
     QuadraticForm ℝ (TangentSpace I x) :=
-  pseudoRiemannianMetricValToQuadraticForm g.val g.symm x
+  PseudoRiemannianMetric.valToQuadraticForm g.val g.symm x
 
 /-- Coercion from PseudoRiemannianMetric to its function representation. -/
 instance coeFunInst : CoeFun (PseudoRiemannianMetric E H M n I)
@@ -299,6 +215,38 @@ lemma toBilinForm_apply (g : PseudoRiemannianMetric E H M n I) (x : M)
 lemma toQuadraticForm_apply (g : PseudoRiemannianMetric E H M n I) (x : M)
     (v : TangentSpace I x) :
   toQuadraticForm g x v = g.val x v v := rfl
+
+/-! ## Index (negative inertia) -/
+
+/-- The (negative) index of a pseudo-Riemannian metric at a point, defined as the negative index of
+the associated quadratic form `v ↦ gₓ(v,v)`. -/
+def index (g : PseudoRiemannianMetric E H M n I) (x : M) : ℕ :=
+  (g.toQuadraticForm x).negDim
+
+@[simp] lemma index_def (g : PseudoRiemannianMetric E H M n I) (x : M) :
+    g.index x = (g.toQuadraticForm x).negDim := rfl
+
+lemma index_isLocallyConstant (g : PseudoRiemannianMetric E H M n I) :
+    IsLocallyConstant (fun x : M => g.index x) := by
+  -- this is exactly the structure field, rewritten through `toQuadraticForm`
+  simpa [index, toQuadraticForm] using g.negDim_isLocallyConstant
+
+lemma index_eq_of_isPreconnected (g : PseudoRiemannianMetric E H M n I) {s : Set M}
+    (hs : IsPreconnected s) {x y : M} (hx : x ∈ s) (hy : y ∈ s) :
+    g.index x = g.index y :=
+  (index_isLocallyConstant (g := g)).apply_eq_of_isPreconnected hs hx hy
+
+lemma index_eq_of_preconnectedSpace [PreconnectedSpace M] (g : PseudoRiemannianMetric E H M n I)
+    (x y : M) :
+    g.index x = g.index y :=
+  (index_isLocallyConstant (g := g)).apply_eq_of_preconnectedSpace x y
+
+lemma index_eq_of_mem_connectedComponent (g : PseudoRiemannianMetric E H M n I) (x y : M)
+    (hy : y ∈ connectedComponent x) :
+    g.index y = g.index x :=
+  (index_isLocallyConstant (g := g)).apply_eq_of_isPreconnected
+    (isConnected_connectedComponent.isPreconnected)
+    hy (mem_connectedComponent : x ∈ connectedComponent x)
 
 @[simp]
 lemma toBilinForm_isSymm (g : PseudoRiemannianMetric E H M n I) (x : M) :
@@ -501,9 +449,9 @@ section Cotangent
 
 variable {E : Type v} {H : Type w} {M : Type w} {n : WithTop ℕ∞}
 variable [NormedAddCommGroup E] [NormedSpace ℝ E]
-variable [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M] [ChartedSpace H E]
+variable [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M]
 variable {I : ModelWithCorners ℝ E H}
-variable [IsManifold I (n + 1) M]
+variable [IsManifold I (n + 1) M] [IsManifold I 1 M]
 variable [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)]
 
 /-- The value of the induced metric on the cotangent space at point `x`. -/
@@ -628,6 +576,30 @@ lemma cotangentToBilinForm_nondegenerate (g : PseudoRiemannianMetric E H M n I) 
     have hv : ∀ (y : TangentSpace I x →L[ℝ] ℝ), ((g.cotangentToBilinForm x) ω) y = 0 := by
       intro y; rw [LinearMap.BilinForm.isSymm_def.mp (cotangentToBilinForm_isSymm g x)]; simp [hω]
     exact hv v
+
+/-! ## Cotangent signature -/
+
+/-- The cotangent quadratic form is equivalent to the tangent quadratic form via `sharp`. -/
+theorem cotangentToQuadraticForm_equivalent_toQuadraticForm
+    (g : PseudoRiemannianMetric E H M n I) (x : M) :
+    (g.cotangentToQuadraticForm x).Equivalent (g.toQuadraticForm x) := by
+  classical
+  refine ⟨?_⟩
+  refine
+    { toLinearEquiv := (g.sharpEquiv x).toLinearEquiv
+      map_app' := fun ω => ?_ }
+  -- unfold through the simp lemmas for both quadratic forms
+  simp [cotangentToQuadraticForm_apply, cotangentMetricVal, toQuadraticForm, toQuadraticForm_apply,
+    sharpEquiv, sharpL, coe_sharpEquiv]
+
+theorem cotangent_signature_eq (g : PseudoRiemannianMetric E H M n I) (x : M) :
+    (g.cotangentToQuadraticForm x).signature = (g.toQuadraticForm x).signature :=
+  QuadraticForm.signature_eq_of_equivalent (E := (TangentSpace I x →L[ℝ] ℝ))
+    (E₂ := TangentSpace I x) (cotangentToQuadraticForm_equivalent_toQuadraticForm (g := g) x)
+
+theorem cotangent_negDim_eq (g : PseudoRiemannianMetric E H M n I) (x : M) :
+    (g.cotangentToQuadraticForm x).negDim = (g.toQuadraticForm x).negDim :=
+  congrArg QuadraticForm.Signature.neg (cotangent_signature_eq (g := g) x)
 
 end Cotangent
 
