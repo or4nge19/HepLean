@@ -843,7 +843,7 @@ theorem zeroDim_weightedSumSquares_signType (w : Fin n → SignType) :
       Fintype.card (Fin n) - A - B = (Fintype.card (Fin n) - A) - B := rfl
       _ = (B + C) - B := by
         simpa using congrArg (fun t => t - B) h1
-      _ = C := by simp [Nat.add_sub_cancel_left]
+      _ = C := by simp
   set Q : QuadraticForm ℝ (Fin n → ℝ) :=
     (QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ))
   have hposI : posIndex (V := Fin n → ℝ) Q = A := by
