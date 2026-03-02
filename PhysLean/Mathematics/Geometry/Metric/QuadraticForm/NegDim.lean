@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2025 Matteo Cipollina. All rights reserved.
+Copyright (c) 2026 Matteo Cipollina. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Matteo Cipollina
 -/
@@ -12,7 +12,7 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 /-!
 ## Negative index for real quadratic forms
 
-This file provides a lightweight notion of the **negative index** (`negDim`) of a real quadratic
+This file provides the **negative index** (`negDim`) of a real quadratic
 form on a finite-dimensional real vector space, defined canonically via maximal positive definite
 subspaces (the standard “inertia index” definition).
 
