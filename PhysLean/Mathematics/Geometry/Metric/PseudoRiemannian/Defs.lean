@@ -79,9 +79,28 @@ class PseudoRiemannianBundle : Type _ where
 
 variable [PseudoRiemannianBundle (B := B) (E := E)]
 
+/-- The metric as a family of continuous bilinear maps. -/
+abbrev metric (x : B) : E x →L[ℝ] E x →L[ℝ] ℝ :=
+  PseudoRiemannianBundle.metric (B := B) (E := E) x
+
 /-- The fiberwise pseudo-inner-product \(g_x(v,w)\). -/
 abbrev pseudoInner (x : B) (v w : E x) : ℝ :=
   (PseudoRiemannianBundle.metric (B := B) (E := E) x) v w
+
+omit [TopologicalSpace B] in
+@[simp] lemma pseudoInner_def (x : B) (v w : E x) :
+    pseudoInner (B := B) (E := E) x v w = metric (B := B) (E := E) x v w := rfl
+
+omit [TopologicalSpace B] in
+lemma pseudoInner_symm (x : B) (v w : E x) :
+    pseudoInner (B := B) (E := E) x v w = pseudoInner (B := B) (E := E) x w v := by
+  simpa [pseudoInner] using (PseudoRiemannianBundle.symm (B := B) (E := E) x v w)
+
+omit [TopologicalSpace B] in
+lemma pseudoInner_nondegenerate (x : B) (v : E x) (hv : ∀ w : E x,
+    pseudoInner (B := B) (E := E) x v w = 0) :
+    v = 0 :=
+  PseudoRiemannianBundle.nondegenerate (B := B) (E := E) x v hv
 
 end PseudoRiemannianBundle
 
@@ -129,6 +148,54 @@ instance [IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (3 : WithTop ℕ∞
     IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (2 : WithTop ℕ∞)) (F := F) (E := E) :=
   IsContMDiffPseudoRiemannianBundle.of_le (IB := IB) (n := (3 : WithTop ℕ∞)) (F := F) (E := E)
     (by norm_cast)
+
+section ContMDiffPairing
+
+variable
+  {EM : Type*} [NormedAddCommGroup EM] [NormedSpace ℝ EM]
+  {HM : Type*} [TopologicalSpace HM] {IM : ModelWithCorners ℝ EM HM}
+  {M : Type*} [TopologicalSpace M] [ChartedSpace HM M]
+  [h : IsContMDiffPseudoRiemannianBundle (IB := IB) (n := n) (F := F) (E := E)]
+  {b : M → B} {v w : ∀ x, E (b x)} {s : Set M} {x : M}
+
+/-- Given two smooth maps into the same fibers of a pseudo-Riemannian bundle, their pairing is smooth. -/
+lemma ContMDiffWithinAt.pseudoInner_bundle
+    (hv : ContMDiffWithinAt IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (v m : TotalSpace F E)) s x)
+    (hw : ContMDiffWithinAt IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (w m : TotalSpace F E)) s x) :
+    ContMDiffWithinAt IM 𝓘(ℝ) n (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) s x := by
+  rcases h.exists_contMDiff with ⟨g, g_smooth, hg⟩
+  have hb : ContMDiffWithinAt IM IB n b s x := by
+    simp only [contMDiffWithinAt_totalSpace] at hv
+    exact hv.1
+  simp only [hg]
+  have : ContMDiffWithinAt IM (IB.prod 𝓘(ℝ)) n
+      (fun m ↦ TotalSpace.mk' ℝ (E := Bundle.Trivial B ℝ) (b m) (g (b m) (v m) (w m))) s x := by
+    apply ContMDiffWithinAt.clm_bundle_apply₂ (F₁ := F) (F₂ := F)
+    · exact ContMDiffAt.comp_contMDiffWithinAt x g_smooth.contMDiffAt hb
+    · exact hv
+    · exact hw
+  simp only [contMDiffWithinAt_totalSpace] at this
+  exact this.2
+
+lemma ContMDiffAt.pseudoInner_bundle
+    (hv : ContMDiffAt IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (v m : TotalSpace F E)) x)
+    (hw : ContMDiffAt IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (w m : TotalSpace F E)) x) :
+    ContMDiffAt IM 𝓘(ℝ) n (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) x :=
+  ContMDiffWithinAt.pseudoInner_bundle (IB := IB) (n := n) (F := F) (E := E) hv hw
+
+lemma ContMDiffOn.pseudoInner_bundle
+    (hv : ContMDiffOn IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (v m : TotalSpace F E)) s)
+    (hw : ContMDiffOn IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (w m : TotalSpace F E)) s) :
+    ContMDiffOn IM 𝓘(ℝ) n (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) s :=
+  fun x hx ↦ (hv x hx).pseudoInner_bundle (IB := IB) (n := n) (F := F) (E := E) (hw x hx)
+
+lemma ContMDiff.pseudoInner_bundle
+    (hv : ContMDiff IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (v m : TotalSpace F E)))
+    (hw : ContMDiff IM (IB.prod 𝓘(ℝ, F)) n (fun m ↦ (w m : TotalSpace F E))) :
+    ContMDiff IM 𝓘(ℝ) n (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) :=
+  fun x ↦ (hv x).pseudoInner_bundle (IB := IB) (n := n) (F := F) (E := E) (hw x)
+
+end ContMDiffPairing
 
 end ContMDiff
 
@@ -210,7 +277,7 @@ structure MetricTensor
     (val x v) w = 0) → v = 0
   /-- Smoothness of the metric tensor as a smooth section of the bundle of bilinear forms.
 
-  This packaging follows the same pattern as Mathlib's Riemannian metric API, using `TotalSpace.mk'`
+  We follow the same pattern as Mathlib's Riemannian metric API, using `TotalSpace.mk'`
   for the bundled map. -/
   contMDiff : ContMDiff I (I.prod 𝓘(ℝ, E →L[ℝ] E →L[ℝ] ℝ)) n
     (fun x ↦
@@ -471,17 +538,17 @@ def cotangentToQuadraticForm (g : MetricTensor E H M n I) (x : M) :
           ContinuousLinearMap.add_apply]
         ring⟩
 
-@[simp] 
+@[simp]
 lemma cotangentToBilinForm_apply (g : MetricTensor E H M n I) (x : M)
     (ω₁ ω₂ : TangentSpace I x →L[ℝ] ℝ) :
     cotangentToBilinForm g x ω₁ ω₂ = cotangentMetricVal g x ω₁ ω₂ := rfl
 
-@[simp] 
+@[simp]
 lemma cotangentToQuadraticForm_apply (g : MetricTensor E H M n I) (x : M)
     (ω : TangentSpace I x →L[ℝ] ℝ) :
     cotangentToQuadraticForm g x ω = cotangentMetricVal g x ω ω := rfl
 
-@[simp] 
+@[simp]
 lemma cotangentToBilinForm_isSymm (g : MetricTensor E H M n I) (x : M) :
     (cotangentToBilinForm g x).IsSymm := by
   refine { eq := ?_ }
@@ -573,20 +640,17 @@ variable [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace
 
 /-! ## Predicate typeclass: pseudo-Riemannian manifolds -/
 
-/-- Prop-valued typeclass recording that the manifold carries *some* `C^n` pseudo-Riemannian metric.
+/-- Prop-valued predicate recording existence of a `C^n` pseudo-Riemannian metric.
 
-This mirrors the way one often uses `IsRiemannianManifold` as a Prop-valued predicate, but here
-we do not derive any distance structure (pseudo-metrics are indefinite). -/
-class IsPseudoRiemannianManifold : Prop where
-  exists_metric : ∃ _ : PseudoRiemannianMetric E H M n I, True
-
-noncomputable def pseudoRiemannianMetric [h : IsPseudoRiemannianManifold (E := E) (H := H) (M := M) (n := n) (I := I)] :
-    PseudoRiemannianMetric E H M n I :=
-  Classical.choose h.exists_metric
+This is the “there exists a metric” statement, *without* making any noncanonical choice.  For
+bundle-first development, the primary data is still an explicit `PseudoRiemannianMetric` (or a
+`Bundle.PseudoRiemannianBundle` + smoothness instance). -/
+class HasPseudoRiemannianMetric : Prop where
+  out : Nonempty (PseudoRiemannianMetric E H M n I)
 
 instance (g : PseudoRiemannianMetric E H M n I) :
-    IsPseudoRiemannianManifold (E := E) (H := H) (M := M) (n := n) (I := I) :=
-  ⟨⟨g, trivial⟩⟩
+    HasPseudoRiemannianMetric (E := E) (H := H) (M := M) (n := n) (I := I) :=
+  ⟨⟨g⟩⟩
 
 /-- Given a pseudo-Riemannian metric `g` on manifold `M` and a point `x : M`,
 this function constructs a bilinear form on the tangent space at `x`.
@@ -623,7 +687,7 @@ the associated quadratic form `v ↦ gₓ(v,v)`. -/
 def index (g : PseudoRiemannianMetric E H M n I) (x : M) : ℕ :=
   (g.toQuadraticForm x).negDim
 
-@[simp] 
+@[simp]
 lemma index_def (g : PseudoRiemannianMetric E H M n I) (x : M) :
   g.index x = (g.toQuadraticForm x).negDim := rfl
 
@@ -964,8 +1028,6 @@ theorem cotangentToQuadraticForm_equivalent_toQuadraticForm
     { toLinearEquiv := (g.sharpEquiv x).toLinearEquiv
       map_app' := fun ω => ?_ }
   have hsh : g.sharpL x ω = g.sharpEquiv x ω := rfl
-  -- unfold through the simp lemmas for both quadratic forms, but keep `cotangentMetricVal` as `g.val _ _ _`
-  -- (avoids rewriting to `ω (sharpL ω)`).
   simp [cotangentToQuadraticForm_apply, cotangentMetricVal, toQuadraticForm, hsh]
 
 theorem cotangent_signature_eq (g : PseudoRiemannianMetric E H M n I) (x : M) :
