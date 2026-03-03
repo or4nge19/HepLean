@@ -15,6 +15,11 @@ import PhysLean.Mathematics.Geometry.Metric.QuadraticForm.NegDim
 This file defines pseudo-Riemannian metrics on smooth manifolds, in a way that mirrors Mathlib's
 bundle-first Riemannian metric API.
 
+A pseudo-Riemannian metric is a smoothly varying symmetric nondegenerate bilinear form on each
+tangent space, whose index (negative inertia) is locally constant. The index is formalized using
+`QuadraticForm.negDim`. In finite dimension, a metric induces the usual musical isomorphisms
+(`flat`/`sharp`) and an induced metric on the cotangent spaces.
+
 ## Main definitions
 
 * `Bundle.PseudoRiemannianBundle`: fiberwise data of a symmetric nondegenerate bilinear form.
@@ -38,6 +43,10 @@ same spirit as Mathlib's `Bundle.RiemannianBundle`.
 ## Tags
 
 pseudo-Riemannian, metric tensor, musical isomorphisms, index
+
+## References
+
+* Barrett O'Neill, *Semi-Riemannian Geometry with Applications to Relativity*, Academic Press (1983).
 -/
 
 section PseudoRiemannianMetric
@@ -164,6 +173,26 @@ instance [IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (3 : WithTop ℕ∞
   IsContMDiffPseudoRiemannianBundle.of_le (IB := IB) (n := (3 : WithTop ℕ∞)) (F := F) (E := E)
     (by norm_cast)
 
+namespace ContMDiffPseudoRiemannianMetric
+
+/-- A smooth pseudo-Riemannian metric along a bundle induces the corresponding fiberwise structure. -/
+def toPseudoRiemannianBundle
+    (g : ContMDiffPseudoRiemannianMetric (IB := IB) (n := n) (F := F) (E := E)) :
+    PseudoRiemannianBundle (B := B) (E := E) where
+  metric := g.metric
+  symm := g.symm
+  nondegenerate := g.nondegenerate
+
+instance (g : ContMDiffPseudoRiemannianMetric (IB := IB) (n := n) (F := F) (E := E)) :
+    letI : PseudoRiemannianBundle (B := B) (E := E) := toPseudoRiemannianBundle (IB := IB) (n := n)
+      (F := F) (E := E) g
+    IsContMDiffPseudoRiemannianBundle (IB := IB) (n := n) (F := F) (E := E) :=
+  letI : PseudoRiemannianBundle (B := B) (E := E) := toPseudoRiemannianBundle (IB := IB) (n := n)
+    (F := F) (E := E) g
+  ⟨⟨g, fun _ _ _ => rfl⟩⟩
+
+end ContMDiffPseudoRiemannianMetric
+
 section ContMDiffPairing
 
 variable
@@ -238,9 +267,11 @@ end Bundle
 
 namespace PseudoRiemannianMetric
 
-/-- Turn a (curried) symmetric bilinear map on each tangent space into the associated quadratic form
-`v ↦ val x v v`. This is the entry point to quadratic-form invariants (e.g. `QuadraticForm.negDim`)
-from bundled metric data. -/
+/-- Turn a (curried) symmetric bilinear map on a tangent space into the associated quadratic form
+`v ↦ val x v v`.
+
+This is the entry point to quadratic-form invariants (e.g. `QuadraticForm.negDim`) from bundled
+metric data; compare O'Neill, *Semi-Riemannian Geometry* (1983), p. 47. -/
 def valToQuadraticForm
     {E : Type v} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type w} [TopologicalSpace H]
@@ -498,14 +529,12 @@ lemma sharpL_apply_flatL (g : MetricTensor E H M n I) (x : M) (v : TangentSpace 
 
 @[simp]
 lemma flatL_apply_sharpL (g : MetricTensor E H M n I) (x : M)
-    (ω : TangentSpace I x →L[ℝ] ℝ) :
-    g.flatL x (g.sharpL x ω) = ω :=
+    (ω : TangentSpace I x →L[ℝ] ℝ) : g.flatL x (g.sharpL x ω) = ω :=
   (g.flatEquiv x).right_inv ω
 
 @[simp]
 lemma flat_sharp_apply (g : MetricTensor E H M n I) (x : M)
-    (ω : TangentSpace I x →L[ℝ] ℝ) :
-    g.flat x (g.sharp x ω) = ω := by
+    (ω : TangentSpace I x →L[ℝ] ℝ) : g.flat x (g.sharp x ω) = ω := by
   ext v
   have h := congrArg (fun f : TangentSpace I x →L[ℝ] ℝ => f v) (flatL_apply_sharpL (g := g) x ω)
   simpa [flat, flatL, sharp, sharpL] using h
@@ -670,8 +699,9 @@ end MetricTensor
 
 /-- A `C^n` pseudo-Riemannian metric on a manifold.
 
-This is a `MetricTensor` whose pointwise index (defined using `QuadraticForm.negDim`) is locally
-constant. -/
+This is a smooth symmetric nondegenerate bilinear form on each tangent space whose index
+(`QuadraticForm.negDim`) is locally constant (O'Neill, *Semi-Riemannian Geometry* (1983),
+Definition 3.1). -/
 @[ext]
 structure PseudoRiemannianMetric
     (E : Type v) (H : Type w) (M : Type*) (n : WithTop ℕ∞)
@@ -715,18 +745,16 @@ abbrev toQuadraticForm (g : PseudoRiemannianMetric E H M n I) (x : M) :
 
 /-- Coercion from PseudoRiemannianMetric to its function representation. -/
 instance coeFunInst : CoeFun (PseudoRiemannianMetric E H M n I)
-        (fun _ => ∀ x : M, TangentSpace I x →L[ℝ] (TangentSpace I x →L[ℝ] ℝ)) where
+    (fun _ => ∀ x : M, TangentSpace I x →L[ℝ] (TangentSpace I x →L[ℝ] ℝ)) where
   coe g := g.val
 
 @[simp]
 lemma toBilinForm_apply (g : PseudoRiemannianMetric E H M n I) (x : M)
-    (v w : TangentSpace I x) :
-  toBilinForm g x v w = g.val x v w := rfl
+  (v w : TangentSpace I x) : toBilinForm g x v w = g.val x v w := rfl
 
 @[simp]
 lemma toQuadraticForm_apply (g : PseudoRiemannianMetric E H M n I) (x : M)
-    (v : TangentSpace I x) :
-  toQuadraticForm g x v = g.val x v v := rfl
+  (v : TangentSpace I x) : toQuadraticForm g x v = g.val x v v := rfl
 
 /-! ## Index (negative inertia) -/
 
@@ -744,18 +772,15 @@ lemma index_isLocallyConstant (g : PseudoRiemannianMetric E H M n I) :
   simpa [index, toQuadraticForm] using g.negDim_isLocallyConstant
 
 lemma index_eq_of_isPreconnected (g : PseudoRiemannianMetric E H M n I) {s : Set M}
-    (hs : IsPreconnected s) {x y : M} (hx : x ∈ s) (hy : y ∈ s) :
-    g.index x = g.index y :=
+    (hs : IsPreconnected s) {x y : M} (hx : x ∈ s) (hy : y ∈ s) : g.index x = g.index y :=
   (index_isLocallyConstant (g := g)).apply_eq_of_isPreconnected hs hx hy
 
 lemma index_eq_of_preconnectedSpace [PreconnectedSpace M] (g : PseudoRiemannianMetric E H M n I)
-    (x y : M) :
-    g.index x = g.index y :=
+    (x y : M) : g.index x = g.index y :=
   (index_isLocallyConstant (g := g)).apply_eq_of_preconnectedSpace x y
 
 lemma index_eq_of_mem_connectedComponent (g : PseudoRiemannianMetric E H M n I) (x y : M)
-    (hy : y ∈ connectedComponent x) :
-    g.index y = g.index x :=
+    (hy : y ∈ connectedComponent x) : g.index y = g.index x :=
   (index_isLocallyConstant (g := g)).apply_eq_of_isPreconnected
     (isConnected_connectedComponent.isPreconnected)
     hy (mem_connectedComponent : x ∈ connectedComponent x)
