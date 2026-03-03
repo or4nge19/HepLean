@@ -31,14 +31,14 @@ section
 
 variable {E : Type v} [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable {H : Type w} [TopologicalSpace H]
-variable {M : Type w} [TopologicalSpace M] [ChartedSpace H M]
+variable {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
 variable {I : ModelWithCorners ℝ E H} {n : WithTop ℕ∞}
-variable [IsManifold I 1 M] [IsManifold I (n + 1) M]
+variable [IsManifold I (n + 1) M] [IsManifold I 1 M]
 
 /-- A `C^n` Riemannian metric on `M`, packaged using Mathlib's modern bundle API. -/
 abbrev RiemannianMetric
-    (I : ModelWithCorners ℝ E H) (n : WithTop ℕ∞) (M : Type w)
-    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M] [IsManifold I (n + 1) M] :=
+    (I : ModelWithCorners ℝ E H) (n : WithTop ℕ∞) (M : Type*)
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I (n + 1) M] [IsManifold I 1 M] :=
   Bundle.ContMDiffRiemannianMetric (IB := I) (n := n) (F := E) (E := fun x : M ↦ TangentSpace I x)
 
 namespace RiemannianMetric

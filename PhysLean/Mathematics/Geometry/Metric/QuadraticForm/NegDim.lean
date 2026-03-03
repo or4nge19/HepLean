@@ -6,6 +6,7 @@ Authors: Matteo Cipollina
 
 import Mathlib.LinearAlgebra.QuadraticForm.Real
 import Mathlib.Algebra.Module.Submodule.Map
+import Mathlib.Data.Nat.Lattice
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
@@ -33,10 +34,9 @@ diagonalization.
 
 ## Implementation notes
 
-We also define noncanonical auxiliary data (`QuadraticForm.signTypeWeights`,
-`QuadraticForm.signatureChoice`) by choosing Sylvester diagonalization weights, for bridging to
-`QuadraticForm.equivalent_signType_weighted_sum_squared` in
-`Mathlib.LinearAlgebra.QuadraticForm.Real`. These choices are not claimed to be canonical.
+Noncanonical Sylvester-diagonalization choices (`QuadraticForm.signTypeWeights`,
+`QuadraticForm.signatureChoice`, and the bridge lemmas relating them to the canonical indices) are
+kept in `PhysLean.Mathematics.Geometry.Metric.QuadraticForm.Sylvester`.
 
 ## Tags
 
@@ -64,54 +64,6 @@ namespace Signature
 abbrev nullity (s : Signature) : ℕ := s.zero
 
 end Signature
-
-/-- A choice of `SignType`-weights in Sylvester's diagonalization of a quadratic form.
-
-This is auxiliary data: it exists by `QuadraticForm.equivalent_signType_weighted_sum_squared`,
-but is not canonical (it is chosen noncomputably). -/
-noncomputable def signTypeWeights {E : Type*} [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E]
-    (q : QuadraticForm ℝ E) : Fin (finrank ℝ E) → SignType :=
-  Classical.choose (QuadraticForm.equivalent_signType_weighted_sum_squared q)
-
-lemma equivalent_weightedSumSquares_signTypeWeights {E : Type*} [AddCommGroup E] [Module ℝ E]
-    [FiniteDimensional ℝ E] (q : QuadraticForm ℝ E) :
-    QuadraticMap.Equivalent q
-      (QuadraticMap.weightedSumSquares ℝ fun i => ((signTypeWeights q i : SignType) : ℝ)) :=
-  Classical.choose_spec (QuadraticForm.equivalent_signType_weighted_sum_squared q)
-
-/-- A *chosen* signature `(pos, neg, zero)` of a real quadratic form, defined using
-`signTypeWeights`.
-
-This is **not** asserted to be canonical/invariant in this file; it is primarily a bridge to
-Mathlib's existence result (Sylvester diagonalization). -/
-noncomputable def signatureChoice {E : Type*} [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E]
-    (q : QuadraticForm ℝ E) : Signature := by
-  let w := signTypeWeights q
-  refine ⟨
-    (univ.filter fun i => w i = SignType.pos).card,
-    (univ.filter fun i => w i = SignType.neg).card,
-    (univ.filter fun i => w i = 0).card⟩
-
-/-!
-We will define canonical indices (`posDim`, `negDim`, `zeroDim`, `signature`) below using `posIndex`,
-and we keep `signatureChoice` only as auxiliary data.
--/
-
-lemma signatureChoice_le_finrank {E : Type*} [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E]
-    (q : QuadraticForm ℝ E) :
-    (signatureChoice q).neg ≤ finrank ℝ E ∧ (signatureChoice q).pos ≤ finrank ℝ E ∧
-      (signatureChoice q).zero ≤ finrank ℝ E := by
-  constructor
-  · simp [signatureChoice, signTypeWeights]
-    simpa using (Finset.card_filter_le (s := (Finset.univ : Finset (Fin (finrank ℝ E))))
-      (p := fun i => signTypeWeights q i = SignType.neg))
-  constructor
-  · simp [signatureChoice, signTypeWeights]
-    simpa using (Finset.card_filter_le (s := (Finset.univ : Finset (Fin (finrank ℝ E))))
-      (p := fun i => signTypeWeights q i = SignType.pos))
-  · simp [signatureChoice, signTypeWeights]
-    simpa using (Finset.card_filter_le (s := (Finset.univ : Finset (Fin (finrank ℝ E))))
-      (p := fun i => signTypeWeights q i = 0))
 
 /-- For a standard basis vector in a weighted sum of squares, only one term in the sum is nonzero. -/
 lemma QuadraticMap.weightedSumSquares_basis_vector {E : Type*} [AddCommGroup E] [Module ℝ E]
@@ -189,56 +141,63 @@ variable {V : Type*} [AddCommGroup V] [Module ℝ V] [FiniteDimensional ℝ V]
 def IsPosDefOn (Q : QuadraticForm ℝ V) (W : Submodule ℝ V) : Prop :=
   (Q.comp W.subtype).PosDef
 
-/-- The finset of candidate dimensions of positive-definite submodules of a quadratic form. -/
-private noncomputable def posIndexCandidates (Q : QuadraticForm ℝ V) : Finset ℕ := by
-  classical
-  exact (Finset.range (finrank ℝ V + 1)).filter fun k =>
-    ∃ W : Submodule ℝ V, finrank ℝ W = k ∧ IsPosDefOn (V := V) Q W
+/-- Predicate asserting that a real quadratic form admits a positive definite submodule of
+dimension `k`. -/
+def PosIndexPred (Q : QuadraticForm ℝ V) (k : ℕ) : Prop :=
+  ∃ W : Submodule ℝ V, finrank ℝ W = k ∧ IsPosDefOn (V := V) Q W
 
-omit [FiniteDimensional ℝ V] in
-private lemma posIndexCandidates_nonempty (Q : QuadraticForm ℝ V) :
-    (posIndexCandidates (V := V) Q).Nonempty := by
+private lemma posIndexPred_zero (Q : QuadraticForm ℝ V) : PosIndexPred (V := V) Q 0 := by
   classical
-  refine ⟨0, ?_⟩
-  refine Finset.mem_filter.2 ?_
-  refine ⟨by simp, ?_⟩
   refine ⟨(⊥ : Submodule ℝ V), by simp, ?_⟩
   intro x hx
   exfalso
   exact hx (Subsingleton.elim x 0)
 
+private lemma posIndexPred_le_finrank {Q : QuadraticForm ℝ V} {k : ℕ}
+    (hk : PosIndexPred (V := V) Q k) : k ≤ finrank ℝ V := by
+  rcases hk with ⟨W, hW, -⟩
+  have hk_le : finrank ℝ W ≤ finrank ℝ V :=
+    Submodule.finrank_le (R := ℝ) (M := V) W
+  simpa [hW] using hk_le
+
 /-- The positive index of a real quadratic form: the maximal dimension of a subspace on which the
 form is positive definite. -/
-noncomputable def posIndex (Q : QuadraticForm ℝ V) : ℕ := by
-  classical
-  exact (posIndexCandidates (V := V) Q).max' (posIndexCandidates_nonempty (V := V) Q)
+noncomputable def posIndex (Q : QuadraticForm ℝ V) : ℕ :=
+  sSup {k : ℕ | PosIndexPred (V := V) Q k}
 
-omit [FiniteDimensional ℝ V] in
+private lemma posIndex_nonempty (Q : QuadraticForm ℝ V) :
+    ({k : ℕ | PosIndexPred (V := V) Q k} : Set ℕ).Nonempty :=
+  ⟨0, posIndexPred_zero (V := V) Q⟩
+
+private lemma posIndex_bddAbove (Q : QuadraticForm ℝ V) :
+    BddAbove ({k : ℕ | PosIndexPred (V := V) Q k} : Set ℕ) := by
+  refine ⟨finrank ℝ V, ?_⟩
+  intro k hk
+  exact posIndexPred_le_finrank (V := V) (Q := Q) hk
+
 lemma posIndex_spec (Q : QuadraticForm ℝ V) :
     ∃ W : Submodule ℝ V, finrank ℝ W = posIndex (V := V) Q ∧ IsPosDefOn (V := V) Q W := by
   classical
+  -- `posIndex` is the supremum of a bounded, nonempty set of attainable dimensions,
+  -- hence it is itself attainable.
   have hmem :
-      posIndex (V := V) Q ∈ posIndexCandidates (V := V) Q := by
+      posIndex (V := V) Q ∈ ({k : ℕ | PosIndexPred (V := V) Q k} : Set ℕ) := by
+    -- `Nat.sSup_mem` gives membership of `sSup` for nonempty bounded sets.
     simpa [posIndex] using
-      (Finset.max'_mem _ (posIndexCandidates_nonempty (V := V) Q))
-  rcases (Finset.mem_filter.1 hmem).2 with ⟨W, hW, hWpos⟩
+      (Nat.sSup_mem (s := ({k : ℕ | PosIndexPred (V := V) Q k} : Set ℕ))
+        (posIndex_nonempty (V := V) Q) (posIndex_bddAbove (V := V) Q))
+  rcases hmem with ⟨W, hW, hWpos⟩
   exact ⟨W, hW, hWpos⟩
 
 lemma le_posIndex_of_exists {Q : QuadraticForm ℝ V} {k : ℕ}
     (hk : ∃ W : Submodule ℝ V, finrank ℝ W = k ∧ IsPosDefOn (V := V) Q W) :
     k ≤ posIndex (V := V) Q := by
-  classical
-  have hk_mem : k ∈ posIndexCandidates (V := V) Q := by
-    refine Finset.mem_filter.2 ?_
-    refine ⟨?_, hk⟩
-    rcases hk with ⟨W, hW, -⟩
-    have hk_le : k ≤ finrank ℝ V := by
-      simpa [hW] using (Submodule.finrank_le (R := ℝ) (M := V) W)
-    simpa [posIndexCandidates] using (Finset.mem_range.2 (Nat.lt_succ_of_le hk_le))
-  simpa [posIndex] using Finset.le_max' (posIndexCandidates (V := V) Q) k hk_mem
+  have hb : BddAbove ({k : ℕ | PosIndexPred (V := V) Q k} : Set ℕ) :=
+    posIndex_bddAbove (V := V) Q
+  -- `le_csSup` for `ℕ` requires boundedness (and membership gives nonemptiness).
+  simpa [posIndex, PosIndexPred] using (le_csSup hb hk)
 
 /- If `Q` and `Q₂` are equivalent, then `posIndex Q ≤ posIndex Q₂`. -/
-omit [FiniteDimensional ℝ V] in
 lemma posIndex_le_of_equivalent {V₂ : Type*} [AddCommGroup V₂] [Module ℝ V₂]
     [FiniteDimensional ℝ V₂] {Q : QuadraticForm ℝ V} {Q₂ : QuadraticForm ℝ V₂}
     (h : Q.Equivalent Q₂) :
@@ -298,9 +257,15 @@ variable {E : Type*} [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E]
 
 lemma posIndex_le_finrank (Q : QuadraticForm ℝ E) :
     posIndex (V := E) Q ≤ finrank ℝ E := by
-  rcases posIndex_spec (Q := Q) with ⟨W, hW, -⟩
-  have : finrank ℝ W ≤ finrank ℝ E := Submodule.finrank_le (R := ℝ) (M := E) W
-  simpa [hW] using this
+  classical
+  let s : Set ℕ := {k : ℕ | PosIndexPred (V := E) Q k}
+  have hsne : s.Nonempty := ⟨0, posIndexPred_zero (V := E) Q⟩
+  refine (csSup_le hsne) ?_
+  intro k hk
+  rcases hk with ⟨W, hW, -⟩
+  have hk_le : finrank ℝ W ≤ finrank ℝ E :=
+    Submodule.finrank_le (R := ℝ) (M := E) W
+  simpa [s, hW] using hk_le
 
 /-- The positive index of inertia of a real quadratic form (canonical). -/
 noncomputable def posDim (Q : QuadraticForm ℝ E) : ℕ :=
@@ -673,19 +638,16 @@ lemma finrank_supportedOnPos (w : Fin n → SignType) :
   classical
   have h :
       finrank ℝ ({i // i ∈ posSet (n := n) w} → ℝ) = (posSet (n := n) w).card := by
-    -- Write the index type as the finset `posSet w` itself to avoid rewriting the predicate.
     change finrank ℝ ((posSet (n := n) w) → ℝ) = (posSet (n := n) w).card
     calc
       finrank ℝ ((posSet (n := n) w) → ℝ) = Fintype.card (posSet (n := n) w) := by
         simp [Module.finrank_fintype_fun_eq_card]
       _ = (posSet (n := n) w).card := by
         simp
-  -- Convert the `LinearEquiv` finrank equality using the computation of the codomain finrank.
   simpa [h] using (LinearEquiv.finrank_eq (supportedOnPosEquiv (n := n) w))
 
-theorem posIndex_diag_signType (w : Fin n → SignType) :
+private theorem posIndex_diag_signType (w : Fin n → SignType) :
     posIndex (V := Fin n → ℝ) (diagForm (n := n) w) = (posSet (n := n) w).card := by
-  -- lower bound: exhibit the supported-on-positive submodule
   have h_lower :
       (posSet (n := n) w).card ≤ posIndex (V := Fin n → ℝ) (diagForm (n := n) w) := by
     have hk :
@@ -743,43 +705,37 @@ theorem posIndex_weightedSumSquares_signType (w : Fin n → SignType) :
     posIndex (V := Fin n → ℝ)
         (QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ)) =
       (Finset.univ.filter fun i : Fin n => w i = SignType.pos).card := by
-  simpa [diagForm, posSet] using (posIndex_diag_signType (n := n) w)
+  simpa [diagForm, posSet, signSet] using (posIndex_diag_signType (n := n) w)
 
-theorem posIndex_diagForm (w : Fin n → SignType) :
-    posIndex (V := Fin n → ℝ) (diagForm (n := n) w) = (posSet (n := n) w).card := by
-  simpa [diagForm, posSet, signSet] using (posIndex_weightedSumSquares_signType (n := n) w)
+private theorem posDim_diagForm (w : Fin n → SignType) :
+    QuadraticForm.posDim (E := Fin n → ℝ) (diagForm (n := n) w) = (posSet (n := n) w).card := by
+  simp [QuadraticForm.posDim, posIndex_diag_signType (n := n) w]
 
 theorem posDim_weightedSumSquares_signType (w : Fin n → SignType) :
     QuadraticForm.posDim (E := Fin n → ℝ)
         ((QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ)) :
           QuadraticForm ℝ (Fin n → ℝ)) =
       (Finset.univ.filter fun i : Fin n => w i = SignType.pos).card := by
-  simp [QuadraticForm.posDim, posIndex_weightedSumSquares_signType (n := n) w]
+  simpa [diagForm, posSet, signSet] using (posDim_diagForm (n := n) w)
 
-theorem posDim_diagForm (w : Fin n → SignType) :
-    QuadraticForm.posDim (E := Fin n → ℝ) (diagForm (n := n) w) = (posSet (n := n) w).card := by
-  simp [QuadraticForm.posDim, posIndex_diagForm (n := n) w]
-
-theorem negDim_weightedSumSquares_signType (w : Fin n → SignType) :
-    QuadraticForm.negDim (E := Fin n → ℝ)
-        ((QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ)) :
-          QuadraticForm ℝ (Fin n → ℝ)) =
-      (Finset.univ.filter fun i : Fin n => w i = SignType.neg).card := by
+private theorem negDim_diagForm (w : Fin n → SignType) :
+    QuadraticForm.negDim (E := Fin n → ℝ) (diagForm (n := n) w) = (negSet (n := n) w).card := by
   classical
-  set Q : QuadraticForm ℝ (Fin n → ℝ) :=
-    (QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ))
+  set Q : QuadraticForm ℝ (Fin n → ℝ) := diagForm (n := n) w
   have hneg : -Q = diagForm (n := n) (fun i => -w i) := by
     ext v
     simp [Q, diagForm, QuadraticMap.weightedSumSquares_apply]
   have hpos : posIndex (V := Fin n → ℝ) (-Q) = (posSet (n := n) (fun i => -w i)).card := by
     simpa [hneg] using (posIndex_diag_signType (n := n) (w := fun i => -w i))
   -- `negDim Q = posIndex (-Q)` and `posSet (-w) = negSet w`.
-  simp [QuadraticForm.negDim, Q, hpos, posSet_neg (n := n) w, negSet, signSet]
+  simp [Q, QuadraticForm.negDim, hpos, posSet_neg (n := n) w, negSet, signSet]
 
-theorem negDim_diagForm (w : Fin n → SignType) :
-    QuadraticForm.negDim (E := Fin n → ℝ) (diagForm (n := n) w) = (negSet (n := n) w).card := by
-  -- This is exactly the filter-card theorem, restated via `negSet`.
-  simpa [diagForm, negSet, signSet] using (negDim_weightedSumSquares_signType (n := n) w)
+theorem negDim_weightedSumSquares_signType (w : Fin n → SignType) :
+    QuadraticForm.negDim (E := Fin n → ℝ)
+        ((QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ)) :
+          QuadraticForm ℝ (Fin n → ℝ)) =
+      (Finset.univ.filter fun i : Fin n => w i = SignType.neg).card := by
+  simpa [diagForm, negSet, signSet] using (negDim_diagForm (n := n) w)
 
 lemma card_posSet_add_card_negSet_add_card_zeroSet (w : Fin n → SignType) :
     (posSet (n := n) w).card + (negSet (n := n) w).card + (zeroSet (n := n) w).card =
@@ -828,14 +784,11 @@ lemma card_posSet_add_card_negSet_add_card_zeroSet (w : Fin n → SignType) :
       _ = Fintype.card (Fin n) := huniv
   simpa [A, B, C, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using this
 
-theorem zeroDim_weightedSumSquares_signType (w : Fin n → SignType) :
-    QuadraticForm.zeroDim (E := Fin n → ℝ)
-        ((QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ)) :
-          QuadraticForm ℝ (Fin n → ℝ)) =
-      (Finset.univ.filter fun i : Fin n => w i = 0).card := by
+private theorem zeroDim_diagForm (w : Fin n → SignType) :
+    QuadraticForm.zeroDim (E := Fin n → ℝ) (diagForm (n := n) w) = (zeroSet (n := n) w).card := by
   have hfin : finrank ℝ (Fin n → ℝ) = Fintype.card (Fin n) := by simp
-  have hpos := posDim_weightedSumSquares_signType (n := n) w
-  have hneg := negDim_weightedSumSquares_signType (n := n) w
+  have hpos := posDim_diagForm (n := n) w
+  have hneg := negDim_diagForm (n := n) w
   have hsum := card_posSet_add_card_negSet_add_card_zeroSet (n := n) w
   let A : ℕ := (posSet (n := n) w).card
   let B : ℕ := (negSet (n := n) w).card
@@ -851,98 +804,26 @@ theorem zeroDim_weightedSumSquares_signType (w : Fin n → SignType) :
       _ = (B + C) - B := by
         simpa using congrArg (fun t => t - B) h1
       _ = C := by simp
-  set Q : QuadraticForm ℝ (Fin n → ℝ) :=
-    (QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ))
+  set Q : QuadraticForm ℝ (Fin n → ℝ) := diagForm (n := n) w
   have hposI : posIndex (V := Fin n → ℝ) Q = A := by
-    simpa [Q, A, posSet, signSet] using (posIndex_weightedSumSquares_signType (n := n) w)
+    simpa [Q, A] using (posIndex_diag_signType (n := n) w)
   have hnegI : posIndex (V := Fin n → ℝ) (-Q) = B := by
-    -- `negDim Q = posIndex (-Q)` and `negDim Q = card (negSet w)`.
-    simpa [QuadraticForm.negDim, Q, B, negSet, signSet] using hneg
+    simpa [Q, B, QuadraticForm.negDim] using hneg
   have : QuadraticForm.zeroDim (E := Fin n → ℝ) Q = C := by
     dsimp [QuadraticForm.zeroDim, QuadraticForm.posDim, QuadraticForm.negDim]
     rw [hfin, hposI, hnegI]
     simpa using hz0
-  simpa [C, zeroSet, signSet, Q] using this
+  simpa [Q, C] using this
 
-theorem zeroDim_diagForm (w : Fin n → SignType) :
-    QuadraticForm.zeroDim (E := Fin n → ℝ) (diagForm (n := n) w) = (zeroSet (n := n) w).card := by
-  simpa [diagForm, zeroSet, signSet] using (zeroDim_weightedSumSquares_signType (n := n) w)
+theorem zeroDim_weightedSumSquares_signType (w : Fin n → SignType) :
+    QuadraticForm.zeroDim (E := Fin n → ℝ)
+        ((QuadraticMap.weightedSumSquares ℝ fun i : Fin n => (w i : ℝ)) :
+          QuadraticForm ℝ (Fin n → ℝ)) =
+      (Finset.univ.filter fun i : Fin n => w i = 0).card := by
+  simpa [diagForm, zeroSet, signSet] using (zeroDim_diagForm (n := n) w)
 
 end
 
 end Diagonal
-
-/-!
-### Canonical signature equals Sylvester choice
-
-Using the diagonal computation for `weightedSumSquares` and the Sylvester diagonalization existence
-theorem, we show that the canonical signature defined via `posIndex` agrees with the previously
-defined `signatureChoice`. In particular, `signatureChoice` becomes an invariant of the quadratic
-form (independent of the chosen diagonalization witness).
--/
-
-section SylvesterBridge
-
-variable {E : Type*} [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E]
-
-theorem posDim_eq_signatureChoice_pos (q : QuadraticForm ℝ E) :
-    q.posDim = (signatureChoice q).pos := by
-  let w : Fin (finrank ℝ E) → SignType := signTypeWeights q
-  let Qd : QuadraticForm ℝ (Fin (finrank ℝ E) → ℝ) :=
-    (QuadraticMap.weightedSumSquares ℝ fun i : Fin (finrank ℝ E) => (w i : ℝ))
-  have heq : q.Equivalent Qd := by
-    simpa [Qd, w, signTypeWeights] using (equivalent_weightedSumSquares_signTypeWeights q)
-  have hpos : q.posDim = Qd.posDim :=
-    posDim_eq_of_equivalent (E := E) (E₂ := Fin (finrank ℝ E) → ℝ) heq
-  have hposd :
-      Qd.posDim = (Finset.univ.filter fun i : Fin (finrank ℝ E) => w i = SignType.pos).card := by
-    simpa [Qd] using (posDim_weightedSumSquares_signType (n := finrank ℝ E) w)
-  simpa [signatureChoice, w, signTypeWeights] using hpos.trans hposd
-
-theorem negDim_eq_signatureChoice_neg (q : QuadraticForm ℝ E) :
-    q.negDim = (signatureChoice q).neg := by
-  let w : Fin (finrank ℝ E) → SignType := signTypeWeights q
-  let Qd : QuadraticForm ℝ (Fin (finrank ℝ E) → ℝ) :=
-    (QuadraticMap.weightedSumSquares ℝ fun i : Fin (finrank ℝ E) => (w i : ℝ))
-  have heq : q.Equivalent Qd := by
-    simpa [Qd, w, signTypeWeights] using (equivalent_weightedSumSquares_signTypeWeights q)
-  have hneg : q.negDim = Qd.negDim :=
-    negDim_eq_of_equivalent (E := E) (E₂ := Fin (finrank ℝ E) → ℝ) heq
-  have hnegd :
-      Qd.negDim = (Finset.univ.filter fun i : Fin (finrank ℝ E) => w i = SignType.neg).card := by
-    simpa [Qd] using (negDim_weightedSumSquares_signType (n := finrank ℝ E) w)
-  simpa [signatureChoice, w, signTypeWeights] using hneg.trans hnegd
-
-theorem zeroDim_eq_signatureChoice_zero (q : QuadraticForm ℝ E) :
-    q.zeroDim = (signatureChoice q).zero := by
-  let w : Fin (finrank ℝ E) → SignType := signTypeWeights q
-  let Qd : QuadraticForm ℝ (Fin (finrank ℝ E) → ℝ) :=
-    (QuadraticMap.weightedSumSquares ℝ fun i : Fin (finrank ℝ E) => (w i : ℝ))
-  have heq : q.Equivalent Qd := by
-    simpa [Qd, w, signTypeWeights] using (equivalent_weightedSumSquares_signTypeWeights q)
-  have hzero : q.zeroDim = Qd.zeroDim :=
-    zeroDim_eq_of_equivalent (E := E) (E₂ := Fin (finrank ℝ E) → ℝ) heq
-  have hzerod :
-      Qd.zeroDim = (Finset.univ.filter fun i : Fin (finrank ℝ E) => w i = 0).card := by
-    simpa [Qd] using (zeroDim_weightedSumSquares_signType (n := finrank ℝ E) w)
-  simpa [signatureChoice, w, signTypeWeights] using hzero.trans hzerod
-
-theorem signature_eq_signatureChoice (q : QuadraticForm ℝ E) :
-    q.signature = signatureChoice q := by
-  ext
-  · simpa using posDim_eq_signatureChoice_pos (E := E) q
-  · simpa using negDim_eq_signatureChoice_neg (E := E) q
-  · simpa using zeroDim_eq_signatureChoice_zero (E := E) q
-
-theorem signatureChoice_eq_of_equivalent {E₂ : Type*} [AddCommGroup E₂] [Module ℝ E₂]
-    [FiniteDimensional ℝ E₂] {Q : QuadraticForm ℝ E} {Q₂ : QuadraticForm ℝ E₂}
-    (h : Q.Equivalent Q₂) :
-    signatureChoice Q = signatureChoice Q₂ := by
-  calc
-    signatureChoice Q = Q.signature := (signature_eq_signatureChoice (E := E) Q).symm
-    _ = Q₂.signature := signature_eq_of_equivalent (E := E) (E₂ := E₂) h
-    _ = signatureChoice Q₂ := signature_eq_signatureChoice (E := E₂) Q₂
-
-end SylvesterBridge
 
 end QuadraticForm

@@ -7,12 +7,12 @@ Authors: Matteo Cipollina
 import PhysLean.Mathematics.Geometry.Metric.PseudoRiemannian.Defs
 
 /-!
-# Lorentzian metrics (PhysLean)
+# Lorentzian metrics
 
 This file defines Lorentzian metrics as pseudo-Riemannian metrics of index `1` (negative dimension
 `1`), in the sense of Sylvester's law of inertia (`QuadraticForm.negDim`).
 
-This is intentionally lightweight: it provides a reusable definition that composes with the
+It provides a reusable definition that composes with the
 existing pseudo-Riemannian API (musical isomorphisms, induced bilinear forms, etc.).
 -/
 
@@ -28,7 +28,7 @@ variable {E : Type v} [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable {H : Type w} [TopologicalSpace H]
 variable {M : Type w} [TopologicalSpace M] [ChartedSpace H M]
 variable {I : ModelWithCorners ℝ E H} {n : WithTop ℕ∞}
-variable [IsManifold I 1 M] [IsManifold I (n + 1) M]
+variable [IsManifold I (n + 1) M]
 variable [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)]
 
 /-- A Lorentzian metric is a pseudo-Riemannian metric whose associated quadratic form has
@@ -36,7 +36,7 @@ variable [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)]
 abbrev LorentzianMetric (E : Type v) (H : Type w) (M : Type w) (n : WithTop ℕ∞)
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M]
-    (I : ModelWithCorners ℝ E H) [IsManifold I (n + 1) M] [IsManifold I 1 M]
+    (I : ModelWithCorners ℝ E H) [IsManifold I (n + 1) M]
     [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)] :=
   PseudoRiemannianMetric E H M n I
 
