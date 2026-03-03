@@ -341,7 +341,7 @@ lemma signature_zero [FiniteDimensional ℝ E] (Q : QuadraticForm ℝ E) : Q.sig
 
 @[simp]
 lemma signature_def [FiniteDimensional ℝ E] (Q : QuadraticForm ℝ E) :
-    Q.signature = ⟨Q.posDim, Q.negDim, Q.zeroDim⟩ := rfl
+  Q.signature = ⟨Q.posDim, Q.negDim, Q.zeroDim⟩ := rfl
 
 lemma posDim_add_negDim_add_zeroDim [FiniteDimensional ℝ E] (Q : QuadraticForm ℝ E) :
     Q.posDim + Q.negDim + Q.zeroDim = finrank ℝ E := by
