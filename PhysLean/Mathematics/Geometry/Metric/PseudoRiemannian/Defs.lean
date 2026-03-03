@@ -26,8 +26,8 @@ tangent space, whose index (negative inertia) is locally constant. The index is 
 * `Bundle.ContMDiffPseudoRiemannianMetric`: a `C^n` pseudo-Riemannian metric along a vector bundle,
   expressed as a smooth section into the bundle of bilinear forms.
 * `Bundle.IsContMDiffPseudoRiemannianBundle`: the corresponding Prop-valued existence predicate.
-* `MetricTensor E H M n I`: the common core data of a smooth symmetric nondegenerate bilinear form on
-  each tangent space.
+* `MetricTensor E H M n I`: the common core data of a smooth symmetric nondegenerate bilinear form
+   on each tangent space.
 * `PseudoRiemannianMetric E H M n I`: a `MetricTensor` whose pointwise index is locally constant.
 
 ## Implementation notes
@@ -46,7 +46,8 @@ pseudo-Riemannian, metric tensor, musical isomorphisms, index
 
 ## References
 
-* Barrett O'Neill, *Semi-Riemannian Geometry with Applications to Relativity*, Academic Press (1983).
+* Barrett O'Neill, *Semi-Riemannian Geometry with Applications to Relativity*, Academic
+Press (1983).
 -/
 
 section PseudoRiemannianMetric
@@ -176,7 +177,8 @@ instance [IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (3 : WithTop ℕ∞
 
 namespace ContMDiffPseudoRiemannianMetric
 
-/-- A smooth pseudo-Riemannian metric along a bundle induces the corresponding fiberwise structure. -/
+/-- A smooth pseudo-Riemannian metric along a bundle induces the corresponding fiberwise
+structure. -/
 def toPseudoRiemannianBundle
     (g : ContMDiffPseudoRiemannianMetric (IB := IB) (n := n) (F := F) (E := E)) :
     PseudoRiemannianBundle (B := B) (E := E) where
