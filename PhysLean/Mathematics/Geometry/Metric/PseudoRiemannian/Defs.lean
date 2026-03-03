@@ -7,7 +7,7 @@ import Mathlib.Geometry.Manifold.VectorBundle.Riemannian
 import Mathlib.Geometry.Manifold.VectorBundle.Tangent
 import Mathlib.LinearAlgebra.BilinearForm.Properties
 import Mathlib.Topology.LocallyConstant.Basic
-import PhysLean.Mathematics.Geometry.Metric.QuadraticForm.NegDim
+import PhysLean.Mathematics.Geometry.Metric.QuadraticForm.Index
 
 /-!
 # Pseudo-Riemannian metrics
@@ -689,12 +689,11 @@ end FiniteDimensional
 associated quadratic form `v ↦ gₓ(v,v)`.
 
 This is a pointwise invariant; it need not be locally constant. -/
-noncomputable def index (g : MetricTensor E H M n I) (x : M)
-    [FiniteDimensional ℝ (TangentSpace I x)] : ℕ :=
+noncomputable def index (g : MetricTensor E H M n I) (x : M) : ℕ :=
   (g.toQuadraticForm x).negDim
 
-@[simp] lemma index_def (g : MetricTensor E H M n I) (x : M)
-    [FiniteDimensional ℝ (TangentSpace I x)] :
+@[simp]
+lemma index_def (g : MetricTensor E H M n I) (x : M) :
     g.index x = (g.toQuadraticForm x).negDim :=
   rfl
 
