@@ -250,7 +250,14 @@ private lemma rpow_kron_diagonal
   congr! 2 with x
   apply Real.mul_rpow (ha x.1) (hb x.2)
 
-open scoped Kronecker Matrix in
+open scoped Kronecker in
+omit [DecidableEq d] [DecidableEq d₂] in
+lemma conj_kron
+  (A : Matrix d d 𝕜) (B : Matrix d₂ d₂ 𝕜) (C : HermitianMat d 𝕜) (D : HermitianMat d₂ 𝕜) :
+    conj (A ⊗ₖ B) (C ⊗ₖ D) = conj A C ⊗ₖ conj B D := by
+  ext1
+  simp [conj, Matrix.mul_kronecker_mul, Matrix.conjTranspose_kronecker]
+
 lemma rpow_kron
     {A : HermitianMat d ℂ} {B : HermitianMat d₂ ℂ} (r : ℝ) (hA : 0 ≤ A) (hB : 0 ≤ B) :
     (A ⊗ₖ B) ^ r = (A ^ r) ⊗ₖ (B ^ r) := by
@@ -260,13 +267,13 @@ lemma rpow_kron
   obtain ⟨V, b, hb, hB⟩ : ∃ V : 𝐔[d₂], ∃ b : d₂ → ℝ, (∀ j, 0 ≤ b j) ∧ B = conj V.val (diagonal ℂ b) := by
     rw [zero_le_iff] at hB
     exact ⟨_, _, hB.eigenvalues_nonneg, eq_conj_diagonal B⟩
-  have h_kron_r_pow : (A ⊗ₖ B) ^ r = conj (U ⊗ᵤ V).val ((diagonal ℂ a ⊗ₖ diagonal ℂ b) ^ r) := by
+  have h_kron_r_pow : (A ⊗ₖ B) ^ r = conj (Matrix.unitary_kron U V).val ((diagonal ℂ a ⊗ₖ diagonal ℂ b) ^ r) := by
     subst hB hA
     rw [← rpow_conj_unitary, Matrix.unitary_kron, conj_kron]
   rw [h_kron_r_pow]
   subst A B
   have h_kron_r_pow_diag : (diagonal ℂ a ⊗ₖ diagonal ℂ b) ^ r = ((diagonal ℂ a) ^ r) ⊗ₖ ((diagonal ℂ b) ^ r) := by
-    exact pow_kron_diagonal a b r ha hb
+    exact rpow_kron_diagonal a b r ha hb
   rw [h_kron_r_pow_diag, Matrix.unitary_kron]
   rw [rpow_conj_unitary, rpow_conj_unitary, ← conj_kron]
 
@@ -294,3 +301,63 @@ lemma continuousOn_rpow_uniform {K : Set ℝ} (hK : IsCompact K) :
   · constructor <;> linarith
   · have : |r - n| < δ := abs_lt.mpr ⟨by linarith, by linarith⟩
     simpa
+
+section continuity
+
+variable {X : Type*} [TopologicalSpace X]
+/-
+PROBLEM
+Joint continuity of matrix rpow for nonneg matrices with positive exponent:
+    if `A(x)` is a continuous family of nonneg Hermitian matrices and `p(x)` is a continuous
+    positive real-valued function, then `A(x) ^ p(x)` is continuous.
+    The proof works by localization: at each point x₀, restrict to a neighborhood where
+    the matrix is bounded (hence spectrum is in a compact set), then apply
+    `continuous_cfc_joint`.
+PROVIDED SOLUTION
+Show ContinuousWithinAt at each point x₀ ∈ S.
+Step 1: Since A is ContinuousWithinAt at x₀, the preimage of Metric.ball (A x₀) 1 is in nhdsWithin x₀ S.
+Step 2: By `HermitianMat.ball_subset_Icc`, Metric.ball (A x₀) 1 ⊆ Set.Icc (A x₀ - 1 • 1) (A x₀ + 1 • 1). By `HermitianMat.spectrum_subset_of_mem_Icc`, there exist a, b such that all matrices in this Icc have spectrum ⊆ Set.Icc a b. So for all x near x₀ (in the preimage), spectrum (A x).mat ⊆ Set.Icc a b.
+Step 3: The function f(x, t) = t ^ p(x) is ContinuousOn on (S ×ˢ Set.Icc a b) because: apply `ContinuousOn.rpow` to `fun q ↦ q.2` (continuous projection) and `fun q ↦ p q.1` (continuous since hp), with the condition that p(q.1) > 0 (from hp_pos), so the disjunction `base ≠ 0 ∨ 0 < exponent` holds.
+Step 4: Apply `HermitianMat.continuous_cfc_joint` with T = Set.Icc a b on the restricted set (preimage ∩ S) to get ContinuousOn on the neighborhood.
+Step 5: ContinuousWithinAt at x₀ follows from ContinuousOn on a nhdsWithin subset, using `nhdsWithin_inter_of_mem` to relate nhdsWithin x₀ (preimage ∩ S) with nhdsWithin x₀ S.
+-/
+@[fun_prop]
+theorem continuousOn_rpow_joint_nonneg_pos
+    {A : X → HermitianMat d ℂ} {p : X → ℝ} {S : Set X}
+    (hA : ContinuousOn A S) (hp : ContinuousOn p S)
+    (hA_nonneg : ∀ x ∈ S, 0 ≤ A x) (hp_pos : ∀ x ∈ S, 0 < p x) :
+    ContinuousOn (fun x ↦ A x ^ p x) S := by
+  intro x hx;
+  -- By `HermitianMat.ball_subset_Icc`, Metric.ball (A x) 1 ⊆ Set.Icc (A x - 1 • 1) (A x + 1 • 1).
+  obtain ⟨U, hU⟩ : ∃ U ∈ nhdsWithin x S, ∀ y ∈ U ∩ S, A y ∈ Set.Icc (A x - 1) (A x + 1) := by
+    use { y | A y ∈ Metric.ball ( A x ) 1 };
+    refine' ⟨ _, _ ⟩;
+    · exact hA.continuousWithinAt hx ( Metric.ball_mem_nhds _ zero_lt_one );
+    · intro y hy; have := HermitianMat.ball_subset_Icc ( A x ) 1 ( by simpa using hy.1 ) ; aesop;
+  -- By `HermitianMat.spectrum_subset_of_mem_Icc`, there exist a, b such that all matrices in this Icc have spectrum ⊆ Set.Icc a b.
+  obtain ⟨a, b, hab⟩ : ∃ a b : ℝ, ∀ y ∈ U ∩ S, Set.range (A y).H.eigenvalues ⊆ Set.Icc a b := by
+    have := @HermitianMat.spectrum_subset_of_mem_Icc d ℂ;
+    obtain ⟨ a, b, h ⟩ := this ( A x - 1 ) ( A x + 1 );
+    refine' ⟨ a, b, fun y hy => _ ⟩;
+    convert h ( A y ) ( hU.2 y hy ) using 1;
+    exact Eq.symm (Matrix.IsHermitian.eigenvalues_eq_spectrum_real (H (A y)));
+  -- The function f(x, t) = t ^ p(x) is ContinuousOn on (S ×ˢ Set.Icc a b) because: apply `ContinuousOn.rpow` to `fun q ↦ q.2` (continuous projection) and `fun q ↦ p q.1` (continuous since hp), with the condition that p(q.1) > 0 (from hp_pos), so the disjunction `base ≠ 0 ∨ 0 < exponent` holds.
+  have h_cont_f : ContinuousOn (fun q : X × ℝ => q.2 ^ p q.1) (S ×ˢ Set.Icc a b) := by
+    refine' ContinuousOn.rpow _ _ _;
+    · exact continuousOn_snd;
+    · exact hp.comp continuousOn_fst fun x hx => hx.1;
+    · exact fun x hx => Or.inr ( hp_pos x.1 hx.1 );
+  -- Apply `HermitianMat.continuous_cfc_joint` with T = Set.Icc a b on the restricted set (preimage ∩ S) to get ContinuousOn on the neighborhood.
+  have h_cont_cfc : ContinuousOn (fun x => (A x).cfc (fun t => t ^ p x)) (U ∩ S) := by
+    apply_rules [ HermitianMat.continuous_cfc_joint, h_cont_f ];
+    any_goals exact Set.Icc a b;
+    · exact CompactIccSpace.isCompact_Icc;
+    · exact h_cont_f.mono ( Set.prod_mono ( Set.inter_subset_right ) Set.Subset.rfl );
+    · intro y hy; specialize hab y hy; rw [ A y |>.H.spectrum_real_eq_range_eigenvalues ] ; aesop;
+    · exact hA.mono ( Set.inter_subset_right );
+  rw [ ContinuousWithinAt ] at *;
+  convert h_cont_cfc.continuousWithinAt ( show x ∈ U ∩ S from ⟨ mem_of_mem_nhdsWithin ( by aesop ) hU.1, hx ⟩ ) using 1;
+  rw [ ContinuousWithinAt ];
+  rw [ nhdsWithin_inter_of_mem ] <;> aesop
+
+end continuity
