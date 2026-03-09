@@ -105,3 +105,97 @@ lemma HermitianMat.trace_young
   · refine' Finset.sum_congr rfl fun i _ => _;
     have := Matrix.unitary_col_sum_norm_sq ( A.H.eigenvectorUnitary.val.conjTranspose * B.H.eigenvectorUnitary.val ) ?_ i <;> simp_all [ Matrix.mul_assoc, Matrix.conjTranspose_mul ];
     simp [ ← Matrix.mul_assoc, Matrix.IsHermitian.eigenvectorUnitary ]
+
+/-- For PSD `A` and Hermitian `B`, the product
+`C = A^{1/2} * B` satisfies `C^* C = (A.conj B.mat).mat = B * A * B`. -/
+lemma conjTranspose_half_mul_eq_conj
+    {A B : HermitianMat d ℂ} (hA : 0 ≤ A) :
+    ((A ^ (1/2 : ℝ)).mat * B.mat).conjTranspose * ((A ^ (1/2 : ℝ)).mat * B.mat)
+    = (A.conj B.mat).mat := by
+  have := HermitianMat.pow_half_mul hA; simp_all +decide [ ← mul_assoc ] ;
+  simp +decide only [mul_assoc, this]
+
+lemma schattenNorm_half_mul_rpow_eq_trace_conj
+    {A B : HermitianMat d ℂ} (hA : 0 ≤ A)
+    {α : ℝ} (hα : 0 < α) :
+    (schattenNorm ((A ^ (1/2 : ℝ)).mat * B.mat) (2 * α)) ^ (2 * α) =
+    ((A.conj B.mat) ^ α).trace := by
+  have h_conj : ((A ^ (1 / 2 : ℝ)).mat * B.mat).conjTranspose * ((A ^ (1 / 2 : ℝ)).mat * B.mat) = (A.conj B.mat).mat := by
+    exact?;
+  unfold schattenNorm;
+  rw [ ← Real.rpow_mul ] <;> norm_num [ hα.ne' ];
+  · ring_nf; norm_num [ hα.ne' ];
+    rw [ ← Matrix.IsHermitian.cfc_eq ];
+    rw [ Matrix.conjTranspose_conjTranspose ];
+    exact?;
+  · have h_eigenvalues_nonneg : ∀ i, 0 ≤ (Matrix.isHermitian_mul_conjTranspose_self ((A ^ (1 / 2 : ℝ)).mat * B.mat).conjTranspose).eigenvalues i := by
+      intro i; exact (by
+      have := Matrix.eigenvalues_conjTranspose_mul_self_nonneg ( ( A ^ ( 1 / 2 : ℝ ) ).mat * B.mat ) i; aesop;);
+    simp_all +decide [ Matrix.trace, Matrix.IsHermitian.cfc ];
+    simp_all +decide [ Matrix.mul_apply, Matrix.diagonal ];
+    refine' Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => _;
+    field_simp;
+    exact mul_nonneg ( Real.rpow_nonneg ( h_eigenvalues_nonneg j ) _ ) ( add_nonneg ( sq_nonneg _ ) ( sq_nonneg _ ) )
+
+/-!
+The *Schatten–Hölder inequality* for matrix products:
+For matrices `A`, `B` and exponents `r, p, q > 0` with `1/r = 1/p + 1/q`,
+the Schatten `r`-norm of the product satisfies
+  `‖A * B‖_{S^r} ≤ ‖A‖_{S^p} * ‖B‖_{S^q}`.
+This version includes the quasi-norm case (r, p, q < 1).
+-/
+lemma schattenNorm_mul_le (A B : Matrix d d ℂ) {r p q : ℝ}
+    (hr : 0 < r) (hp : 0 < p) (hq : 0 < q) (hpqr : 1 / r = 1 / p + 1 / q) :
+    schattenNorm (A * B) r ≤ schattenNorm A p * schattenNorm B q := by
+  sorry
+
+lemma trace_rpow_conj_le
+    {A B : HermitianMat d ℂ} (hA : 0 ≤ A) (hB : 0 ≤ B)
+    {α p q : ℝ} (hα : 0 < α) (hp : 0 < p) (hq : 0 < q)
+    (hpq : 1 / (2 * α) = 1 / p + 1 / q) :
+    ((A.conj B.mat) ^ α).trace ≤
+    (((A ^ (p / 2)).trace) ^ (1 / p) * ((B ^ q).trace) ^ (1 / q)) ^ (2 * α) := by
+  by_contra h_contra;
+  -- Apply the Schatten-Hölder inequality to the matrices $A^{1/2} * B$.
+  have h_schatten_holder : schattenNorm ((A ^ (1 / 2 : ℝ)).mat * B.mat) (2 * α) ≤ schattenNorm (A ^ (1 / 2 : ℝ)).mat p * schattenNorm B.mat q := by
+    apply_rules [ schattenNorm_mul_le ];
+    positivity;
+  -- Raise both sides of the inequality to the power of $2\alpha$.
+  have h_exp : ((A.conj B.mat) ^ α).trace ≤ (schattenNorm (A ^ (1 / 2 : ℝ)).mat p * schattenNorm B.mat q) ^ (2 * α) := by
+    have h_exp : ((A.conj B.mat) ^ α).trace = (schattenNorm ((A ^ (1 / 2 : ℝ)).mat * B.mat) (2 * α)) ^ (2 * α) := by
+      convert schattenNorm_half_mul_rpow_eq_trace_conj hA hα |> Eq.symm using 1;
+    exact h_exp.symm ▸ Real.rpow_le_rpow ( by
+      refine' Real.rpow_nonneg _ _;
+      have h_nonneg : ∀ (M : Matrix d d ℂ), 0 ≤ RCLike.re ((Matrix.isHermitian_mul_conjTranspose_self M.conjTranspose).cfc (fun x => x ^ (α))).trace := by
+        intro M
+        have h_nonneg : ∀ (x : ℝ), 0 ≤ x → 0 ≤ x ^ α := by
+          exact fun x hx => Real.rpow_nonneg hx α
+        generalize_proofs at *;
+        rw [ Matrix.trace ] at *; simp_all +decide [ Matrix.IsHermitian.cfc, Matrix.trace ] ;
+        simp +decide [ Matrix.mul_apply, Matrix.diagonal ] at *; (
+        refine' Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => _ ; ring_nf ; (
+        exact add_nonneg ( mul_nonneg ( sq_nonneg _ ) ( h_nonneg _ ( by
+          exact? ) ) ) ( mul_nonneg ( h_nonneg _ ( by
+          exact? ) ) ( sq_nonneg _ ) )););
+      field_simp;
+      convert h_nonneg ( ( A ^ ( 1 / 2 : ℝ ) ).mat * B.mat ) using 1 ) h_schatten_holder ( by positivity );
+  -- By definition of Schatten norm, we know that:
+  have h_schatten_norm_def : schattenNorm (A ^ (1 / 2 : ℝ)).mat p = ((A ^ (1 / 2 : ℝ)) ^ p).trace ^ (1 / p) ∧ schattenNorm B.mat q = (B ^ q).trace ^ (1 / q) := by
+    apply And.intro
+    all_goals generalize_proofs at *;
+    · convert schattenNorm_hermitian_pow _ hp using 1
+      (generalize_proofs at *; (
+      exact?));
+    · apply schattenNorm_hermitian_pow hB hq
+      skip
+  generalize_proofs at *; (
+  -- Substitute the definitions of the Schatten norms into the inequality.
+  rw [h_schatten_norm_def.left, h_schatten_norm_def.right] at h_exp
+  generalize_proofs at *; (
+  -- By the properties of exponents, we can simplify the expression.
+  have h_exp_simp : (A ^ (1 / 2 : ℝ)) ^ p = A ^ (p / 2 : ℝ) := by
+    -- By the properties of exponents, we can simplify the expression using the fact that $(A^a)^b = A^{a*b}$.
+    have h_exp_simp : ∀ (a b : ℝ), (A ^ a) ^ b = A ^ (a * b) := by
+      exact?
+    generalize_proofs at *; (exact h_exp_simp (1 / 2 : ℝ) p ▸ by ring)
+  generalize_proofs at *; (exact h_contra (by rw [h_exp_simp] at h_exp; exact h_exp))))

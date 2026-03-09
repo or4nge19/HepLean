@@ -227,7 +227,29 @@ private lemma inner_rpow_le_one (hα₀ : 0 < α) (hα : α < 1) :
 
 private theorem sandwiched_trace_of_lt_1 (hα₀ : 0 < α) (hα : α < 1) :
     ((ρ.M.conj (σ.M ^ ((1 - α)/(2 * α)) ).mat) ^ α).trace ≤ 1 := by
-  sorry
+    have h1α : 0 < 1 - α := sub_pos.mpr hα
+    -- Apply trace_rpow_conj_le with p = 2 and q = 2α/(1-α)
+    set t := (1 - α) / (2 * α) with ht_def
+    have ht_pos : 0 < t := by positivity
+    have hp : (0 : ℝ) < 2 := by positivity
+    have hq : (0 : ℝ) < 2 * α / (1 - α) := by positivity
+    have hpq : 1 / (2 * α) = 1 / 2 + 1 / (2 * α / (1 - α)) := by
+      field_simp
+      ring
+    calc ((ρ.M.conj (σ.M ^ t).mat) ^ α).trace
+        ≤ (((ρ.M ^ (2 / 2)).trace) ^ (1 / 2) *
+          (((σ.M ^ t) ^ (2 * α / (1 - α))).trace) ^ (1 / (2 * α / (1 - α)))) ^ (2 * α) :=
+          trace_rpow_conj_le ρ.nonneg (HermitianMat.rpow_nonneg σ.nonneg) hα₀ hp hq hpq
+      _ = 1 := by
+          -- Simplify: ρ.M ^ (2/2) = ρ.M ^ 1 = ρ.M, Tr[ρ.M] = 1
+          -- (σ.M ^ t) ^ (2α/(1-α)) = σ.M ^ (t * 2α/(1-α)) = σ.M ^ 1, Tr[σ.M] = 1
+          have h1 : (2 : ℝ) / 2 = 1 := by norm_num
+          have h2 : t * (2 * α / (1 - α)) = 1 := by
+            rw [ht_def]; field_simp
+          rw [h1, HermitianMat.rpow_one,
+              ← HermitianMat.rpow_mul σ.nonneg, h2, HermitianMat.rpow_one,
+              ρ.tr, σ.tr]
+          simp
 
 /-- For PSD A and p ≠ 0, `A^{-p} * A^p = HermitianMat.supportProj A`. -/
 lemma HermitianMat.rpow_neg_mul_rpow_eq_supportProj
