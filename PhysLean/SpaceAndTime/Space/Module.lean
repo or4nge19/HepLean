@@ -671,15 +671,15 @@ noncomputable def modelDiffeo {d} :
 
 @[simp]
 lemma modelDiffeo_apply (p : Space d) :
-      modelDiffeo p = p := rfl
+    modelDiffeo p = p := rfl
 
 open Manifold in
 /-- The derivative of `modelDiffeo` provides an equivalence between
   `Space d` and `EuclideanSpace ℝ (Fin d)`. This equivalences takes the basis
   of `EuclideanSpace ℝ (Fin d)` to the basis of `Space d`, and vice versa. -/
 lemma basis_eq_mfderiv_modelDiffeo_single (d : ℕ) (μ : Fin d) (x : Space d) :
-      basis μ = mfderiv (manifoldStructure d) 𝓘(ℝ, Space d) (modelDiffeo (d := d)) x
-        (EuclideanSpace.single μ 1) := by
+    basis μ = mfderiv (manifoldStructure d) 𝓘(ℝ, Space d) (modelDiffeo (d := d)) x
+      (EuclideanSpace.single μ 1) := by
   simp [mfderiv]
   rw [if_pos (modelDiffeo.mdifferentiable (WithTop.top_ne_zero)).mdifferentiableAt]
   change _ = fderiv ℝ (manifoldStructure d).symm (manifoldStructure d x) (EuclideanSpace.single μ 1)

@@ -295,7 +295,6 @@ lemma manifoldStructure_comp_manifoldStructure_symm {d : ℕ} :
   ext1 x
   simpa using (manifoldStructure d).right_inv' (x := x) (by simp [manifoldStructure])
 
-@[simp]
 lemma manifoldStructure_comp_manifoldStructure_symm_apply {d : ℕ}
     (x : EuclideanSpace ℝ (Fin d)) :
     (manifoldStructure d) ((manifoldStructure d).symm x) = x := by
