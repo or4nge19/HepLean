@@ -100,6 +100,41 @@ lemma deriv_eq_mfderiv {M d} [NormedAddCommGroup M] [NormedSpace ℝ M]
   rw [deriv_eq_fderiv_basis, ← mfderiv_eq_fderiv]
   rfl
 
+open Manifold in
+/-- The spatial-derivative in terms of the derivative of functions between
+  manifolds with the manifold structure `Space.manifoldStructure d`.
+  This should eventually be used as the definition of `deriv`. -/
+lemma deriv_eq_mfderiv_manifoldStructure {M d} [NormedAddCommGroup M] [NormedSpace ℝ M]
+    (μ : Fin d) (f : Space d → M) (hf : Differentiable ℝ f) (x : Space d) :
+    deriv μ f x = mfderiv (Space.manifoldStructure d) 𝓘(ℝ, M) f x (EuclideanSpace.single μ 1) := by
+  rw [deriv_eq_mfderiv]
+  change _ = mfderiv (Space.manifoldStructure d) 𝓘(ℝ, M)
+    (f ∘ modelDiffeo) x (EuclideanSpace.single μ 1)
+  rw [mfderiv_comp (I' := 𝓘(ℝ, Space d))]
+  rotate_left
+  · exact hf.mdifferentiable.mdifferentiableAt
+  · exact MDifferentiable.mdifferentiableAt <|
+      Diffeomorph.mdifferentiable modelDiffeo WithTop.top_ne_zero
+  simp only [Function.comp_apply, modelDiffeo_apply, mfderiv_eq_fderiv,
+    ContinuousLinearMap.coe_comp']
+  congr 1
+  simp [mfderiv]
+  rw [if_pos]
+  rotate_left
+  · exact MDifferentiable.mdifferentiableAt <|
+      Diffeomorph.mdifferentiable modelDiffeo WithTop.top_ne_zero
+  change _ = (fderiv ℝ (↑(manifoldStructure d).symm) ((manifoldStructure d) x))
+    (EuclideanSpace.single μ 1)
+  simp [manifoldStructure]
+  ext i
+  rw [fderiv_space_components _ _ (by fun_prop)]
+  simp only [vadd_apply, fderiv_add_const]
+  change _ = (fderiv ℝ (EuclideanSpace.proj i) (x -ᵥ Classical.choice _))
+    (EuclideanSpace.single μ 1)
+  simp [basis_apply]
+  congr 1
+  exact Eq.propIntro (fun a => id (Eq.symm a)) fun a => id (Eq.symm a)
+
 /-!
 
 ### A.2. Derivative of the constant function

@@ -6,6 +6,7 @@ Authors: Joseph Tooby-Smith
 module
 
 public import PhysLean.SpaceAndTime.Space.Basic
+public import Mathlib.Geometry.Manifold.Diffeomorph
 /-!
 
 # The structure of a module on Space
@@ -474,6 +475,12 @@ def equivPi (d : ℕ) :
     invFun := fun f => ⟨f⟩
   }
 
+/-!
+
+## Basic differentiablity conditions
+
+-/
+
 @[fun_prop]
 lemma mk_continuous {d : ℕ} :
     Continuous (fun (f : Fin d → ℝ) => (⟨f⟩ : Space d)) := (equivPi d).symm.continuous
@@ -483,7 +490,7 @@ lemma mk_differentiable {d : ℕ} :
     Differentiable ℝ (fun (f : Fin d → ℝ) => (⟨f⟩ : Space d)) := (equivPi d).symm.differentiable
 
 @[fun_prop]
-lemma mk_contDiff {d n : ℕ} :
+lemma mk_contDiff {d  : ℕ} {n : WithTop ℕ∞}:
     ContDiff ℝ n (fun (f : Fin d → ℝ) => (⟨f⟩ : Space d)) := (equivPi d).symm.contDiff
 
 @[simp]
@@ -497,6 +504,50 @@ lemma fderiv_val {d : ℕ} (p : Space d) :
     fderiv ℝ Space.val p = (equivPi d) := by
   change fderiv ℝ (equivPi d) p = _
   rw [@ContinuousLinearEquiv.fderiv]
+
+@[fun_prop]
+lemma contDiffOn_vadd (s : Space d) :
+    ContDiffOn ℝ ω (fun (v : EuclideanSpace ℝ (Fin d)) => v +ᵥ s) Set.univ := by
+  rw [contDiffOn_univ]
+  refine fun_comp ?_ ?_
+  · exact mk_contDiff (n := ω)
+  · fun_prop
+
+@[fun_prop]
+lemma vadd_differentiable {d} (s : Space d) :
+    Differentiable ℝ (fun (v : EuclideanSpace ℝ (Fin d)) => v +ᵥ s) := by
+  apply Differentiable.comp
+  · exact mk_differentiable
+  · fun_prop
+
+@[fun_prop]
+lemma contDiffOn_vsub (s1 : Space d) :
+    ContDiffOn ℝ ω (fun (s : Space d) => s -ᵥ s1) Set.univ := by
+  rw [contDiffOn_univ]
+  refine fun_comp ?_ ?_
+  · fun_prop
+  · fun_prop
+
+@[fun_prop]
+lemma vsub_differentiable {d} (s1 : Space d) :
+    Differentiable ℝ (fun (s : Space d) => s -ᵥ s1) := by
+  apply Differentiable.comp
+  · exact PiLp.contDiff_toLp.differentiable (NeZero.ne' 2).symm
+  · fun_prop
+
+lemma fderiv_space_components {M d} [NormedAddCommGroup M] [NormedSpace ℝ M]
+    (μ : Fin d) (f : M → Space d) (hf : Differentiable ℝ f) (m dm : M):
+    fderiv ℝ f m dm μ  = fderiv ℝ (fun m' => f m' μ) m dm := by
+  trans fderiv ℝ (Space.coordCLM μ ∘ fun m' => f m') m dm
+  swap
+  · congr
+    ext i
+    simp [coordCLM, coord_apply]
+  rw [fderiv_comp]
+  simp
+  simp [coordCLM, coord_apply]
+  · fun_prop
+  · fun_prop
 
 /-!
 
@@ -603,5 +654,42 @@ lemma oneEquiv_measurePreserving : MeasurePreserving oneEquiv volume volume :=
 
 lemma oneEquiv_symm_measurePreserving : MeasurePreserving oneEquiv.symm volume volume := by
   exact LinearIsometryEquiv.measurePreserving oneEquiv.symm
+
+/-!
+
+## Relation to tangent space
+
+-/
+
+
+
+
+open Manifold in
+/-- A diffeomorphism between the two different manifold sturctures on `Space d`,
+  that equivalent to `manifoldStructure d` and that equivalent to `𝓘(ℝ, Space d)` -/
+noncomputable def modelDiffeo {d} :
+    Diffeomorph (manifoldStructure d) 𝓘(ℝ, Space d) (Space d) (Space d) ⊤ where
+  toFun p :=  p
+  invFun p :=  p
+  left_inv := fun _ => rfl
+  right_inv := fun _ => rfl
+  contMDiff_toFun := by
+    rw [contMDiff_iff]
+    refine ⟨?_, ?_⟩
+    · simpa using  continuous_id'
+    intro x y
+    simp [manifoldStructure]
+    fun_prop
+  contMDiff_invFun := by
+    rw [contMDiff_iff]
+    refine ⟨?_, ?_⟩
+    · simpa using  continuous_id'
+    intro x y
+    simp [manifoldStructure]
+    fun_prop
+
+@[simp]
+lemma modelDiffeo_apply (p : Space d) :
+    modelDiffeo p = p := rfl
 
 end Space
