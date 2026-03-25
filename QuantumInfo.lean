@@ -29,15 +29,14 @@ import QuantumInfo.Finite.Unitary
 --Documentation without code
 import QuantumInfo.Finite.Capacity_doc
 
-/-! # Quantum Information in Lean
+--Classical information theory
+-- import QuantumInfo.ClassicalInfo.Capacity
+-- import QuantumInfo.ClassicalInfo.Channel
+import QuantumInfo.ClassicalInfo.Distribution
+import QuantumInfo.ClassicalInfo.Entropy
+import QuantumInfo.ClassicalInfo.Prob
 
-What follows is a top-level index to some major definitions in this repository, in roughly their dependency order:
- * `Bra` and `Ket` for pure quantum states
- * `MState` for mixed quantum states
- * `𝐔[d]`, a notation for unitary matrices
- * `MEnsemble` and `PEnsemble`: Ensemble of mixed and pure states, respectively
- * `(mixed_)convex_roof` : (Mixed) convex roof extension
- * `CPTPMap` for quantum channels
- * `MState.fidelity`, the fidelity between quantum states
- * `Sᵥₙ`, `qConditionalEnt`, `qMutualInfo`, `coherentInfo`, etc. - different notions of entropy or information in quantum states
--/
+--Statistical mechanics
+import QuantumInfo.StatMech.Hamiltonian
+import QuantumInfo.StatMech.IdealGas
+import QuantumInfo.StatMech.ThermoQuantities

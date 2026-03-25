@@ -4,7 +4,7 @@ Released under MIT license as described in the file LICENSE.
 Authors: Alex Meiburg, Rodolfo Soldati
 -/
 import QuantumInfo.ForMathlib
-import ClassicalInfo.Distribution
+import QuantumInfo.ClassicalInfo.Distribution
 
 /-!
 Finite dimensional quantum pure states, bra and kets. Mixed states are `MState` in that file.

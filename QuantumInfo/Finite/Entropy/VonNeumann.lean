@@ -5,7 +5,7 @@ Authors: Alex Meiburg
 -/
 import QuantumInfo.Finite.Braket
 import QuantumInfo.Finite.CPTPMap
-import ClassicalInfo.Entropy
+import QuantumInfo.ClassicalInfo.Entropy
 
 /-!
 Quantum notions of information and entropy.

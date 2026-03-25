@@ -6,7 +6,7 @@ Authors: Alex Meiburg, Rodolfo Soldati, Ruize Chen
 
 import Mathlib
 import QuantumInfo.ForMathlib
-import ClassicalInfo.Distribution
+import QuantumInfo.ClassicalInfo.Distribution
 /-!
 A minimal EuclideanSpace-based `Ket` type (experimental).
 -/

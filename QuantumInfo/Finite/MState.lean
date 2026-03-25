@@ -4,7 +4,7 @@ Released under MIT license as described in the file LICENSE.
 Authors: Alex Meiburg, Leonardo A. Lessa
 -/
 import QuantumInfo.ForMathlib
-import ClassicalInfo.Distribution
+import QuantumInfo.ClassicalInfo.Distribution
 import QuantumInfo.Finite.Braket
 
 import Mathlib.Logic.Equiv.Basic

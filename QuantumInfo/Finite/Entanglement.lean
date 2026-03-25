@@ -6,7 +6,7 @@ Authors: Leonardo A Lessa
 import QuantumInfo.Finite.Braket
 import QuantumInfo.Finite.Ensemble
 import QuantumInfo.Finite.Entropy
-import ClassicalInfo.Entropy
+import QuantumInfo.ClassicalInfo.Entropy
 
 /-!
 Entanglement measures. (Mixed) convex roof extensions. Definition of product / separable / entangled states
