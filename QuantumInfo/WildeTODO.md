@@ -1,3 +1,12 @@
+# Matching QuantumInfo to _Quantum Information Theory_
+
+Mark Wilde's book "Quantum Information Theory" provides a solid guide to QIT in general; early on
+in the development of `QuantumInfo`, it was conceived that we could try to match the repository to
+that book where reasonably possible as a way to ensure good coverage. This document generally
+gives that correspondence, although it may be rather out of date (probably last current as of
+early 2025). Of course there's also a lot of content in `QuantumInfo` that goes well beyond the scope
+of that book, too.
+
 Each of the items below is an item in Mark Wilde's book, "Quantum Information Theory". The following emoji indicate possible status:
  * ✅ - Completed, and proved with no `sorry`s.
  * 📝 - All required definitions are present and the question is stated / the theorem is in a form that could be used, but it is unproved / depends on `sorry`.
@@ -110,7 +119,7 @@ Exercise 3.7.1 - 3.7.11: Lemmas about qudit X and Z operators.
 ❓ Sure, if we define them.
 
 Exercise 3.7.12: "Transpose trick" for Bell state |Φ⟩, that `(U⊗I)|Φ⟩=(I⊗Uᵀ)|Φ⟩`.
-❓
+✅ `transposeTrick` in `Braket.lean`.
 
 Theorem 3.8.1, Exercise 3.8.1: Schmidt Decomposition.
 ❓

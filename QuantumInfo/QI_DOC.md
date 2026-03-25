@@ -1,6 +1,8 @@
-# Lean-QuantumInfo Documentation
+# QuantumInfo Documentation
 
-This document provides a comprehensive overview of mathematical and physical definitions in the Lean-QuantumInfo library, explaining the exact conventions adopted, their motivations, and key theorems.
+This document provides a comprehensive overview of mathematical and physical definitions in the
+QuantumInfo part of PhysLib, explaining the exact conventions adopted, their motivations,
+and highlighting key theorems.
 
 ---
 
@@ -98,15 +100,15 @@ where `M.IsHermitian` means `Mᴴ = M` (conjugate transpose equals itself).
 - Scalar multiplication by **real numbers** (see below)
 
 **Key operations:**
-- **`conj (B : Matrix m n α) : HermitianMat n α →+ HermitianMat m α`**: 
+- **`conj (B : Matrix m n α) : HermitianMat n α →+ HermitianMat m α`**:
   Conjugation by a (possibly rectangular) matrix: `A ↦ B * A * Bᴴ`
   - Returns a `HermitianMat m α` (different size!)
   - This is an `AddMonoidHom`
-  
+
 - **`conjLinear (B : Matrix m n α) : HermitianMat n α →ₗ[R] HermitianMat m α`**:
   Same as `conj` but as a linear map (when we have scalar multiplication by `R`)
 
-- **`diagonal (f : n → ℝ) : HermitianMat n 𝕜`**: 
+- **`diagonal (f : n → ℝ) : HermitianMat n 𝕜`**:
   Diagonal matrix with real entries on the diagonal
 
 - **`kronecker (A : HermitianMat m α) (B : HermitianMat n α) : HermitianMat (m × n) α`**:
@@ -123,7 +125,7 @@ Hermitian matrices over `ℂ` can be viewed as matrices over a **real** vector s
 This typeclass handles the relationship between the scalar field for matrices (`α = ℂ`) and the scalar field for Hermitian matrices (effectively `ℝ`):
 
 ```lean
-class IsMaximalSelfAdjoint (R A : Type*) [CommSemiring R] [AddCommGroup A] [Module R A] 
+class IsMaximalSelfAdjoint (R A : Type*) [CommSemiring R] [AddCommGroup A] [Module R A]
     [Star A] [StarAddMonoid A] where
   selfadjMap : selfAdjoint A →ₗ[R] R
 ```
@@ -155,7 +157,7 @@ For bipartite systems:
 
 - **`traceLeft (A : HermitianMat (m × n) α) : HermitianMat n α`**:
   Trace out the first subsystem
-  
+
 - **`traceRight (A : HermitianMat (m × n) α) : HermitianMat m α`**:
   Trace out the second subsystem
 
@@ -211,7 +213,7 @@ Multiple equivalent ways to express the order:
 
 2. **`zero_le_iff`**: `0 ≤ A ↔ A.mat.PosSemidef`
 
-3. **`le_iff_mulVec_le`**: 
+3. **`le_iff_mulVec_le`**:
    ```
    A ≤ B ↔ ∀ x, ⟨x, A*x⟩ ≤ ⟨x, B*x⟩
    ```
@@ -241,7 +243,7 @@ Multiple equivalent ways to express the order:
 
 - **`OrderClosedTopology`**: The order relation is closed
   - If `Aₙ ≤ Bₙ` and `Aₙ → A`, `Bₙ → B`, then `A ≤ B`
-  
+
 - **`CompactIccSpace`**: Order intervals are compact
   - The set `{X | A ≤ X ≤ B}` is compact for any `A ≤ B`
 
@@ -299,7 +301,7 @@ This is crucial for proving operator monotonicity and concavity results.
 
 For diagonal matrices, the CFC is particularly simple:
 
-**`cfc_diagonal`**: 
+**`cfc_diagonal`**:
 ```
 (diagonal 𝕜 d).cfc f = diagonal 𝕜 (f ∘ d)
 ```
@@ -404,7 +406,7 @@ def log (A : HermitianMat d 𝕜) : HermitianMat d 𝕜 :=
 
 ### Consequences of the Convention
 
-1. **Works on singular matrices:** 
+1. **Works on singular matrices:**
    - If `A` has zero eigenvalues, `A.log` is still defined
    - Zero eigenvalues map to zero
 
@@ -535,7 +537,7 @@ Then the minimax equality holds.
 
 **The theorem:** States that under appropriate compactness and continuity assumptions, we can exchange sup and inf.
 
-**Why it matters:** 
+**Why it matters:**
 - Used in quantum resource theory for optimization problems
 - Essential for capacity formulas
 - Provides a general framework for saddle point problems
@@ -734,7 +736,7 @@ Measures how "pure" a state is:
 
 ### Tensor Products
 
-**`prod` (`ρ₁ ⊗ᴹ ρ₂`)**: 
+**`prod` (`ρ₁ ⊗ᴹ ρ₂`)**:
 For `ρ₁ : MState d₁` and `ρ₂ : MState d₂`, gives `MState (d₁ × d₂)`.
 
 ```lean
@@ -1098,7 +1100,7 @@ Quantum conditional entropy: `S(A|B) = S(ρ_{AB}) - S(ρ_B)`.
 
 **Key difference from classical:** Can be **negative** (indicates entanglement).
 
-**Interpretation:** 
+**Interpretation:**
 - Negative conditional entropy means the joint system has less uncertainty than subsystem B alone
 - This is impossible classically but common for entangled quantum states
 
@@ -1320,7 +1322,7 @@ The **fidelity** between states: `F(ρ, σ) = Tr[√(√ρ σ √ρ)]`.
 - **Symmetry:** `Fidelity ρ σ = Fidelity σ ρ`
 - **Monotonicity:** `Fidelity (Λ ρ) (Λ σ) ≥ Fidelity ρ σ` for CPTP `Λ`
   - Opposite direction from trace distance!
-  
+
 **Physical meaning:** Measures "closeness" of quantum states, with different operational interpretation than trace distance.
 
 **Uhlmann's theorem:** The fidelity is achieved by optimal choice of purifications.
@@ -1489,7 +1491,7 @@ open scoped Braket        -- enables ∣ψ〉, 〈ψ∣, etc.
 
 ### Operator Theory
 
-1. **`log_mono`** (Logarithm Monotonicity): 
+1. **`log_mono`** (Logarithm Monotonicity):
    For positive definite `A ≤ B`, we have `A.log ≤ B.log`.
    - The matrix logarithm is **operator monotone**
 
