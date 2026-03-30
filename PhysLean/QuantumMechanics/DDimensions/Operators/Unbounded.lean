@@ -37,6 +37,7 @@ Definitions:
   - C.1. Partial order
   - C.2. Zero
   - C.3. AddZeroClass
+  - C.4. DistribSMul
 - D. Closure
 - E. Adjoint
 - F. Symmetric operators
@@ -267,6 +268,92 @@ lemma add_assoc {U₁ U₂ U₃ : UnboundedOperator H H'}
     have hD₁₂' : ¬Dense ((U₁ + U₂).domain ⊓ U₃.domain : Set H) := add_domain_of_dense hD₁₂ ▸ hD
     have hD₂₃' : ¬Dense (U₁.domain ⊓ (U₂ + U₃).domain : Set H) := add_domain_of_dense hD₂₃ ▸ hD'
     rw [add_toLinearPMap_of_not_dense hD₁₂', add_toLinearPMap_of_not_dense hD₂₃']
+
+/-!
+### C.4. DistribSMul
+
+Scalar multiplication by complex numbers is inherited from `LinearPMap`. Note that `(c : ℂ) • U` has
+the same domain as `U` for all constants; in particular, `(0 : ℂ) • U ≤ 0` with equality if and only
+if `U.domain = ⊤`.
+-/
+
+lemma smul_mem_graph_of_mem_smul_graph {E F : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+    [NormedAddCommGroup F] [InnerProductSpace ℂ F] {f : LinearPMap ℂ E F} {c : ℂ} (hc : c ≠ 0)
+    {x : E × F} (h : x ∈ (c • f).graph.topologicalClosure) :
+    (x.fst, c⁻¹ • x.snd) ∈ f.graph.topologicalClosure := by
+  obtain ⟨b, hb, hb'⟩ := mem_closure_iff_seq_limit.mp h
+  apply mem_closure_iff_seq_limit.mpr
+  use fun n ↦ ((b n).fst, c⁻¹ • (b n).snd)
+  rw [nhds_prod_eq, Filter.tendsto_prod_iff'] at *
+  refine ⟨?_, ⟨hb'.1, ?_⟩⟩
+  · have {y : f.domain} {z : F} : c • f y = z ↔ f y = c⁻¹ • z := by aesop
+    simp_all
+  · rw [nhds_smul₀ (inv_ne_zero hc), ← Pi.smul_def, Filter.smul_tendsto_smul_iff₀ (inv_ne_zero hc)]
+    exact hb'.2
+
+lemma smul_isClosable_of_isClosable {E F : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+    [NormedAddCommGroup F] [InnerProductSpace ℂ F] {f : LinearPMap ℂ E F} (hf : f.IsClosable)
+    (c : ℂ) : (c • f).IsClosable := by
+  rcases eq_zero_or_neZero c with (rfl | hc)
+  · exact isClosable_of_zero (by simp)
+  · use (c • f).graph.topologicalClosure.toLinearPMap
+    refine Eq.symm <| toLinearPMap_graph_eq _ (fun x hx hx1 ↦ ?_)
+    suffices c⁻¹ • x.snd = 0 by aesop
+    have hx := smul_mem_graph_of_mem_smul_graph hc.ne hx
+    rw [IsClosable.graph_closure_eq_closure_graph hf, hx1] at hx
+    exact graph_fst_eq_zero_snd f.closure hx rfl
+
+noncomputable instance : SMul ℂ (UnboundedOperator H H') where
+  smul c U := ⟨c • U.toLinearPMap, U.dense_domain, smul_isClosable_of_isClosable U.is_closable c⟩
+
+variable (U : UnboundedOperator H H')
+
+@[simp]
+lemma smul_domain (c : ℂ) : (c • U).domain = U.domain := rfl
+
+@[simp]
+lemma smul_toLinearPMap (c : ℂ) : (c • U).toLinearPMap = c • U.toLinearPMap := rfl
+
+lemma zero_smul_le_zero : (0 : ℂ) • U ≤ 0 := ⟨by simp, by simp⟩
+
+noncomputable instance : DistribSMul ℂ (UnboundedOperator H H') where
+  smul_zero _ := ext <| by ext <;> simp
+  smul_add c U₁ U₂ := by
+    apply UnboundedOperator.ext
+    by_cases hD : Dense (U₁.domain ⊓ U₂.domain : Set H)
+    · have hD' : Dense ((c • U₁).domain ⊓ (c • U₂).domain : Set H) := by grind
+      by_cases hC : (U₁.1 + U₂.1).IsClosable
+      · -- No junk values: smul distributes as it does for `LinearPMap`
+        have h : c • (U₁.1 + U₂.1) = c • U₁.1 + c • U₂.1 := by
+          ext
+          · simp [LinearPMap.add_domain]
+          · simp [LinearPMap.add_apply]
+        have hC' : ((c • U₁).1 + (c • U₂).1).IsClosable := by
+          simp [← h, smul_isClosable_of_isClosable hC]
+        simp only [h, smul_toLinearPMap, add_toLinearPMap_of_dense_closable hD hC,
+          add_toLinearPMap_of_dense_closable hD' hC']
+      · -- `D(U₁) ∩ D(U₂)` is dense and `U₁ + U₂` is not closable:
+        -- both sides are the zero operator on `D(U₁) ∩ D(U₂)`.
+        -- `c = 0` must be treated separately because in this case the RHS side *is* closable.
+        rw [smul_toLinearPMap, add_toLinearPMap_of_dense_not_closable hD hC]
+        rcases eq_zero_or_neZero c with (rfl | hc)
+        · have hC' : (((0 : ℂ) • U₁).1 + ((0 : ℂ) • U₂).1).IsClosable :=
+            isClosable_of_zero (by ext; simp [LinearPMap.add_apply])
+          rw [add_toLinearPMap_of_dense_closable hD' hC']
+          ext
+          · simp [LinearPMap.add_domain]
+          · simp [LinearPMap.add_apply]
+        · have h : U₁.1 + U₂.1 = c⁻¹ • (c • U₁.1 + c • U₂.1) := by
+            ext
+            · simp [LinearPMap.add_domain]
+            · simp [LinearPMap.add_apply, smul_smul, inv_mul_cancel₀ hc.ne]
+          have hC' := fun h' ↦ hC (h ▸ smul_isClosable_of_isClosable h' c⁻¹)
+          rw [add_toLinearPMap_of_dense_not_closable hD' hC']
+          ext <;> simp
+    · -- `D(U₁) ∩ D(U₂)` is not dense: both sides are the junk zero operator with domain `⊤`
+      have hD' : ¬Dense ((c • U₁).domain ⊓ (c • U₂).domain : Set H) := by grind
+      rw [smul_toLinearPMap, add_toLinearPMap_of_not_dense hD, add_toLinearPMap_of_not_dense hD']
+      ext <;> simp
 
 end
 
