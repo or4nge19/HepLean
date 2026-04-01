@@ -1328,7 +1328,7 @@ theorem IsHermitian.spectrum_subset_Ici_of_sub {d 𝕜 : Type*} [Fintype d] [Dec
             Unitary.conjStarAlgAut_apply]
           simp [ mul_comm, mul_left_comm, Algebra.smul_def ]
           congr! 1
-          simp [Algebra.algebraMap_eq_smul_one, mul_assoc]
+          simp [Algebra.algebraMap_eq_smul_one]
         -- Substitute the decomposition of $A$ into the expression $(star v ⬝ᵥ (A.mulVec v))$.
         have h_subst : (star v ⬝ᵥ (A.mulVec v)) = ∑ i, (hA.eigenvalues i) * (star v ⬝ᵥ (Matrix.mulVec (Matrix.of (fun j k => (hA.eigenvectorBasis i j) * (star (hA.eigenvectorBasis i k)))) v)) := by
           -- Substitute the decomposition of $A$ into the expression $(star v ⬝ᵥ (A.mulVec v))$ and use the linearity of matrix multiplication.
@@ -1541,8 +1541,7 @@ theorem trace_piProd [CommSemiring R] :
   symm
   simp [trace, piProd, Fintype.prod_sum]
 
-open ComplexOrder in
-set_option maxHeartbeats 400000 in
+open ComplexOrder MatrixOrder in
 theorem PosSemidef.piProd [RCLike R] (hA : ∀ i, (A i).PosSemidef) :
     (piProd A).PosSemidef := by
   -- Let B i be the square root of A i. Let BigB be the pi-product of B i. Show that BigB.conjTranspose * BigB equals the pi-product of A i using Fintype.prod_sum. Then use Matrix.PosSemidef.conjTranspose_mul_self to conclude the proof.
@@ -1551,7 +1550,9 @@ theorem PosSemidef.piProd [RCLike R] (hA : ∀ i, (A i).PosSemidef) :
     have h_decomp : ∀ i, ∃ B : Matrix (d i) (d i) R, A i = B * star B := by
       intro i
       obtain ⟨B, hB⟩ : ∃ B : Matrix (d i) (d i) R, A i = B.conjTranspose * B := by
-        exact Matrix.posSemidef_iff_eq_conjTranspose_mul_self.mp (hA i)
+        classical
+        apply CStarAlgebra.nonneg_iff_eq_star_mul_self.mp
+        exact nonneg_iff_posSemidef.mpr (hA i)
       use B.conjTranspose;
       convert hB using 1;
       simp [ Matrix.star_eq_conjTranspose ];
@@ -1570,10 +1571,12 @@ theorem PosSemidef.piProd [RCLike R] (hA : ∀ i, (A i).PosSemidef) :
   · intro x
     set y := star (Matrix.of (fun j k : (∀ i, d i) => ∏ i, B i (j i) (k i))) *ᵥ x
     convert dotProduct_star_self_nonneg y using 1
-    simp [ Matrix.dotProduct_mulVec]
-    simp [ Matrix.dotProduct_mulVec, y ];
-    simp [ Matrix.vecMul, dotProduct, mul_comm ];
-    simp [ Matrix.mul_apply, Matrix.mulVec, dotProduct, Finset.mul_sum _ _ _, mul_assoc, mul_comm, mul_left_comm ];
+    simp only [dotProduct_mulVec, y];
+    simp only [dotProduct, vecMul, Pi.star_apply, RCLike.star_def, mul_comm, star_apply, of_apply,
+      star_prod];
+    simp only [mul_apply, of_apply, star_apply, star_prod, RCLike.star_def, Finset.mul_sum _ _ _,
+      mul_left_comm, mulVec, dotProduct, mul_comm, map_sum, map_mul, map_prod,
+      RingHomCompTriple.comp_apply, RingHom.id_apply, mul_assoc];
     exact Finset.sum_congr rfl fun _ _ => Finset.sum_comm.trans ( Finset.sum_congr rfl fun _ _ => Finset.sum_congr rfl fun _ _ => by ring )
 
 end finprod

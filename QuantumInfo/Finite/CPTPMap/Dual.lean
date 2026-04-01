@@ -48,13 +48,16 @@ theorem Dual.trace_eq (M : MatrixMap dIn dOut R) (A : Matrix dIn dIn R) (B : Mat
 theorem IsHermitianPreserving.dual (h : M.IsHermitianPreserving) : M.dual.IsHermitianPreserving := by
   sorry
 
+open MatrixOrder
 --TODO Cleanup, find home, abstract out to HermitianMats...?
 theorem _root_.Matrix.PosSemidef.trace_mul_nonneg {n : Type*} [Fintype n] [DecidableEq n]
     {A B : Matrix n n 𝕜} (hA : A.PosSemidef) (hB : B.PosSemidef) :
     0 ≤ (A * B).trace := by
   open scoped Matrix in
   obtain ⟨sqrtB, rfl⟩ : ∃ sqrtB : Matrix n n 𝕜, B = sqrtBᴴ * sqrtB := by
-    exact Matrix.posSemidef_iff_eq_conjTranspose_mul_self.mp hB;
+    classical
+    apply CStarAlgebra.nonneg_iff_eq_star_mul_self.mp
+    exact Matrix.nonneg_iff_posSemidef.mpr hB
   simp only [← Matrix.mul_assoc, ← Matrix.trace_mul_comm sqrtB]
   have h : (sqrtB * A * sqrtBᴴ).PosSemidef := by
     convert hA.conjTranspose_mul_mul_same sqrtBᴴ using 1

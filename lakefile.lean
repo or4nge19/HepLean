@@ -8,10 +8,16 @@ require "mathlib" from git "https://github.com/leanprover-community/mathlib4.git
 require «doc-gen4» from git "https://github.com/leanprover/doc-gen4" @ "v4.28.0"
 
 @[default_target]
-lean_lib PhysLean
+lean_lib PhysLean where
+  moreLeanArgs := #[
+    "-Dwarn.sorry=false"
+  ]
 
 @[default_target]
-lean_lib QuantumInfo
+lean_lib QuantumInfo where
+  moreLeanArgs := #[
+    "-Dwarn.sorry=false"
+  ]
 
 -- These were their own lean_lib in Lean-QuantumInfo, we should move them to appropriate directories.
 -- lean_lib ClassicalInfo

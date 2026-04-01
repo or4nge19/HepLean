@@ -417,7 +417,7 @@ lemma trajectory_equationOfMotion (IC : InitialConditions) :
   have hωm : S.ω ^ 2 * S.m = S.k := by
     rw [ω_sq]
     field_simp [m_ne_zero S]
-  simp [trajectory_eq, smul_add, smul_smul, mul_comm, mul_left_comm]
+  simp [trajectory_eq, smul_add, smul_smul, mul_comm]
   rw [← hωm]
   field_simp [hω]
   ring
