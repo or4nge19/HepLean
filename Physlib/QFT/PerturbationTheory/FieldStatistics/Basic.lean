@@ -302,17 +302,16 @@ instance : AddMonoid FieldStatistic where
   add a b := a * b
   nsmul n a := ∏ (i : Fin n), a
   zero_add a := by
-    cases a <;> simp only [instCommGroup] <;> rfl
+    cases a <;> rfl
   add_zero a := by
-    cases a <;>
-      simp only [instCommGroup] <;> rfl
+    cases a <;> rfl
   add_assoc a b c := by
-    cases a <;> cases b <;> cases c <;> simp only [instCommGroup] <;> rfl
+    cases a <;> cases b <;> cases c <;> rfl
   nsmul_zero a := by
-    simp only [Finset.univ_eq_empty, Finset.prod_const, instCommGroup, Finset.card_empty, pow_zero]
+    simp only [Finset.univ_eq_empty, Finset.prod_const, Finset.card_empty, pow_zero]
     rfl
   nsmul_succ a n := by
-    simp only [instCommGroup, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+    simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
     rfl
 
 @[simp]
