@@ -140,8 +140,8 @@ lemma contr_contrCoUnit (x : complexCo) :
     Action.whiskerRight_hom, Action.associator_inv_hom, CategoryTheory.Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
     Fintype.sum_sum_type, Finset.univ_unique, Fin.default_eq_zero, Fin.isValue,
-    Finset.sum_singleton, Fin.sum_univ_three, tmul_add, add_tmul, smul_tmul, tmul_smul, map_add,
-    map_smul, ModuleCat.MonoidalCategory.associator_inv_apply]
+    Finset.sum_singleton, Fin.sum_univ_three, tmul_add, add_tmul, smul_tmul, tmul_smul,
+    LinearMap.map_add, map_smul, ModuleCat.MonoidalCategory.associator_inv_apply]
   have h1'' (y : complexCo.V)
     (z : complexCo.V ⊗[ℂ] complexContr.V) :
     (coContrContraction.hom ▷ complexCo.V) (z ⊗ₜ[ℂ] y) = (coContrContraction.hom z) ⊗ₜ[ℂ] y := rfl
@@ -168,8 +168,8 @@ lemma contr_coContrUnit (x : complexContr) :
     Action.whiskerRight_hom, Action.associator_inv_hom, CategoryTheory.Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
     Fintype.sum_sum_type, Finset.univ_unique, Fin.default_eq_zero, Fin.isValue,
-    Finset.sum_singleton, Fin.sum_univ_three, tmul_add, add_tmul, smul_tmul, tmul_smul, map_add,
-    map_smul, ModuleCat.MonoidalCategory.associator_inv_apply]
+    Finset.sum_singleton, Fin.sum_univ_three, tmul_add, add_tmul, smul_tmul, tmul_smul,
+    LinearMap.map_add, map_smul, ModuleCat.MonoidalCategory.associator_inv_apply]
   have h1'' (y : complexContr.V)
     (z : complexContr.V ⊗[ℂ] complexCo.V) :
     (contrCoContraction.hom ▷ complexContr.V) (z ⊗ₜ[ℂ] y) =

@@ -650,7 +650,7 @@ lemma contrPCoeff_update_fst_add {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fin
     contrPCoeff i j hij (p.update i x) + contrPCoeff i j hij (p.update i y) := by
   change ((S.contr.app { as := c i })).hom.hom' _ = ((S.contr.app { as := c i })).hom.hom' _
     + ((S.contr.app { as := c i })).hom.hom' _
-  simp [Function.update_of_ne (Ne.symm hij.1), update, TensorProduct.add_tmul, map_add]
+  simp [Function.update_of_ne (Ne.symm hij.1), update, TensorProduct.add_tmul, LinearMap.map_add]
 
 @[simp]
 lemma contrPCoeff_update_snd_add {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fin n → C}
@@ -668,7 +668,7 @@ lemma contrPCoeff_update_snd_add {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fin
   conv_lhs =>
     enter [2, 3]
     change ((S.FD.map (eqToHom _))).hom.hom' (x + y)
-  simp only [Monoidal.tensorUnit_obj, map_add, TensorProduct.tmul_add]
+  simp only [Monoidal.tensorUnit_obj, TensorProduct.tmul_add, LinearMap.map_add]
   rfl
 
 @[simp]
@@ -682,7 +682,7 @@ lemma contrPCoeff_update_fst_smul {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fi
     Functor.comp_obj, Discrete.functor_obj_eq_as, Function.comp_apply, update, Function.update_self,
     TensorProduct.smul_tmul, TensorProduct.tmul_smul]
   change ((S.contr.app { as := c i })).hom.hom' _ = r * _
-  simp only [Monoidal.tensorUnit_obj, map_smul, smul_eq_mul]
+  simp only [Monoidal.tensorUnit_obj, LinearMap.map_smul, smul_eq_mul]
   congr 1
   change ((S.contr.app { as := c i })).hom.hom' _ = ((S.contr.app { as := c i })).hom.hom' _
   rw [Function.update_of_ne (Ne.symm hij.1), Function.update_of_ne (Ne.symm hij.1)]
@@ -701,7 +701,7 @@ lemma contrPCoeff_update_snd_smul {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fi
   conv_lhs =>
     enter [2, 3]
     change ((S.FD.map (eqToHom _))).hom.hom' (r • _)
-  simp only [Monoidal.tensorUnit_obj, map_smul, TensorProduct.tmul_smul, smul_eq_mul]
+  simp only [Monoidal.tensorUnit_obj, LinearMap.map_smul, TensorProduct.tmul_smul, smul_eq_mul]
   rfl
 
 lemma contrPCoeff_dropPair {n : ℕ} {c : Fin (n + 1 + 1) → C}

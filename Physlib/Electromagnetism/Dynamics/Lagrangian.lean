@@ -380,7 +380,7 @@ lemma gradLagrangian_eq_electricField_magneticField {𝓕 : FreeSpace}
 ### C.7. The lagrangian gradient in tensor notation
 
 -/
-
+attribute [-simp] Nat.reduceAdd Nat.reduceSucc Fin.isValue in
 lemma gradLagrangian_eq_tensor {𝓕 : FreeSpace}
     (A : ElectromagneticPotential d)
     (hA : ContDiff ℝ ∞ A) (J : LorentzCurrentDensity d)
@@ -390,11 +390,11 @@ lemma gradLagrangian_eq_tensor {𝓕 : FreeSpace}
     (permT id (PermCond.auto) {((1/ 𝓕.μ₀ : ℝ) • tensorDeriv A.toFieldStrength x | κ κ ν') +
     - (J x | ν')}ᵀ)) ν := by
   rw [gradLagrangian_eq_kineticTerm_sub _ hA _ hJ]
-  simp only [Pi.sub_apply, apply_sub, Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, one_div, map_smul,
+  simp only [Pi.sub_apply, apply_sub, one_div, map_smul,
     map_neg, map_add, permT_permT, CompTriple.comp_eq, apply_add, apply_smul, neg_apply]
   rw [gradKineticTerm_eq_tensorDeriv A x hA]
   rw [gradFreeCurrentPotential_eq_tensor A hA J hJ x ν]
-  simp only [Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, one_div, map_smul, apply_smul,
+  simp only [one_div, map_smul, apply_smul,
     permT_id_self, LinearEquiv.symm_apply_apply]
   ring_nf
   congr
@@ -542,19 +542,19 @@ lemma gradLagrangian_sum_inr_i {𝓕 : FreeSpace}
 
 -/
 
+attribute [-simp] Nat.reduceAdd Nat.reduceSucc Fin.isValue in
 lemma gradLagrangian_eq_tensor {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d) (J : DistLorentzCurrentDensity d)
     (ε : 𝓢(SpaceTime d, ℝ)) (ν : Fin 1 ⊕ Fin d) :
     A.gradLagrangian 𝓕 J ε ν =
     η ν ν * ((Tensorial.toTensor (M := Lorentz.Vector d)).symm
-    (permT id (PermCond.auto) {((1/ 𝓕.μ₀ : ℝ) • distTensorDeriv A.fieldStrength ε | κ κ ν') +
+    (permT id (PermCond.auto) {((1/ 𝓕.μ₀ : ℝ) • (distTensorDeriv A.fieldStrength ε) | κ κ ν') +
     - (J ε | ν')}ᵀ)) ν := by
   rw [gradLagrangian]
-  simp only [ContinuousLinearMap.coe_sub', Pi.sub_apply, apply_sub, Nat.reduceSucc, Nat.reduceAdd,
-    Fin.isValue, one_div, map_smul, map_neg, map_add, permT_permT, CompTriple.comp_eq, apply_add,
+  simp only [ContinuousLinearMap.coe_sub', Pi.sub_apply, apply_sub, one_div, map_smul, map_neg, map_add, permT_permT, CompTriple.comp_eq, apply_add,
     apply_smul, Lorentz.Vector.neg_apply]
   rw [gradKineticTerm_eq_distTensorDeriv, gradFreeCurrentPotential_eq_tensor J ε ν]
-  simp only [Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, one_div, map_smul, apply_smul,
+  simp only [ one_div, map_smul, apply_smul,
     permT_id_self, LinearEquiv.symm_apply_apply]
   ring_nf
   congr

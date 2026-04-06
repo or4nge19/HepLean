@@ -111,7 +111,7 @@ lemma self_toTensor_apply {n : ℕ} (S : TensorSpecies k C G) (c : Fin n → C) 
 -/
 
 /-- The number of indices of a elements `t : M` where `M` carries a tensorial instance. -/
-def numIndices (t : M) [Tensorial S c M] : ℕ :=
+noncomputable def numIndices (t : M) [Tensorial S c M] : ℕ :=
   TensorSpecies.numIndices (toTensor t)
 
 /-!

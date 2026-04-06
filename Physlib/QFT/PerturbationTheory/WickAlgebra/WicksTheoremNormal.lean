@@ -182,7 +182,6 @@ lemma normalOrder_timeOrder_ofFieldOpList_eq_not_haveEqTime_sub_inductive (φs :
   rw [← Finset.sum_sub_distrib]
   congr 1
   funext x
-  simp only
   rw [← smul_sub, ← mul_sub]
 
 lemma wicks_theorem_normal_order_empty : 𝓣(𝓝(ofFieldOpList [])) =

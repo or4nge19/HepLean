@@ -224,7 +224,7 @@ lemma contr_altLeftLeftUnit (x : leftHanded) :
   simp only [Action.tensorObj_V, Action.tensorUnit_V, Action.leftUnitor_hom_hom,
     Action.whiskerRight_hom, Action.associator_inv_hom, CategoryTheory.Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, map_add, map_smul,
+    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, LinearMap.map_add, map_smul,
     ModuleCat.MonoidalCategory.associator_inv_apply]
   have h1 (x y : leftHanded) (z : altLeftHanded) : (leftAltContraction.hom ▷ leftHanded.V)
     ((α_ leftHanded.V altLeftHanded.V leftHanded.V).inv (x ⊗ₜ[ℂ] (z ⊗ₜ[ℂ] y))) =
@@ -248,7 +248,7 @@ lemma contr_leftAltLeftUnit (x : altLeftHanded) :
   simp only [Action.tensorObj_V, Action.tensorUnit_V, Action.leftUnitor_hom_hom,
     Action.whiskerRight_hom, Action.associator_inv_hom, CategoryTheory.Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, map_add, map_smul,
+    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, LinearMap.map_add, map_smul,
     ModuleCat.MonoidalCategory.associator_inv_apply]
   have h1 (x y : altLeftHanded) (z : leftHanded) : (altLeftContraction.hom ▷ altLeftHanded.V)
     ((α_ altLeftHanded.V leftHanded.V altLeftHanded.V).inv (x ⊗ₜ[ℂ] (z ⊗ₜ[ℂ] y))) =
@@ -272,7 +272,7 @@ lemma contr_altRightRightUnit (x : rightHanded) :
   simp only [Action.tensorObj_V, Action.tensorUnit_V, Action.leftUnitor_hom_hom,
     Action.whiskerRight_hom, Action.associator_inv_hom, CategoryTheory.Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, map_add, map_smul,
+    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, LinearMap.map_add, map_smul,
     ModuleCat.MonoidalCategory.associator_inv_apply]
   have h1 (x y : rightHanded) (z : altRightHanded) : (rightAltContraction.hom ▷ rightHanded.V)
     ((α_ rightHanded.V altRightHanded.V rightHanded.V).inv (x ⊗ₜ[ℂ] (z ⊗ₜ[ℂ] y))) =
@@ -296,7 +296,7 @@ lemma contr_rightAltRightUnit (x : altRightHanded) :
   simp only [Action.tensorObj_V, Action.tensorUnit_V, Action.leftUnitor_hom_hom,
     Action.whiskerRight_hom, Action.associator_inv_hom, CategoryTheory.Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, map_add, map_smul,
+    Fin.sum_univ_two, Fin.isValue, tmul_add, add_tmul, smul_tmul, tmul_smul, LinearMap.map_add, map_smul,
     ModuleCat.MonoidalCategory.associator_inv_apply]
   have h1 (x y : altRightHanded) (z : rightHanded) : (altRightContraction.hom ▷ altRightHanded.V)
     ((α_ altRightHanded.V rightHanded.V altRightHanded.V).inv (x ⊗ₜ[ℂ] (z ⊗ₜ[ℂ] y))) =

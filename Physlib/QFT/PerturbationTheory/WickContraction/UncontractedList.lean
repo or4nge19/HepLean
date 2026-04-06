@@ -29,7 +29,7 @@ open Physlib.Fin
 -/
 
 lemma fin_list_sorted_monotone_sorted {n m : ℕ} (l: List (Fin n)) (hl : l.Pairwise (· ≤ ·))
-    (f : Fin n → Fin m) (hf : StrictMono f) : ((List.map f l)).Pairwise (· ≤ ·) := by
+    (f : Fin n → Fin m) (hf : StrictMono f) : (List.map f l).Pairwise (· ≤ ·) := by
   induction l with
   | nil => simp
   | cons a l ih =>
@@ -134,8 +134,7 @@ lemma fin_list_sorted_indexOf_mem :
   conv_lhs => rw [fin_list_sorted_split l hl i]
   rw [List.idxOf_append_of_notMem]
   erw [fin_list_sorted_indexOf_filter_le_mem l hl i hi]
-  · simp
-  · simp
+  simp
 
 lemma orderedInsert_of_fin_list_sorted :
     (l : List (Fin n)) → (hl : l.Pairwise (· ≤ ·)) → (i : Fin n) →

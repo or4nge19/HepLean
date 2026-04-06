@@ -1015,6 +1015,7 @@ lemma kineticTerm_hasVarGradientAt {d} {𝓕 : FreeSpace} (A : ElectromagneticPo
 
 -/
 
+attribute [-simp] Nat.reduceAdd Nat.reduceSucc Fin.isValue in
 lemma gradKineticTerm_eq_tensorDeriv {d} {𝓕 : FreeSpace}
     (A : ElectromagneticPotential d) (x : SpaceTime d)
     (hA : ContDiff ℝ ∞ A) (ν : Fin 1 ⊕ Fin d) :
@@ -1045,21 +1046,22 @@ lemma gradKineticTerm_eq_tensorDeriv {d} {𝓕 : FreeSpace}
   funext μ
   congr
   · apply Lorentz.CoVector.indexEquiv.symm.injective
-    simp only [Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, Function.comp_apply, Fin.cast_eq_self,
-      Equiv.symm_apply_apply]
+    simp only [Function.comp_apply, Fin.cast_eq_self, Equiv.symm_apply_apply]
     simp [Lorentz.CoVector.indexEquiv]
     funext j
     fin_cases j
-    simp [ComponentIdx.prodEquiv, ComponentIdx.prodIndexEquiv]
-    simp [ComponentIdx.DropPairSection.ofFinEquiv, ComponentIdx.DropPairSection.ofFin]
+    simp only [Fin.zero_eta, Matrix.cons_val_zero, Fin.cast_eq_self,
+      ComponentIdx.prodEquiv, ComponentIdx.prodIndexEquiv, Equiv.piCongr_symm_apply,
+      Sum.elim_inl, finCongr_symm, finCongr_apply, Sum.elim_inr, Equiv.coe_fn_mk]
+    simp only [ComponentIdx.DropPairSection.ofFinEquiv, Equiv.coe_fn_mk,
+      ComponentIdx.DropPairSection.ofFin, Fin.cast_eq_self, Function.comp_apply, left_eq_dite_iff]
     intro h
     change ¬ 0 = 0 at h
     simp at h
   funext x
   congr
   · apply finSumFinEquiv.injective
-    simp only [Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, Function.comp_apply, Fin.cast_eq_self,
-      Equiv.apply_symm_apply]
+    simp only [Function.comp_apply, Fin.cast_eq_self, Equiv.apply_symm_apply]
     simp [ComponentIdx.prodEquiv, ComponentIdx.prodIndexEquiv]
     simp [ComponentIdx.DropPairSection.ofFinEquiv, ComponentIdx.DropPairSection.ofFin]
     intro _ h
@@ -1067,8 +1069,7 @@ lemma gradKineticTerm_eq_tensorDeriv {d} {𝓕 : FreeSpace}
     apply h
     decide
   · apply finSumFinEquiv.injective
-    simp only [Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, Function.comp_apply, Fin.cast_eq_self,
-      Equiv.apply_symm_apply]
+    simp only [Function.comp_apply, Fin.cast_eq_self, Equiv.apply_symm_apply]
     simp [ComponentIdx.prodEquiv, ComponentIdx.prodIndexEquiv]
     simp [ComponentIdx.DropPairSection.ofFinEquiv, ComponentIdx.DropPairSection.ofFin]
     split_ifs
@@ -1079,6 +1080,7 @@ lemma gradKineticTerm_eq_tensorDeriv {d} {𝓕 : FreeSpace}
       suffices ¬ (finSumFinEquiv (Sum.inr 1) = (1 : Fin (1 + 1 + 1))) from False.elim (this h2)
       decide
     · rfl
+
 
 end ElectromagneticPotential
 
@@ -1217,6 +1219,7 @@ lemma gradKineticTerm_sum_inr_eq {d} {𝓕 : FreeSpace}
 
 -/
 
+attribute [-simp] Nat.reduceAdd Nat.reduceSucc Fin.isValue in
 lemma gradKineticTerm_eq_distTensorDeriv {d} {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d) (ε : 𝓢(SpaceTime d, ℝ)) (ν : Fin 1 ⊕ Fin d) :
     A.gradKineticTerm 𝓕 ε ν = η ν ν * ((Tensorial.toTensor (M := Lorentz.Vector d)).symm
@@ -1245,7 +1248,7 @@ lemma gradKineticTerm_eq_distTensorDeriv {d} {𝓕 : FreeSpace}
   · generalize (distDeriv μ (A.fieldStrength) ε) = t at *
     rw [Tensorial.basis_toTensor_apply]
     rw [Tensorial.basis_map_prod]
-    simp only [Nat.reduceSucc, Nat.reduceAdd, Basis.repr_reindex, Finsupp.mapDomain_equiv_apply,
+    simp only [Basis.repr_reindex, Finsupp.mapDomain_equiv_apply,
       Equiv.symm_symm]
     rw [Lorentz.Vector.tensor_basis_map_eq_basis_reindex]
     have hb : (((Lorentz.Vector.basis (d := d)).reindex
@@ -1281,14 +1284,14 @@ lemma gradKineticTerm_eq_distTensorDeriv {d} {𝓕 : FreeSpace}
     simp at h
   funext x
   fin_cases x
-  · simp only [Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, Function.comp_apply, Fin.cast_eq_self]
+  · simp only [Function.comp_apply, Fin.cast_eq_self]
     simp [ComponentIdx.prodEquiv, ComponentIdx.prodIndexEquiv]
     simp [ComponentIdx.DropPairSection.ofFinEquiv, ComponentIdx.DropPairSection.ofFin]
     intro _ h
     apply False.elim
     apply h
     decide
-  · simp only [Nat.reduceSucc, Nat.reduceAdd, Fin.isValue, Function.comp_apply, Fin.cast_eq_self]
+  · simp only [Function.comp_apply, Fin.cast_eq_self]
     simp [ComponentIdx.prodEquiv, ComponentIdx.prodIndexEquiv]
     simp [ComponentIdx.DropPairSection.ofFinEquiv, ComponentIdx.DropPairSection.ofFin]
     split_ifs

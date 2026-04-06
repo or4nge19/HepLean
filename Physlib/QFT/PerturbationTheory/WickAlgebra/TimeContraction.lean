@@ -44,10 +44,9 @@ lemma timeContract_of_timeOrderRel (φ ψ : 𝓕.FieldOp) (h : timeOrderRel φ �
   conv_rhs =>
     rw [ofFieldOp_eq_crPart_add_anPart]
     rw [map_add, superCommute_anPart_anPart, superCommute_anPart_crPart]
-  simp only [timeContract, instCommGroup.eq_1, Algebra.smul_mul_assoc, add_zero]
+  simp only [timeContract, Algebra.smul_mul_assoc, add_zero]
   rw [timeOrder_ofFieldOp_ofFieldOp_ordered h]
   rw [normalOrder_ofFieldOp_mul_ofFieldOp]
-  simp only [instCommGroup.eq_1]
   rw [ofFieldOp_eq_crPart_add_anPart, ofFieldOp_eq_crPart_add_anPart]
   simp only [mul_add, add_mul]
   abel_nf
@@ -55,7 +54,6 @@ lemma timeContract_of_timeOrderRel (φ ψ : 𝓕.FieldOp) (h : timeOrderRel φ �
 lemma timeContract_of_not_timeOrderRel (φ ψ : 𝓕.FieldOp) (h : ¬ timeOrderRel φ ψ) :
     timeContract φ ψ = 𝓢(𝓕 |>ₛ φ, 𝓕 |>ₛ ψ) • timeContract ψ φ := by
   rw [timeContract_eq_smul]
-  simp only
   rw [normalOrder_ofFieldOp_ofFieldOp_swap]
   rw [timeOrder_ofFieldOp_ofFieldOp_not_ordered_eq_timeOrder h]
   rw [timeContract_eq_smul]
@@ -159,7 +157,6 @@ lemma timeOrder_timeContract_ne_time {φ ψ : 𝓕.FieldOp}
   by_cases h2 : timeOrderRel φ ψ
   · simp_all only [true_and]
     rw [timeContract_of_timeOrderRel _ _ h2]
-    simp only
     rw [ofFieldOp_eq_sum]
     simp only [map_sum]
     apply Finset.sum_eq_zero
