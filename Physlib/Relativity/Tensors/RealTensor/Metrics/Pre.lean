@@ -196,6 +196,10 @@ lemma contrCoContract_apply_metric {d : ℕ} : (β_ (Contr d) (Co d)).hom.hom
       (contrBasis d i ⊗ₜ[ℝ]
       (contrCoContract.hom (contrBasis d i ⊗ₜ[ℝ] coBasis d j) ⊗ₜ[ℝ] coBasis d j)) := by
     simp [- Fintype.sum_sum_type]
+    simp only [Fintype.sum_sum_type, Finset.univ_unique, Fin.default_eq_zero, Fin.isValue,
+      Finset.sum_singleton, minkowskiMatrix.inl_0_inl_0, mul_one, minkowskiMatrix.inr_i_inr_i,
+      mul_neg, neg_smul, Finset.sum_neg_distrib, one_smul, neg_neg, LinearMap.map_add, map_neg,
+      map_sum]
     rfl
   rw [h4]
   have h5 : ∑ i, ∑ j, (minkowskiMatrix i i * minkowskiMatrix j j) •
@@ -221,7 +225,7 @@ lemma contrCoContract_apply_metric {d : ℕ} : (β_ (Contr d) (Co d)).hom.hom
     simp [- Fintype.sum_sum_type]
   rw [h6]
   rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
-  simp
+  simp [LinearMap.map_add]
 
 lemma coContrContract_apply_metric {d : ℕ} : (β_ (Co d) (Contr d)).hom.hom
     (((Co d).V ◁ (λ_ (Contr d).V).hom)
@@ -267,6 +271,7 @@ lemma coContrContract_apply_metric {d : ℕ} : (β_ (Co d) (Contr d)).hom.hom
       (coBasis d i ⊗ₜ[ℝ] (coContrContract.hom
       (coBasis d i ⊗ₜ[ℝ] contrBasis d j) ⊗ₜ[ℝ] contrBasis d j)) := by
     simp [- Fintype.sum_sum_type]
+    simp [LinearMap.map_add]
     rfl
   rw [h4]
   have h5 : ∑ i, ∑ j, (minkowskiMatrix i i * minkowskiMatrix j j) •
@@ -292,7 +297,7 @@ lemma coContrContract_apply_metric {d : ℕ} : (β_ (Co d) (Contr d)).hom.hom
     simp [- Fintype.sum_sum_type]
   rw [h6]
   rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul]
-  simp
+  simp [LinearMap.map_add]
 
 end Lorentz
 end
