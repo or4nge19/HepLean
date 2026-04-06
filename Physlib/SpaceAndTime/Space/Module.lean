@@ -275,7 +275,7 @@ instance {d} : InnerProductSpace ℝ (Space d) where
 
 -/
 
-instance {d : ℕ} : MeasurableSpace (Space d) := borel (Space d)
+noncomputable instance {d : ℕ} : MeasurableSpace (Space d) := borel (Space d)
 
 instance {d : ℕ} : BorelSpace (Space d) where
   measurable_eq := by rfl
@@ -467,7 +467,7 @@ lemma eval_contDiff {d n} (i : Fin d) :
   simp [coordCLM_apply, coord]
 
 /-- The continuous linear equivalence between `Space d` and the corresponding `Pi` type. -/
-def equivPi (d : ℕ) :
+noncomputable def equivPi (d : ℕ) :
     Space d ≃L[ℝ] Π (_ : Fin d), ℝ := LinearEquiv.toContinuousLinearEquiv <|
   {
     toFun := fun p i => p i
