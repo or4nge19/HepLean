@@ -166,6 +166,7 @@ lemma ofList_eq_prod (s : 𝓕 → FieldStatistic) : (φs : List 𝓕) →
   | φ :: φs => by
     rw [ofList_cons_eq_mul, List.map_cons, List.prod_cons, ofList_eq_prod]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma ofList_singleton (s : 𝓕 → FieldStatistic) (φ : 𝓕) : ofList s [φ] = s φ := by
   simp only [ofList]
@@ -178,6 +179,7 @@ lemma ofList_freeMonoid (s : 𝓕 → FieldStatistic) (φ : 𝓕) : ofList s (Fr
 @[simp]
 lemma ofList_empty (s : 𝓕 → FieldStatistic) : ofList s [] = bosonic := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma ofList_append (s : 𝓕 → FieldStatistic) (φs φs' : List 𝓕) :
     ofList s (φs ++ φs') = if ofList s φs = ofList s φs' then bosonic else fermionic := by
@@ -212,6 +214,7 @@ lemma ofList_insertionSort (s : 𝓕 → FieldStatistic) (le1 : 𝓕 → 𝓕 �
     (φs : List 𝓕) : ofList s (List.insertionSort le1 φs) = ofList s φs :=
   ofList_perm s (List.perm_insertionSort le1 φs)
 
+set_option backward.isDefEq.respectTransparency false in
 lemma ofList_map_eq_finset_prod (s : 𝓕 → FieldStatistic) :
     (φs : List 𝓕) → (l : List (Fin φs.length)) → (hl : l.Nodup) →
     ofList s (l.map φs.get) = ∏ (i : Fin φs.length), if i ∈ l then s φs[i] else 1

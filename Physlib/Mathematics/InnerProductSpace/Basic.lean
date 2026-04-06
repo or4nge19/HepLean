@@ -91,6 +91,7 @@ instance [inst : InnerProductSpace' 𝕜 E] : InnerProductSpace.Core 𝕜 E := i
 
 instance [inst : InnerProductSpace' 𝕜 E] : Inner 𝕜 E := inst.core.toInner
 
+set_option backward.isDefEq.respectTransparency false in
 instance {𝕜 : Type*} {E : Type*} [RCLike 𝕜] [NormedAddCommGroup E] [inst : InnerProductSpace 𝕜 E] :
     InnerProductSpace' 𝕜 E where
   norm₂ x := ‖x‖
@@ -390,6 +391,7 @@ local instance : Inner 𝕜 (E×F) := ⟨fun (x,y) (x',y') => ⟪x,x'⟫ + ⟪y,
 lemma prod_inner_apply' (x y : (E × F)) : ⟪x, y⟫ = ⟪x.fst, y.fst⟫ + ⟪x.snd, y.snd⟫ := rfl
 
 open InnerProductSpace' in
+set_option backward.isDefEq.respectTransparency false in
 noncomputable
 instance : InnerProductSpace' 𝕜 (E × F) where
   norm₂ x := (WithLp.instProdNormedAddCommGroup 2 (WithLp 2 E) (WithLp 2 F)).toNorm.norm
@@ -460,6 +462,7 @@ instance : InnerProductSpace' 𝕜 (E × F) where
               _ ≤ d₁ * ‖x‖ ^ 2 + d₁ * ‖x‖ ^ 2 := by gcongr <;> exact h₁₂ x
               _ ≤ _ := by ring_nf; gcongr <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 open InnerProductSpace' in
 noncomputable
 instance {ι : Type*} [Fintype ι] : InnerProductSpace' 𝕜 (ι → E) where

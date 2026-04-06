@@ -64,6 +64,7 @@ def B₃ : MSSMACC.Sols :=
 lemma B₃_val : B₃.val = B₃AsCharge := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma doublePoint_B₃_B₃ (R : MSSMACC.LinSols) : cubeTriLin B₃.val B₃.val R.val = 0 := by
   simp only [cubeTriLin, TriLinearSymm.mk₃_toFun_apply_apply, cubeTriLinToFun,
     MSSMSpecies_numberCharges]

@@ -12,7 +12,6 @@ lean_lib Physlib where
   moreLeanArgs := #[
     "-Dwarn.sorry=false"
   ]
-  leanOptions := #[⟨`backward.isDefEq.respectTransparency, false⟩]
 
 @[default_target]
 lean_lib QuantumInfo where

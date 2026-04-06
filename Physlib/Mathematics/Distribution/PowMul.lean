@@ -71,6 +71,7 @@ lemma norm_iteratedFDeriv_ofRealCLM {x} (i : ℕ) :
       rw [h1]
       exact ContinuousMultilinearMap.opNorm_zero
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The continuous linear map `𝓢(ℝ, 𝕜) →L[𝕜] 𝓢(ℝ, 𝕜)` taking a Schwartz map
   `η` to `x * η`. -/
 def powOneMul : 𝓢(ℝ, 𝕜) →L[𝕜] 𝓢(ℝ, 𝕜) := by

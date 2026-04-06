@@ -64,6 +64,7 @@ def Y₃ : MSSMACC.Sols :=
 lemma Y₃_val : Y₃.val = Y₃AsCharge := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma doublePoint_Y₃_Y₃ (R : MSSMACC.LinSols) :
     cubeTriLin Y₃.val Y₃.val R.val = 0 := by
   simp only [cubeTriLin, TriLinearSymm.mk₃_toFun_apply_apply, cubeTriLinToFun,
