@@ -188,6 +188,7 @@ open PosSemidef
 -- TODO: Commutation and order relations about `proj_le` specified in the text
 -- between Eqs. (S77) and (S78)
 
+set_option backward.isDefEq.respectTransparency false in
 open scoped HermitianMat in
 theorem LemmaS2liminf {ε3 : Prob} {ε4 : ℝ≥0} (hε4 : 0 < ε4)
   {d : ℕ → Type*} [∀ n, Fintype (d n)] [∀ n, DecidableEq (d n)] (ρ : (n : ℕ) → MState (d n)) (σ : (n : ℕ) → MState (d n))
@@ -256,6 +257,7 @@ theorem LemmaS2liminf {ε3 : Prob} {ε4 : ℝ≥0} (hε4 : 0 < ε4)
   rw [HermitianMat.inner_comm, ← MState.exp_val]
   exact (ρ n).exp_val_nonneg ((Real.exp (n * (Rinf + ε4)) • (σ n).M).projLE_nonneg (ρ n).M)
 
+set_option backward.isDefEq.respectTransparency false in
 open scoped HermitianMat in
 theorem LemmaS2limsup {ε3 : Prob} {ε4 : ℝ≥0} (hε4 : 0 < ε4)
   {d : ℕ → Type*} [∀ n, Fintype (d n)] [∀ n, DecidableEq (d n)] (ρ : (n : ℕ) → MState (d n)) (σ : (n : ℕ) → MState (d n))
@@ -435,6 +437,7 @@ private lemma commute_aux (n : ℕ) {x : ℝ}
   rw [HermitianMat.projLT_def] at hE
   commutes
 
+set_option backward.isDefEq.respectTransparency false in
 open HermMul in
 private lemma rexp_mul_smul_proj_lt_mul_sub_le_mul_sub {n : ℕ} {x : ℝ}
   {E ℰ σ : HermitianMat d ℂ} (hℰσ : Commute ℰ.mat σ.mat) (hx : 0 < x)
@@ -505,6 +508,7 @@ private lemma rexp_mul_smul_proj_lt_mul_sub_le_mul_sub {n : ℕ} {x : ℝ}
     change 0 < Real.exp (n * x) * gi
     positivity
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma rexp_mul_smul_proj_lt_mul_sub_le_mul_sub' {n : ℕ} {x : ℝ} {y : ℝ}
   {E ℰ σ : HermitianMat d ℂ} (hℰσ : Commute ℰ.mat σ.mat)
   (hℰ : ℰ.mat.PosSemidef) (hσ : σ.mat.PosDef)
@@ -787,6 +791,7 @@ private theorem log_le_f (n : ℕ) (lam : ℝ) : Real.log lam ≤ f_map i n lam 
   _ = _ := by
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- (S46), part 2 -/
 private theorem f_le_log (n : ℕ) (lam : ℝ) : f_map i n lam < Real.log lam + σ₁_c i n :=
   calc
@@ -842,6 +847,7 @@ private theorem σ'_posdef : (σ' ρ ε m σ n).m.PosDef := by
   · apply UnitalPretheory.PosDef.npow (σ₁_pos i)
   · norm_num [← Prob.ne_iff]
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem hσ'n_eq_sum_third : (σ' ρ ε m σ n).M =
     (1 / 3 : ℝ) • («σ̃» m σ n) + (1 / 3 : ℝ) • («σ⋆» ρ ε n) + (1 / 3 : ℝ) • ((σ₁ i) ⊗ᵣ^[n]) := by
   unfold σ'
@@ -852,6 +858,7 @@ private theorem hσ'n_eq_sum_third : (σ' ρ ε m σ n).M =
   dsimp [Mixable.to_U]
   norm_num only [one_div, Prob.coe_one_minus, smul_add, smul_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem hσ₁_le_σ' : (1 / 3 : ℝ) • ((σ₁ i) ⊗ᵣ^[n]).M ≤ (σ' ρ ε m σ n).M := by
     rw [hσ'n_eq_sum_third]
     apply le_add_of_nonneg_left
@@ -865,6 +872,7 @@ private theorem σ''_unnormalized_PosDef : Matrix.PosDef (σ''_unnormalized ρ �
   intro
   positivity
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem σ''_tr_bounds : 1 ≤ (σ''_unnormalized ρ ε m σ n).trace ∧
     (σ''_unnormalized ρ ε m σ n).trace < Real.exp (σ₁_c i n) := by
   have hσ' := (σ' ρ ε m σ n).tr
@@ -897,6 +905,7 @@ variable (m : ℕ) (σ : (n : ℕ) → IsFree (i := i ^ n)) (n : ℕ)
 --We're now finally ready to define the main sequence with the properties we want, σ''.
 --This is the normalized version of σ''_unnormalized, which gives a state because that sequence is
 -- already PosDef
+set_option backward.isDefEq.respectTransparency false in
 private def σ'' : (n : ℕ) → MState (H (i ^ n)) := fun n ↦ {
   --TODO make this its own definition: Normalizing a matrix to give a tr-1 op.
   M := (σ''_unnormalized ρ ε m σ n).trace⁻¹ • (σ''_unnormalized ρ ε m σ n)
@@ -917,6 +926,7 @@ private lemma σ''_posdef n : (σ'' ρ ε m σ n).M.mat.PosDef := by
   have := (σ''_tr_bounds ρ ε m σ n).left
   positivity
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma σ'_le_σ'' (n) : Real.exp (-σ₁_c i n) • (σ' ρ ε m σ n).M ≤ σ'' ρ ε m σ n := by
   dsimp [σ'']
   set x := (σ''_unnormalized ρ ε m σ n).trace
@@ -937,6 +947,7 @@ private lemma σ'_le_σ'' (n) : Real.exp (-σ₁_c i n) • (σ' ρ ε m σ n).M
   · positivity
   · positivity
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma σ''_le_σ' (n) : σ'' ρ ε m σ n ≤ Real.exp (σ₁_c i n) • (σ' ρ ε m σ n).M := by
     dsimp [σ'']
     set x := (σ''_unnormalized ρ ε m σ n).trace
@@ -953,6 +964,7 @@ private lemma σ''_le_σ' (n) : σ'' ρ ε m σ n ≤ Real.exp (σ₁_c i n) •
     suffices 0 ≤ 1 - x⁻¹ by positivity
     simpa using inv_le_one_of_one_le₀ (σ''_tr_bounds ρ ε m σ n).left
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem «σ''_ge_σ⋆» n : σ'' ρ ε m σ n ≥ (Real.exp (-σ₁_c i n) / 3) • («σ⋆» ρ ε n).M := by
     grw [ge_iff_le, ← σ'_le_σ'', div_eq_mul_inv, ← smul_smul, ← one_div]
     rw [smul_le_smul_iff_of_pos_left (by positivity), hσ'n_eq_sum_third]
@@ -963,6 +975,7 @@ private theorem «σ''_ge_σ⋆» n : σ'' ρ ε m σ n ≥ (Real.exp (-σ₁_c 
     · have := ((σ₁ i) ⊗ᵣ^[n]).nonneg
       positivity
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem «σ''_ge_σ̃» n : σ'' ρ ε m σ n ≥ (Real.exp (-σ₁_c i n) / 3) • («σ̃» m σ n).M := by
     grw [ge_iff_le, ← σ'_le_σ'', div_eq_mul_inv, ← smul_smul, ← one_div]
     rw [smul_le_smul_iff_of_pos_left (by positivity), hσ'n_eq_sum_third]
@@ -1081,6 +1094,7 @@ private theorem EquationS88 (ρ : MState (H i)) (σ : (n : ℕ) → ↑IsFree) {
   ring
 
 set_option maxHeartbeats 800000 in
+set_option backward.isDefEq.respectTransparency false in
 private theorem EquationS62
     (ρ : MState (H i)) (σ : (n : ℕ) → IsFree (i := i ^ n))
     {ε ε' : Prob} (hε'₁ : 0 < ε') (hε'₂ : ε' < ε) (hε : ε < 1)
@@ -1734,6 +1748,7 @@ private theorem EquationS62
   rw [ENNReal.ofReal_mul (by simp), Prob.ofNNReal_toNNReal,
     ENNReal.ofReal_toReal (by simp [hR1, hR2]), Prob.coe_one_minus]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Lemma 7 from the paper. We write `ε'` for their `\tilde{ε}`. -/
 private theorem Lemma7 (ρ : MState (H i)) {ε : Prob} (hε : 0 < ε ∧ ε < 1) (σ : (n : ℕ) → IsFree (i := i ^ n)) :
     (R2 ρ σ ≥ R1 ρ ε) →
@@ -1959,6 +1974,7 @@ theorem Lemma7_gap (ρ : MState (H i)) {ε : Prob} (hε : 0 < ε ∧ ε < 1) {ε
 
 end Lemma7
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Theorem 1 in https://arxiv.org/pdf/2408.02722v3 -/
 theorem GeneralizedQSteinsLemma {i : ι} (ρ : MState (H i)) {ε : Prob} (hε : 0 < ε ∧ ε < 1) :
     Filter.atTop.Tendsto (fun n ↦ —log β_ ε(ρ ⊗ᵣ^[n]‖IsFree) / n) (𝓝 (𝑅ᵣ∞ ρ)) := by
