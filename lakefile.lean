@@ -3,21 +3,23 @@ open System Lake DSL
 
 package «Physlib»
 
-require "mathlib" from git "https://github.com/leanprover-community/mathlib4.git" @ "v4.28.0"
+require «doc-gen4» from git "https://github.com/leanprover/doc-gen4" @ "v4.29.0-rc1"
 
-require «doc-gen4» from git "https://github.com/leanprover/doc-gen4" @ "v4.28.0"
+require "mathlib" from git "https://github.com/leanprover-community/mathlib4.git" @ "v4.29.0-rc1"
 
 @[default_target]
 lean_lib Physlib where
   moreLeanArgs := #[
     "-Dwarn.sorry=false"
   ]
+  leanOptions := #[⟨`backward.isDefEq.respectTransparency, false⟩]
 
 @[default_target]
 lean_lib QuantumInfo where
   moreLeanArgs := #[
     "-Dwarn.sorry=false"
   ]
+  leanOptions := #[⟨`backward.isDefEq.respectTransparency, false⟩]
 
 -- These were their own lean_lib in Lean-QuantumInfo, we should move them to appropriate directories.
 -- lean_lib ClassicalInfo
