@@ -136,7 +136,8 @@ lemma preCoContrUnit_apply_one {d : ℕ} : (preCoContrUnit d).hom (1 : ℝ) = pr
 ## Contraction of the units
 
 -/
-
+example (f : ℝ →ₗ[ℝ] ℝ )  (g : Fin d → ℝ) : f (∑ i, g i) = ∑ i, f (g i) := by
+  exact map_sum f g Finset.univ
 /-- Contraction on the right with `contrCoUnit` does nothing. -/
 lemma contr_preContrCoUnit {d : ℕ} (x : Co d) :
     (λ_ (Co d)).hom.hom ((coContrContract ▷ (Co d)).hom
@@ -144,11 +145,14 @@ lemma contr_preContrCoUnit {d : ℕ} (x : Co d) :
   have h1 : ((α_ (Co d) _ (Co d)).inv.hom (x ⊗ₜ[ℝ] (preContrCoUnit d).hom (1 : ℝ)))
       = ∑ i, (x ⊗ₜ[ℝ] contrBasis d i) ⊗ₜ[ℝ] coBasis d i := by
     rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul]
-    simp [tmul_sum, - Fintype.sum_sum_type]
+    simp only [Action.tensorObj_V, Action.associator_inv_hom,
+      CategoryTheory.Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
+      Action.FunctorCategoryEquivalence.functor_obj_obj, tmul_sum]
+    simp [LinearMap.map_add]
   rw [h1]
   have h2 : (coContrContract ▷ (Co d)).hom (∑ i, (x ⊗ₜ[ℝ] contrBasis d i) ⊗ₜ[ℝ] coBasis d i)
       = ∑ i, ((coContrContract).hom (x ⊗ₜ[ℝ] contrBasis d i)) ⊗ₜ[ℝ] coBasis d i := by
-    simp
+    simp [LinearMap.map_add]
   rw [h2]
   obtain ⟨c, rfl⟩ := (Submodule.mem_span_range_iff_exists_fun ℝ).mp (Basis.mem_span (coBasis d) x)
   have h3 (i : Fin 1 ⊕ Fin d) : (CategoryTheory.ConcreteCategory.hom coContrContract.hom)
@@ -171,11 +175,14 @@ lemma contr_preCoContrUnit {d : ℕ} (x : (Contr d)) :
   have h1 : ((α_ (Contr d) _ (Contr d)).inv.hom (x ⊗ₜ[ℝ] (preCoContrUnit d).hom (1 : ℝ)))
       = ∑ i, (x ⊗ₜ[ℝ] coBasis d i) ⊗ₜ[ℝ] contrBasis d i := by
     rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
-    simp [tmul_sum, - Fintype.sum_sum_type]
+    simp only [Action.tensorObj_V, Action.associator_inv_hom,
+      CategoryTheory.Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
+      Action.FunctorCategoryEquivalence.functor_obj_obj, tmul_sum]
+    simp [LinearMap.map_add]
   rw [h1]
   have h2 : (contrCoContract ▷ (Contr d)).hom (∑ i, (x ⊗ₜ[ℝ] coBasis d i) ⊗ₜ[ℝ] contrBasis d i)
       = ∑ i, ((contrCoContract).hom (x ⊗ₜ[ℝ] coBasis d i)) ⊗ₜ[ℝ] contrBasis d i := by
-    simp
+    simp [LinearMap.map_add]
   rw [h2]
   obtain ⟨c, rfl⟩ := (Submodule.mem_span_range_iff_exists_fun ℝ).mp
     (Basis.mem_span (contrBasis d) x)
@@ -205,14 +212,14 @@ lemma preContrCoUnit_symm {d : ℕ} :
     ((preCoContrUnit d).hom (1 : ℝ))) := by
   rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul]
   rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
-  simp
+  simp [LinearMap.map_add]
 
 lemma preCoContrUnit_symm {d : ℕ} :
     ((preCoContrUnit d).hom (1 : ℝ)) = ((Co d) ◁ 𝟙 _).hom ((β_ (Contr d) (Co d)).hom.hom
     ((preContrCoUnit d).hom (1 : ℝ))) := by
   rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul]
   rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
-  simp
+  simp [LinearMap.map_add]
 
 end Lorentz
 end
