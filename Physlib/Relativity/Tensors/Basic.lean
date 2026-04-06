@@ -418,7 +418,7 @@ instance {k : Type} [Field k] {C G : Type} [Group G] (S : TensorSpecies k C G)
     {c : Fin n → C} : FiniteDimensional k (S.Tensor c) :=
   Module.Basis.finiteDimensional_of_finite (Tensor.basis c)
 
-instance {k : Type} [RCLike k] {C G : Type} [Group G] (S : TensorSpecies k C G)
+noncomputable instance {k : Type} [RCLike k] {C G : Type} [Group G] (S : TensorSpecies k C G)
     {c : Fin n → C} : TopologicalSpace (S.Tensor c) :=
   moduleTopology k (S.Tensor c)
 
