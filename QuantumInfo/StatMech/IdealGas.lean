@@ -111,6 +111,7 @@ theorem PartitionZ_eq (hV : 0 < V) (hβ : 0 < β) :
   dsimp
   conv =>
     enter [1, 1, 2, x]
+    simp only [not_exists, not_lt, Prod.mk.eta]
     rw [MeasureTheory.lintegral_const_mul' _ _ (ENNReal.ofReal_ne_top)]
 
 
@@ -129,15 +130,13 @@ theorem PartitionZ_eq (hV : 0 < V) (hβ : 0 < β) :
   · apply Measurable.aestronglyMeasurable
     apply Measurable.ite
     · rw [measurableSet_setOf]
-      apply Measurable.not
-      exact h_measurable_box
+      fun_prop
     · fun_prop
     · fun_prop
   · apply Measurable.comp ENNReal.measurable_ofReal
     apply Measurable.ite
     · rw [measurableSet_setOf]
-      apply Measurable.not
-      exact h_measurable_box
+      fun_prop
     · fun_prop
     · fun_prop
 
@@ -150,6 +149,7 @@ theorem PartitionZ_eq (hV : 0 < V) (hβ : 0 < β) :
       push_neg
       simp_rw [← Prod.forall (p := fun xy ↦ |a xy| ≤ V ^ (3⁻¹ : ℝ) / 2)]
       exact Fintype.prod_boole.symm
+    simp only [not_exists, not_lt] at h_integrand_prod
     simp_rw [h_integrand_prod]; clear h_integrand_prod
     convert ← MeasureTheory.integral_fintype_prod_eq_prod (ι := Fin n × Fin 3) (𝕜 := ℝ)
       (f := fun _ r ↦ if |r| ≤ V ^ (3⁻¹ : ℝ) / 2 then 1 else 0); swap
@@ -176,7 +176,7 @@ theorem PartitionZ_eq (hV : 0 < V) (hβ : 0 < β) :
       congr! 3 with x
       simp_rw [div_eq_inv_mul, ← Finset.mul_sum, ← mul_assoc, neg_mul, mul_comm, PiLp.norm_sq_eq_of_L2]
       congr! 3
-      simp only [Prod.mk.eta, Real.norm_eq_abs, sq_abs]
+      simp only [Real.norm_eq_abs, sq_abs]
       congr
     · field_simp
       congr
