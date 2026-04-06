@@ -30,6 +30,7 @@ open NVEHamiltonian
 
 variable (n : ℕ) {V β T : ℝ}
 
+set_option backward.isDefEq.respectTransparency false in
 open MeasureTheory in
 /-- The partition function Z for an ideal gas. -/
 theorem PartitionZ_eq (hV : 0 < V) (hβ : 0 < β) :

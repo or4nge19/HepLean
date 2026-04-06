@@ -147,6 +147,7 @@ theorem eigenvalue_nonneg : ∀ i, 0 ≤ ρ.Hermitian.eigenvalues i := by
   rw [← Matrix.PosSemidef.nonneg_iff_eigenvalue_nonneg ρ.Hermitian]
   exact ρ.nonneg
 
+set_option backward.isDefEq.respectTransparency false in
 -- Could have used properties of ρ.spectrum
 theorem eigenvalue_le_one : ∀ i, ρ.Hermitian.eigenvalues i ≤ 1 := by
   intro i
@@ -209,6 +210,7 @@ theorem exp_val_prob {T : HermitianMat d ℂ} (h : 0 ≤ T ∧ T ≤ 1) :
     0 ≤ ρ.exp_val T ∧ ρ.exp_val T ≤ 1 :=
   ⟨ρ.exp_val_nonneg h.1, ρ.exp_val_le_one h.2⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem exp_val_sub (A B : HermitianMat d ℂ) :
     ρ.exp_val (A - B) = ρ.exp_val A - ρ.exp_val B := by
   simp [exp_val, inner_sub_right]
@@ -227,6 +229,7 @@ theorem exp_val_eq_one_iff {A : HermitianMat d ℂ} (hA₂ : A ≤ 1) :
   rw [exp_val_sub, exp_val_one]
   rw [sub_eq_zero, eq_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem exp_val_add (A B : HermitianMat d ℂ) :
     ρ.exp_val (A + B) = ρ.exp_val A + ρ.exp_val B := by
   simp [exp_val, inner_add_right]
@@ -280,6 +283,7 @@ def spectrum (ρ : MState d) : ProbDistribution d :=
     (ρ.psd.eigenvalues_nonneg ·)
     (by rw [sum_eigenvalues_eq_trace, ρ.tr])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The spectrum of a pure state is (1,0,0,...), i.e. a constant distribution. -/
 theorem spectrum_pure_eq_constant :
     ∃ i, (pure ψ).spectrum = ProbDistribution.constant i := by
@@ -345,6 +349,7 @@ theorem spectrum_pure_eq_constant :
   use i
   exact ProbDistribution.constant_of_exists_one hi
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If the spectrum of a mixed state is (1,0,0...) i.e. a constant distribution, it is
  a pure state. -/
 theorem pure_of_constant_spectrum (h : ∃ i, ρ.spectrum = ProbDistribution.constant i) :
@@ -398,6 +403,7 @@ theorem pure_iff_constant_spectrum : (∃ ψ, ρ = pure ψ) ↔
   ⟨fun h ↦ h.rec fun ψ h₂ ↦ h₂ ▸ spectrum_pure_eq_constant ψ,
   pure_of_constant_spectrum ρ⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem pure_iff_purity_one : (∃ ψ, ρ = pure ψ) ↔ ρ.purity = 1 := by
   --purity = exp(-Collision entropy)
   --purity eq 1 iff collision entropy is zero
@@ -461,6 +467,7 @@ theorem pure_iff_purity_one : (∃ ψ, ρ = pure ψ) ↔ ρ.purity = 1 := by
         ProbDistribution.normalized, Finset.mem_univ, Finset.sum_erase_eq_sub, Set.Icc.coe_one, sub_self, Finset.mem_erase,
         ne_eq, and_true, Prob.zero_le_coe]
 
+set_option backward.isDefEq.respectTransparency false in
 --TODO: Would be better if there was an `MState.eigenstate` or similar (maybe extending
 -- a similar thing for `HermitianMat`) and then this could be an equality with that, as
 -- an explicit formula, instead of this `Exists`.
@@ -560,6 +567,7 @@ theorem M_default [Unique d] : (default : MState d).M = 1 := by
 
 section ptrace
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Partial tracing out the left half of a system. -/
 @[simps]
 def traceLeft (ρ : MState (d₁ × d₂)) : MState d₂ where
@@ -567,6 +575,7 @@ def traceLeft (ρ : MState (d₁ × d₂)) : MState d₂ where
   nonneg := zero_le_iff.mpr ρ.psd.traceLeft
   tr := by simp [trace]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Partial tracing out the right half of a system. -/
 @[simps]
 def traceRight (ρ : MState (d₁ × d₂)) : MState d₁ where
