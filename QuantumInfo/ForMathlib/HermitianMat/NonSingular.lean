@@ -8,8 +8,6 @@ import QuantumInfo.ForMathlib.Isometry
 
 noncomputable section
 
-attribute [instance] invertibleOne
-
 namespace Matrix
 
 variable {d R S F 𝕜 : Type*} [Fintype d] [DecidableEq d]

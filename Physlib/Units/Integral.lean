@@ -83,7 +83,7 @@ lemma integral_isDimensionallyCorrect (d : Dimension) :
     If the integral is dimensionally correct, this should be the same as just doing the
     original integral in `u2` units i.e. `∫ x, f x ∂μ`. -/
     _ = scaleUnit u1 u2 (∫ x, (scaleUnit u2 u1 f) x ∂(scaleUnit u2 u1 μ)) := by
-      simp [instUnitDependentTwoSided]
+      simp
     /- Since we have assumed `μ` has dimension `d`, `(scaleUnit u2 μ u1)`
       is equal to `(u2.dimScale u1 d) • μ` -/
     _ = scaleUnit u1 u2 (u2.dimScale u1 d • ∫ (x : M), scaleUnit u2 u1 f x ∂ μ) := by

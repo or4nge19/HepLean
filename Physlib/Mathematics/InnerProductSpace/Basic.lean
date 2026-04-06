@@ -420,7 +420,7 @@ instance : InnerProductSpace' 𝕜 (E × F) where
     have : 0 ≤ re ⟪y,y⟫ := PreInnerProductSpace.Core.re_inner_nonneg (𝕜:=𝕜) (F:=F) _ y
     simp only [norm, OfNat.ofNat_ne_zero, ↓reduceDIte, ENNReal.ofNat_ne_top, ↓reduceIte,
       WithLp.toLp_fst, WithLp.equiv_apply, ENNReal.toReal_ofNat, Real.rpow_ofNat, WithLp.toLp_snd,
-      one_div, WithLp.prod_inner_apply, prod_inner_apply', map_add]
+      one_div, prod_inner_apply', map_add]
     repeat rw [Real.sq_sqrt (by assumption)]
     norm_num
     rw[← Real.rpow_mul_natCast (by linarith)]

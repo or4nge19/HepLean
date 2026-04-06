@@ -222,8 +222,7 @@ lemma ofList_map_eq_finset_prod (s : 𝓕 → FieldStatistic) :
       Finset.prod_const_one]
     rfl
   | φ :: φs, i :: l, hl => by
-    simp only [List.length_cons, List.map_cons, List.get_eq_getElem, List.mem_cons, instCommGroup,
-      Fin.getElem_fin]
+    simp only [List.length_cons, List.map_cons, List.get_eq_getElem, List.mem_cons, Fin.getElem_fin]
     rw [ofList_cons_eq_mul]
     rw [ofList_map_eq_finset_prod s (φ :: φs) l]
     have h1 : s (φ :: φs)[↑i] = ∏ (j : Fin (φ :: φs).length),
@@ -233,7 +232,7 @@ lemma ofList_map_eq_finset_prod (s : 𝓕 → FieldStatistic) :
     rw [← Finset.prod_mul_distrib]
     congr
     funext a
-    simp only [instCommGroup, List.length_cons, mul_ite, ite_mul, one_mul, mul_one]
+    simp only [List.length_cons, mul_ite, ite_mul, one_mul, mul_one]
     by_cases ha : a = i
     · simp only [ha, ↓reduceIte, mul_self, true_or]
       rw [if_neg]
@@ -275,7 +274,7 @@ lemma ofList_take_zero (φs : List 𝓕) :
 
 lemma ofList_take_succ_cons (n : ℕ) (φ1 : 𝓕) (φs : List 𝓕) :
     ofList q ((φ1 :: φs).take (n + 1)) = q φ1 * ofList q (φs.take n) := by
-  simp only [List.take_succ_cons, instCommGroup]
+  simp only [List.take_succ_cons]
   rw [ofList_cons_eq_mul]
 
 lemma ofList_take_insertIdx_gt (n m : ℕ) (φ1 : 𝓕) (φs : List 𝓕) (hn : n < m) :

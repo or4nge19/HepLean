@@ -74,7 +74,7 @@ lemma statistics_eq_state_statistics (ψs : CrAnSection φs) :
 lemma take_statistics_eq_take_state_statistics (ψs : CrAnSection φs) n :
     (𝓕 |>ₛ (ψs.1.take n)) = 𝓕 |>ₛ (φs.take n) := by
   erw [FieldStatistic.ofList_eq_prod, FieldStatistic.ofList_eq_prod, crAnStatistics]
-  simp only [instCommGroup, List.map_take]
+  simp only [List.map_take]
   rw [← List.map_comp_map, Function.comp_apply, ψs.2]
 
 /-- The head of a section for `φ :: φs` as an element in `𝓕.fieldOpToCreateAnnihilateType φ`. -/

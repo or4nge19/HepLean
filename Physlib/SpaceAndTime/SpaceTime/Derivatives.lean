@@ -171,8 +171,8 @@ lemma deriv_comp_lorentz_action {M : Type} [NormedAddCommGroup M] [NormedSpace �
     ∂_ μ (fun x => f (Λ • x)) x = ∑ ν, Λ.1 ν μ • ∂_ ν f (Λ • x) := by
   change fderiv ℝ (f ∘ Lorentz.Vector.actionCLM Λ) x (Lorentz.Vector.basis μ) = _
   rw [fderiv_comp]
-  simp only [Lorentz.Vector.actionCLM_apply, Nat.succ_eq_add_one, Nat.reduceAdd,
-    ContinuousLinearMap.fderiv, ContinuousLinearMap.coe_comp', Function.comp_apply]
+  simp only [Lorentz.Vector.actionCLM_apply, ContinuousLinearMap.fderiv,
+    ContinuousLinearMap.coe_comp', Function.comp_apply]
     -- Fintype.sum_sum_type
   rw [Lorentz.Vector.smul_basis]
   simp
@@ -200,7 +200,7 @@ lemma deriv_equivariant (f : SpaceTime d → M) (Λ : LorentzGroup d) (x : Space
       exact hx
   rw [h1 μ x, deriv_comp_lorentz_action]
   change (TensorSpecies.Tensorial.actionCLM _ Λ) (∑ ν, (Λ⁻¹).1 ν μ • ∂_ ν f (Λ⁻¹ • x)) = _
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, map_sum, map_smul]
+  simp only [map_sum, map_smul]
   simp [TensorSpecies.Tensorial.actionCLM_apply]
   · fun_prop
 
@@ -384,12 +384,12 @@ lemma distDeriv_comp_lorentz_action {μ : Fin 1 ⊕ Fin d} (Λ : LorentzGroup d)
   simp [schwartzAction_apply]
   change ∂_ μ η (Λ • x) = ∑ ν, Λ⁻¹.1 ν μ • ∂_ ν (schwartzAction Λ⁻¹ η) (x)
   obtain ⟨η, rfl⟩ := schwartzAction_surjective Λ η
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, smul_eq_mul]
+  simp only [smul_eq_mul]
   rw [schwartzAction_mul_apply]
   simp only [inv_mul_cancel, map_one, ContinuousLinearMap.one_apply]
   change ∂_ μ (fun x => η (Λ⁻¹ • x)) (Λ • x) = _
   rw [deriv_comp_lorentz_action]
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, inv_smul_smul, smul_eq_mul]
+  simp only [inv_smul_smul, smul_eq_mul]
   exact SchwartzMap.differentiable η
 
 /-!

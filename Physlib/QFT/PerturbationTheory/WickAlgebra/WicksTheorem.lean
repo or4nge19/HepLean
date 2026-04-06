@@ -104,7 +104,7 @@ theorem wicks_theorem : (φs : List 𝓕.FieldOp) → 𝓣(ofFieldOpList φs) =
     swap
     · simp
     rw [smul_smul]
-    simp only [instCommGroup.eq_1, exchangeSign_mul_self, Nat.succ_eq_add_one, Fintype.sum_option,
+    simp only [exchangeSign_mul_self, Nat.succ_eq_add_one, Fintype.sum_option,
       Finset.univ_eq_attach, smul_add, one_smul]
     · exact fun k => timeOrder_maxTimeField _ _ k
     · exact fun k => lt_maxTimeFieldPosFin_not_timeOrder _ _ k

@@ -142,7 +142,7 @@ lemma toTensor_eq_asConsTensor :
   trans fromTripleT PauliMatrix.asTensor
   · rw [fromConstTriple, congrArg fromTripleT PauliMatrix.asConsTensor_apply_one]
   rw [PauliMatrix.asTensor_expand, toTensor_basis_expand]
-  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Equivalence.symm_inverse, Fin.isValue, map_sub,
+  simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.isValue, map_sub,
     map_add, _root_.map_smul]
   rw [show complexContrBasis (Sum.inl 0) = complexContrBasisFin4 0 by {simp}]
   rw [show complexContrBasis (Sum.inr 0) = complexContrBasisFin4 1 by {simp}]

@@ -57,7 +57,7 @@ lemma timeContract_of_not_timeOrderRel (φ ψ : 𝓕.FieldOp) (h : ¬ timeOrderR
   rw [normalOrder_ofFieldOp_ofFieldOp_swap]
   rw [timeOrder_ofFieldOp_ofFieldOp_not_ordered_eq_timeOrder h]
   rw [timeContract_eq_smul]
-  simp only [instCommGroup.eq_1, smul_add]
+  simp only [smul_add]
   rw [smul_smul, smul_smul, mul_comm]
 
 /-- For a field specification `𝓕`, and `φ` and `ψ` elements of `𝓕.FieldOp`, if
@@ -103,7 +103,7 @@ lemma timeContract_zero_of_diff_grade (φ ψ : 𝓕.FieldOp) (h : (𝓕 |>ₛ φ
   · rw [timeContract_of_not_timeOrderRel _ _ h1]
     rw [timeContract_of_timeOrderRel _ _ _]
     rw [superCommute_anPart_ofFieldOpF_diff_grade_zero]
-    simp only [instCommGroup.eq_1, smul_zero]
+    simp only [smul_zero]
     exact h.symm
     have ht := Std.Total.total (r := 𝓕.timeOrderRel) φ ψ
     simp_all
@@ -114,7 +114,7 @@ lemma normalOrder_timeContract (φ ψ : 𝓕.FieldOp) :
   · rw [timeContract_of_timeOrderRel _ _ h]
     simp
   · rw [timeContract_of_not_timeOrderRel _ _ h]
-    simp only [instCommGroup.eq_1, map_smul, smul_eq_zero]
+    simp only [map_smul, smul_eq_zero]
     have h1 : timeOrderRel ψ φ := by
       have ht : timeOrderRel φ ψ ∨ timeOrderRel ψ φ := Std.Total.total (r := 𝓕.timeOrderRel) φ ψ
       simp_all
@@ -173,7 +173,7 @@ lemma timeOrder_timeContract_ne_time {φ ψ : 𝓕.FieldOp}
       apply timeOrder_superCommute_ne_time
       simp_all [crAnTimeOrderRel]
   · rw [timeContract_of_not_timeOrderRel_expand _ _ h2]
-    simp only [instCommGroup.eq_1, map_smul, smul_eq_zero]
+    simp only [map_smul, smul_eq_zero]
     right
     rw [ofFieldOp_eq_sum]
     simp only [map_sum]

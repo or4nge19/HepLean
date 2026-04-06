@@ -112,9 +112,9 @@ lemma ι_timeOrderF_superCommuteF_superCommuteF_eq_time_ofCrAnListF {φ1 φ2 φ3
         simp_all
   rw [← ofCrAnListF_singleton, ← ofCrAnListF_singleton, ← ofCrAnListF_singleton]
   rw [superCommuteF_ofCrAnListF_ofCrAnListF]
-  simp only [List.singleton_append, instCommGroup.eq_1, ofList_singleton, map_sub, map_smul]
+  simp only [List.singleton_append, ofList_singleton, map_sub, map_smul]
   rw [superCommuteF_ofCrAnListF_ofCrAnListF, superCommuteF_ofCrAnListF_ofCrAnListF]
-  simp only [List.cons_append, List.nil_append, instCommGroup.eq_1, ofList_singleton, mul_sub, ←
+  simp only [List.cons_append, List.nil_append, ofList_singleton, mul_sub, ←
     ofCrAnListF_append, Algebra.mul_smul_comm, sub_mul, List.append_assoc, Algebra.smul_mul_assoc,
     map_sub, map_smul]
   rw [h123, h132, h231, h321]
@@ -137,9 +137,9 @@ lemma ι_timeOrderF_superCommuteF_superCommuteF_eq_time_ofCrAnListF {φ1 φ2 φ3
   congr
   rw [← ofCrAnListF_singleton, ← ofCrAnListF_singleton, ← ofCrAnListF_singleton]
   rw [superCommuteF_ofCrAnListF_ofCrAnListF]
-  simp only [List.singleton_append, instCommGroup.eq_1, ofList_singleton, map_sub, map_smul]
+  simp only [List.singleton_append, ofList_singleton, map_sub, map_smul]
   rw [superCommuteF_ofCrAnListF_ofCrAnListF, superCommuteF_ofCrAnListF_ofCrAnListF]
-  simp only [List.cons_append, List.nil_append, instCommGroup.eq_1, ofList_singleton, map_sub,
+  simp only [List.cons_append, List.nil_append, ofList_singleton, map_sub,
     map_smul, smul_sub]
   simp_all
 
@@ -241,7 +241,7 @@ lemma ι_timeOrderF_superCommuteF_eq_time {φ ψ : 𝓕.CrAnFieldOp}
         ι [ofCrAnOpF φ, ofCrAnOpF ψ]ₛF := by
         rw [superCommuteF_ofCrAnOpF_ofCrAnOpF]
         rw [← ofCrAnListF_singleton, ← ofCrAnListF_singleton, ← ofCrAnListF_append]
-        simp only [instCommGroup.eq_1, List.singleton_append, Algebra.smul_mul_assoc, map_sub,
+        simp only [List.singleton_append, Algebra.smul_mul_assoc, map_sub,
           map_smul]
         rw [← ofCrAnListF_append]
         simp
@@ -293,7 +293,7 @@ lemma ι_timeOrderF_superCommuteF_ne_time {φ ψ : 𝓕.CrAnFieldOp}
     simp_all only [false_and, not_false_eq_true, mul_zero, zero_mul, map_zero]
     simp_all
   · rw [superCommuteF_ofCrAnOpF_ofCrAnOpF_symm]
-    simp only [instCommGroup.eq_1, neg_smul, map_neg, map_smul, mul_neg, Algebra.mul_smul_comm,
+    simp only [neg_smul, map_neg, map_smul, mul_neg, Algebra.mul_smul_comm,
       neg_mul, Algebra.smul_mul_assoc, neg_eq_zero, smul_eq_zero]
     rw [timeOrderF_superCommuteF_ofCrAnOpF_ofCrAnOpF_not_crAnTimeOrderRel]
     simp only [mul_zero, zero_mul, map_zero, or_true]
@@ -422,7 +422,7 @@ lemma timeOrder_ofFieldOp_ofFieldOp_not_ordered_eq_timeOrder {φ ψ : 𝓕.Field
     𝓣(ofFieldOp φ * ofFieldOp ψ) = 𝓢(𝓕 |>ₛ φ, 𝓕 |>ₛ ψ) • 𝓣(ofFieldOp ψ * ofFieldOp φ) := by
   rw [ofFieldOp, ofFieldOp, ← map_mul, timeOrder_eq_ι_timeOrderF,
     timeOrderF_ofFieldOpF_ofFieldOpF_not_ordered_eq_timeOrderF h]
-  simp only [instCommGroup.eq_1, map_smul]
+  simp only [map_smul]
   rfl
 
 lemma timeOrder_ofFieldOpList_nil : 𝓣(ofFieldOpList (𝓕 := 𝓕) []) = 1 := by

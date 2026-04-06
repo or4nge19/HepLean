@@ -182,7 +182,7 @@ lemma toComplex_eq_sum_basis {n} (c : Fin n → realLorentzTensor.Color) (v : �
     toComplex v = ∑ i, (Tensor.basis (S := realLorentzTensor) c).repr v
       (ComponentIdx.complexify.symm i) •
       Tensor.basis (S := complexLorentzTensor) (colorToComplex ∘ c) i := by
-  simp only [toComplex, LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply]
+  simp only [toComplex, LinearMap.coe_mk, AddHom.coe_mk]
   rw [← Equiv.sum_comp ComponentIdx.complexify]
   rfl
 

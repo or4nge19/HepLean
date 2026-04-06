@@ -333,7 +333,7 @@ def actionCLM {d : ℕ} (Λ : LorentzGroup d) :
     { toFun := fun v => Λ • v
       map_add' := smul_add Λ
       map_smul' := fun c v => by
-        simp only [Nat.succ_eq_add_one, Nat.reduceAdd, RingHom.id_apply]
+        simp only [RingHom.id_apply]
         funext i
         simp [smul_eq_sum]
         ring_nf

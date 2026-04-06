@@ -84,9 +84,7 @@ lemma asTensor_expand : asTensor =
   rw [asTensor_expand_complexContrBasis]
   rw [leftRightToMatrix_σSA_inl_0_expand, leftRightToMatrix_σSA_inr_0_expand,
     leftRightToMatrix_σSA_inr_1_expand, leftRightToMatrix_σSA_inr_2_expand]
-  simp only [CategoryTheory.Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
-    Action.FunctorCategoryEquivalence.functor_obj_obj, Fin.isValue, tmul_add, tmul_neg, tmul_smul,
-    tmul_sub]
+  simp only [Fin.isValue, tmul_add, tmul_neg, tmul_smul, tmul_sub]
   rfl
 
 /-- The tensor `σ^μ^a^{dot a}` based on the Pauli-matrices as a morphism,

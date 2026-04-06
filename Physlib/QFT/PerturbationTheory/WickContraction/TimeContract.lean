@@ -103,7 +103,7 @@ lemma timeContract_insert_some_of_lt
     • (contractStateAtIndex φ [φsΛ]ᵘᶜ ((uncontractedFieldOpEquiv φs φsΛ) (some k)) *
       φsΛ.timeContract) := by
   rw [timeContract_insertAndContract_some]
-  simp only [Nat.succ_eq_add_one, Fin.getElem_fin, ite_mul, instCommGroup.eq_1,
+  simp only [Nat.succ_eq_add_one, Fin.getElem_fin, ite_mul,
     contractStateAtIndex, uncontractedFieldOpEquiv, Equiv.optionCongr_apply,
     Equiv.coe_trans, Option.map_some, Function.comp_apply, finCongr_apply, Fin.val_cast,
     List.getElem_map, uncontractedList_getElem_uncontractedIndexEquiv_symm, List.get_eq_getElem,
@@ -147,14 +147,14 @@ lemma timeContract_insert_some_of_not_lt
     • (contractStateAtIndex φ [φsΛ]ᵘᶜ
       ((uncontractedFieldOpEquiv φs φsΛ) (some k)) * φsΛ.timeContract) := by
   rw [timeContract_insertAndContract_some]
-  simp only [Nat.succ_eq_add_one, Fin.getElem_fin, ite_mul, instCommGroup.eq_1,
+  simp only [Nat.succ_eq_add_one, Fin.getElem_fin, ite_mul,
     contractStateAtIndex, uncontractedFieldOpEquiv, Equiv.optionCongr_apply,
     Equiv.coe_trans, Option.map_some, Function.comp_apply, finCongr_apply, Fin.val_cast,
     List.getElem_map, uncontractedList_getElem_uncontractedIndexEquiv_symm, List.get_eq_getElem,
     Algebra.smul_mul_assoc, uncontractedListGet]
   simp only [hik, ↓reduceIte, MulMemClass.coe_mul]
   rw [timeContract_of_not_timeOrderRel, timeContract_of_timeOrderRel]
-  simp only [instCommGroup.eq_1, Algebra.smul_mul_assoc, smul_smul]
+  simp only [Algebra.smul_mul_assoc, smul_smul]
   congr
   have h1 : ofList 𝓕.fieldOpStatistic (List.take (↑(φsΛ.uncontractedIndexEquiv.symm k))
       (List.map φs.get φsΛ.uncontractedList))

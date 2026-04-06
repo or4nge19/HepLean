@@ -50,7 +50,9 @@ class ResourcePretheory (ι : Type*) extends Semigroup ι where
     )
      = Equiv.cast (congrArg H <| mul_assoc i j k)
 
+attribute [reducible] ResourcePretheory.FinH
 attribute [instance] ResourcePretheory.FinH
+attribute [reducible] ResourcePretheory.DecEqH
 attribute [instance] ResourcePretheory.DecEqH
 attribute [instance] ResourcePretheory.NonemptyH
 

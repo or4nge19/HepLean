@@ -147,7 +147,7 @@ lemma timeOrderSign_pair_ordered {φ ψ : 𝓕.FieldOp} (h : timeOrderRel φ ψ)
 
 lemma timeOrderSign_pair_not_ordered {φ ψ : 𝓕.FieldOp} (h : ¬ timeOrderRel φ ψ) :
     timeOrderSign [φ, ψ] = 𝓢(𝓕 |>ₛ φ, 𝓕 |>ₛ ψ) := by
-  simp only [timeOrderSign, Wick.koszulSign, Wick.koszulSignInsert, mul_one, instCommGroup.eq_1]
+  simp only [timeOrderSign, Wick.koszulSign, Wick.koszulSignInsert, mul_one]
   rw [if_neg h]
   simp [FieldStatistic.exchangeSign_eq_if]
 
@@ -249,7 +249,7 @@ lemma crAnTimeOrderSign_pair_ordered {φ ψ : 𝓕.CrAnFieldOp} (h : crAnTimeOrd
 
 lemma crAnTimeOrderSign_pair_not_ordered {φ ψ : 𝓕.CrAnFieldOp} (h : ¬ crAnTimeOrderRel φ ψ) :
     crAnTimeOrderSign [φ, ψ] = 𝓢(𝓕 |>ₛ φ, 𝓕 |>ₛ ψ) := by
-  simp only [crAnTimeOrderSign, Wick.koszulSign, Wick.koszulSignInsert, mul_one, instCommGroup.eq_1]
+  simp only [crAnTimeOrderSign, Wick.koszulSign, Wick.koszulSignInsert, mul_one]
   rw [if_neg h]
   simp [FieldStatistic.exchangeSign_eq_if]
 

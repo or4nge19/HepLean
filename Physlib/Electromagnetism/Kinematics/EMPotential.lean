@@ -156,7 +156,7 @@ lemma spaceTime_deriv_action_eq_sum {d} {μ ν : Fin 1 ⊕ Fin d} {x : SpaceTime
       conv_lhs =>
         enter [1, 2, i]
         rw [fderiv_const_mul (hdif i)]
-      simp only [Nat.reduceSucc, ContinuousLinearMap.coe_sum', ContinuousLinearMap.coe_smul',
+      simp only [ContinuousLinearMap.coe_sum', ContinuousLinearMap.coe_smul',
         Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
       rw [Lorentz.Vector.smul_eq_sum]
       congr
@@ -180,7 +180,7 @@ lemma spaceTime_deriv_action_eq_sum {d} {μ ν : Fin 1 ⊕ Fin d} {x : SpaceTime
   apply Finset.sum_congr rfl (fun κ _ => ?_)
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl (fun ρ _ => ?_)
-  simp only [Nat.reduceSucc, smul_eq_mul]
+  simp only [smul_eq_mul]
   ring
 
 /-!
@@ -294,7 +294,7 @@ lemma deriv_equivariant {d} {x : SpaceTime d} (A : ElectromagneticPotential d)
         rw [Finset.sum_smul]
         apply Finset.sum_congr rfl (fun ρ _ => ?_)
         congr 1
-        simp only [Nat.succ_eq_add_one, Nat.reduceAdd, smul_eq_mul]
+        simp only [smul_eq_mul]
         ring
       _ = ∑ μ, ∑ ν, ∑ κ, ∑ ρ, (∂_ ρ A (Λ⁻¹ • x) κ) •
           (Λ⁻¹.1 ρ μ • (Lorentz.CoVector.basis μ)) ⊗ₜ[ℝ]
@@ -305,7 +305,7 @@ lemma deriv_equivariant {d} {x : SpaceTime d} (A : ElectromagneticPotential d)
         refine Finset.sum_congr rfl (fun ρ _ => ?_)
         rw [smul_tmul, tmul_smul, tmul_smul, smul_smul, smul_smul]
         congr 1
-        simp only [Nat.reduceSucc, smul_eq_mul]
+        simp only [smul_eq_mul]
         ring
       _ = ∑ κ, ∑ ρ, ∑ μ, ∑ ν, (∂_ ρ A (Λ⁻¹ • x) κ) •
           (Λ⁻¹.1 ρ μ • (Lorentz.CoVector.basis μ)) ⊗ₜ[ℝ]
