@@ -551,9 +551,11 @@ Here, the maximally mixed one is chosen. -/
 instance instInhabited [Nonempty d] : Inhabited (MState d) where
   default := uniform
 
+lemma default_eq [Nonempty d] : (default : MState d) = uniform := rfl
+
 @[simp]
 theorem M_default [Unique d] : (default : MState d).M = 1 := by
-  simp [instInhabited, uniform]
+  simp [default_eq, uniform]
   rfl
 
 section ptrace
