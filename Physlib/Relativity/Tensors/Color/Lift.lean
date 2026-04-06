@@ -86,8 +86,8 @@ lemma toRep_ρ_empty (g : G) : (toRep F (𝟙_ (OverColor C))).ρ g = LinearMap.
   rw [toRep_ρ]
   ext x
   refine PiTensorProduct.induction_on' x (fun r x => ?_) <| fun x y hx hy => by
-    simp_all
-  simp only [Functor.id_obj, PiTensorProduct.tprodCoeff_eq_smul_tprod, map_smul,
+    simp_all [LinearMap.map_add]
+  simp only [Functor.id_obj, PiTensorProduct.tprodCoeff_eq_smul_tprod, LinearMap.map_smul,
     PiTensorProduct.map_tprod, LinearMap.id_coe, id_eq]
   apply congrArg
   apply congrArg
@@ -99,9 +99,9 @@ lemma toRep_ρ_from_fin0 (c : Fin 0 → C) (g : G) :
   rw [toRep_ρ]
   ext x
   refine PiTensorProduct.induction_on' x (fun r x => ?_) <| fun x y hx hy => by
-    simp_all
+    simp_all [LinearMap.map_add]
   simp only [Functor.id_obj, PiTensorProduct.tprodCoeff_eq_smul_tprod,
-    _root_.map_smul, PiTensorProduct.map_tprod, LinearMap.id_coe, id_eq]
+    LinearMap.map_smul, PiTensorProduct.map_tprod, LinearMap.id_coe, id_eq]
   apply congrArg
   apply congrArg
   funext i
