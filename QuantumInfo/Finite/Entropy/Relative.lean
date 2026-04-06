@@ -1563,8 +1563,8 @@ theorem qRelativeEnt_additive (ρ₁ σ₁ : MState d₁) (ρ₂ σ₂ : MState 
 theorem sandwichedRelRentropy_relabel (ρ σ : MState d) (e : d₂ ≃ d) :
     D̃_ α(ρ.relabel e‖σ.relabel e) = D̃_ α(ρ‖σ) := by
   simp only [SandwichedRelRentropy, MState.relabel_M]
-  rw! [HermitianMat.ker_reindex_le_iff] --Why doesn't this `simp`? Because it's an if condition, I'm guessing
-  simp [HermitianMat.conj_submatrix]
+  have := HermitianMat.ker_reindex_le_iff  (σ : HermitianMat d ℂ ) ↑ρ e.symm
+  split_ifs <;> simp_all [HermitianMat.conj_submatrix]
 
 @[simp]
 theorem sandwichedRelRentropy_self (hα : 0 < α) (ρ : MState d) :

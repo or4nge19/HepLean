@@ -304,7 +304,7 @@ theorem isometry_mul_conjTranspose_le_one {m n : Type*} [Fintype m] [Fintype n]
     simp_all [ Matrix.conjTranspose_sub, Matrix.conjTranspose_one, Matrix.conjTranspose_mul ];
   have h_pos : Matrix.PosSemidef (1 - V * Vᴴ) := by
     rw [ h_pos ] at *; apply Matrix.posSemidef_conjTranspose_mul_self;
-  grind
+  exact Matrix.le_iff.mpr h_pos
 
 /-
 If `A†A = I` and `B†B = I` (both isometries into the same space), then `||(A†B)|| ≤ 1`,

@@ -58,9 +58,13 @@ instance instFunLikeKet : FunLike (Ket d) d ℂ where
   coe ψ := ψ.vec
   coe_injective' _ _ h := by rwa [Ket.mk.injEq]
 
+lemma _root_.Ket.coe_fun_eq (ψ : Ket d) : (ψ : d → ℂ) = ψ.vec := rfl
+
 instance instFunLikeBra : FunLike (Bra d) d ℂ where
   coe ψ := ψ.vec
   coe_injective' _ _ h := by rwa [Bra.mk.injEq]
+
+lemma _root_.Bra.coe_fun_eq (ψ : Bra d) : (ψ : d → ℂ) = ψ.vec := rfl
 
 def dot (ξ : Bra d) (ψ : Ket d) : ℂ := ∑ x, (ξ x) * (ψ x)
 
