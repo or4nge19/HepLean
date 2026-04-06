@@ -642,6 +642,7 @@ theorem spectrum_prod (ρ₁ : MState d₁) (ρ₂ : MState d₂) : ∃(σ : d�
   obtain ⟨ i, j, h ⟩ := h σ; have := congr_fun hσ ( i, j ) ; simp_all [ MState.spectrum ] ;
   exact h ( by exact Subtype.ext this )
 
+set_option backward.isDefEq.respectTransparency false in
 theorem sInf_spectrum_prod (ρ : MState d) (σ : MState d₂) :
     sInf (_root_.spectrum ℝ (ρ ⊗ᴹ σ).m) = sInf (_root_.spectrum ℝ ρ.m) * sInf (_root_.spectrum ℝ σ.m) := by
   rcases isEmpty_or_nonempty d with _ | _; · simp
@@ -665,12 +666,14 @@ def IsSeparable (ρ : MState (d₁ × d₂)) : Prop :=
     ∃ ps : ProbDistribution ρLRs, --ProbDistribution over those pairs, an ensemble
       ρ.M = ∑ ρLR : ρLRs, (ps ρLR : ℝ) • (Prod.fst ρLR.val).M ⊗ₖ (Prod.snd ρLR.val).M
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A product state `MState.prod` is separable. -/
 theorem IsSeparable_prod (ρ₁ : MState d₁) (ρ₂ : MState d₂) : IsSeparable (ρ₁ ⊗ᴹ ρ₂) := by
   let only := (ρ₁, ρ₂)
   use { only }, ProbDistribution.constant ⟨only, Finset.mem_singleton_self only⟩
   simp [prod, Unique.eq_default, only]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem eq_of_sum_eq_pure {d : Type*} [Fintype d] [DecidableEq d]
     {ι : Type*} {s : Finset ι} {p : ι → ℝ} {ρs : ι → MState d}
     {ρ : MState d} (h_pure : ρ.purity = 1) (h_sum : ρ.M = ∑ i ∈ s, p i • (ρs i).M)
@@ -781,6 +784,7 @@ theorem pureQ_injective {d : Type*} [Fintype d] [DecidableEq d] : Function.Injec
   simp [pureQ] at h
   exact Quotient.sound ((PhaseEquiv_iff_pure_eq _ _).mpr h)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem pure_separable_imp_IsProd {d₁ d₂ : Type*} [Fintype d₁] [Fintype d₂] [DecidableEq d₁] [DecidableEq d₂]
     (ψ : Ket (d₁ × d₂)) (h : IsSeparable (pure ψ)) : ψ.IsProd := by
   obtain ⟨ ρLRs, ps, hps ⟩ := h;
@@ -855,6 +859,7 @@ theorem pure_separable_iff_IsProd (ψ : Ket (d₁ × d₂)) :
     rw [pure_prod_pure ξ φ]
     exact IsSeparable_prod _ _;
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 A mixed state is pure if and only if its rank is 1.
 -/
@@ -918,6 +923,7 @@ theorem pure_iff_rank_eq_one {d : Type*} [Fintype d] [DecidableEq d] (ρ : MStat
     generalize_proofs at *;
     refine' MState.ext_m _ ; aesop
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 A ket on a product space is a product state if and only if its coefficient matrix has rank 1.
 -/
@@ -1042,6 +1048,7 @@ def purifyX (ρ : MState d) : { ψ : Ket (d × d) // (pure ψ).traceRight = ρ }
 
 end purification
 
+set_option backward.isDefEq.respectTransparency false in
 @[simps]
 def relabel (ρ : MState d₁) (e : d₂ ≃ d₁) : MState d₂ where
   M := ρ.M.reindex e.symm
@@ -1095,6 +1102,7 @@ theorem relabel_cast {d₁ d₂ : Type u} [Fintype d₁] [DecidableEq d₁]
   symm
   apply cast_heq
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem spectrum_relabel {ρ : MState d} (e : d₂ ≃ d) :
     _root_.spectrum ℝ (ρ.relabel e).m = _root_.spectrum ℝ ρ.m := by
@@ -1280,6 +1288,7 @@ noncomputable instance : MetricSpace (MState d) :=
 theorem dist_eq (x y : MState d) : dist x y = dist x.M y.M := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 instance : BoundedSpace (MState d) where
   bounded_univ :=
     CompactSpace.isCompact_univ.isBounded
@@ -1304,6 +1313,7 @@ section finprod
 variable {ι : Type u} [DecidableEq ι] [fι : Fintype ι]
 variable {dI : ι → Type v} [∀(i :ι), Fintype (dI i)] [∀(i :ι), DecidableEq (dI i)]
 
+set_option backward.isDefEq.respectTransparency false in
 def piProd (ρi : (i:ι) → MState (dI i)) : MState ((i:ι) → dI i) where
   M := {
     val := Matrix.piProd (fun i ↦ (ρi i).m)
