@@ -49,9 +49,11 @@ instance {d} : Module ℝ (CoVector d) :=
 instance {d} : AddCommGroup (CoVector d) :=
   inferInstanceAs (AddCommGroup (Fin 1 ⊕ Fin d → ℝ))
 
+set_option backward.isDefEq.respectTransparency false in
 instance {d} : FiniteDimensional ℝ (CoVector d) :=
   inferInstanceAs (FiniteDimensional ℝ (Fin 1 ⊕ Fin d → ℝ))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The equivalence between `CoVector d` and `EuclideanSpace ℝ (Fin 1 ⊕ Fin d)`. -/
 def equivEuclid (d : ℕ) :
     CoVector d ≃ₗ[ℝ] EuclideanSpace ℝ (Fin 1 ⊕ Fin d) :=
@@ -76,10 +78,12 @@ instance isNormedAddCommGroup (d : ℕ) : NormedAddCommGroup (CoVector d) where
     apply (equivEuclid d).injective
     exact (eq_of_dist_eq_zero h)
 
+set_option backward.isDefEq.respectTransparency false in
 instance isNormedSpace (d : ℕ) : NormedSpace ℝ (CoVector d) where
   norm_smul_le c v := by
     simp only [norm_eq_equivEuclid, map_smul]
     exact norm_smul_le c (equivEuclid d v)
+
 open InnerProductSpace
 
 instance (d : ℕ) : Inner ℝ (CoVector d) where
@@ -198,6 +202,7 @@ lemma basis_apply {d : ℕ} (μ ν : Fin 1 ⊕ Fin d) :
   congr 1
   exact Lean.Grind.eq_congr' rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma toTensor_symm_basis {d : ℕ} (μ : Fin 1 ⊕ Fin d) :
     (toTensor (self := tensorial)).symm (Tensor.basis ![Color.down] (indexEquiv.symm μ)) =
     basis μ := by
@@ -262,6 +267,7 @@ lemma map_apply_eq_basis_mulVec {d : ℕ} (f : CoVector d →ₗ[ℝ] CoVector d
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma smul_eq_sum {d : ℕ} (i : Fin 1 ⊕ Fin d) (Λ : LorentzGroup d) (p : CoVector d) :
     (Λ • p) i = ∑ j, Λ⁻¹.1 j i * p j := by
   obtain ⟨p, rfl⟩ := toTensor.symm.surjective p
@@ -313,15 +319,18 @@ lemma smul_eq_mulVec {d} (Λ : LorentzGroup d) (p : CoVector d) :
 lemma smul_add {d : ℕ} (Λ : LorentzGroup d) (p q : CoVector d) :
     Λ • (p + q) = Λ • p + Λ • q := by simp
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma smul_sub {d : ℕ} (Λ : LorentzGroup d) (p q : CoVector d) :
     Λ • (p - q) = Λ • p - Λ • q := by
   rw [smul_eq_mulVec, smul_eq_mulVec, smul_eq_mulVec, Matrix.mulVec_sub]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma smul_zero {d : ℕ} (Λ : LorentzGroup d) :
     Λ • (0 : CoVector d) = 0 := by
   rw [smul_eq_mulVec, Matrix.mulVec_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma smul_neg {d : ℕ} (Λ : LorentzGroup d) (p : CoVector d) :
     Λ • (-p) = - (Λ • p) := by
   rw [smul_eq_mulVec, smul_eq_mulVec, Matrix.mulVec_neg]
@@ -346,6 +355,7 @@ def actionCLM {d : ℕ} (Λ : LorentzGroup d) :
 lemma actionCLM_apply {d : ℕ} (Λ : LorentzGroup d) (p : CoVector d) :
     actionCLM Λ p = Λ • p := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma smul_basis {d : ℕ} (Λ : LorentzGroup d) (μ : Fin 1 ⊕ Fin d) :
     Λ • basis μ = ∑ ν, Λ⁻¹.1 μ ν • basis ν := by
   funext i

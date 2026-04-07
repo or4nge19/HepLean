@@ -319,6 +319,7 @@ lemma sub {F G : (X → U) → (X → V)} {F' G' : (X → V) → (X → U)}
 
 end OnFiniteMeasures
 
+set_option backward.isDefEq.respectTransparency false in
 lemma mul_left {F : (X → U) → (X → ℝ)} {ψ : X → ℝ} {F' : (X → ℝ) → (X → U)}
     (hF : HasVarAdjoint F F') (hψ : ContDiff ℝ ∞ ψ) :
     HasVarAdjoint (fun φ x => ψ x * F φ x) (fun φ x => F' (fun x => ψ x * φ x) x) where
@@ -341,6 +342,7 @@ lemma mul_left {F : (X → U) → (X → ℝ)} {ψ : X → ℝ} {F' : (X → ℝ
     exact ⟨L,cL,by intro _ _ hφ _ _; apply h <;> simp_all⟩
   -- ext := IsLocalizedFunctionTransform.mul_left hF.ext
 
+set_option backward.isDefEq.respectTransparency false in
 lemma mul_right {F : (X → U) → (X → ℝ)} {ψ : X → ℝ} {F' : (X → ℝ) → (X → U)}
     (hF : HasVarAdjoint F F') (hψ : ContDiff ℝ ∞ ψ) :
     HasVarAdjoint (fun φ x => F φ x * ψ x) (fun φ x => F' (fun x => φ x * ψ x) x) where
@@ -682,6 +684,7 @@ lemma adjFDeriv_apply
             · exact real_inner_comm' (φ y) dy
   -- ext := IsLocalizedFunctionTransform.adjFDeriv
 
+set_option backward.isDefEq.respectTransparency false in
 protected lemma gradient {d} :
     HasVarAdjoint (fun φ : Space d → ℝ => gradient φ)
     (fun φ x => - Space.div (Space.basis.repr ∘ φ) x) := by
@@ -700,6 +703,7 @@ protected lemma gradient {d} :
     rw [gradient_eq_adjFDeriv]
     apply hφ.differentiable x
 
+set_option backward.isDefEq.respectTransparency false in
 lemma grad {d} : HasVarAdjoint (fun (φ : Space d → ℝ) x => Space.grad φ x)
     (fun ψ x => - Space.div ψ x) := by
   let f : Space d → Space d →L[ℝ] EuclideanSpace ℝ (Fin d) := fun x =>
@@ -727,6 +731,7 @@ lemma div {d} : HasVarAdjoint (fun (φ : Space d → EuclideanSpace ℝ (Fin d))
   simp only [neg_neg]
   exact IsLocalizedFunctionTransform.grad
 
+set_option backward.isDefEq.respectTransparency false in
 lemma prod
     [IsFiniteMeasureOnCompacts (@volume X _)] [OpensMeasurableSpace X]
     {F : (X → U) → (X → V)} {G : (X → U) → (X → W)} {F' G'}
@@ -771,6 +776,7 @@ lemma prod
       rw[hF,hG] <;> simp_all
   -- ext := IsLocalizedFunctionTransform.prod hF.ext hG.ext
 
+set_option backward.isDefEq.respectTransparency false in
 lemma fst {F'} {F : (X → U) → (X → W×V)}
     (hF : HasVarAdjoint F F') :
     HasVarAdjoint
@@ -796,6 +802,7 @@ lemma fst {F'} {F : (X → U) → (X → W×V)}
       rw[hF] <;> simp_all
   -- ext := IsLocalizedFunctionTransform.fst hF.ext
 
+set_option backward.isDefEq.respectTransparency false in
 lemma snd {F'} {F : (X → U) → (X → W×V)}
     (hF : HasVarAdjoint F F') :
     HasVarAdjoint

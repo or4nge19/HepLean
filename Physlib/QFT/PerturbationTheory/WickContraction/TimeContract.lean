@@ -49,6 +49,7 @@ lemma timeContract_insert_none (φ : 𝓕.FieldOp) (φs : List 𝓕.FieldOp)
   ext a
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a list `φs = φ₀…φₙ` of `𝓕.FieldOp`, a Wick contraction `φsΛ` of `φs`, an element `φ` of
   `𝓕.FieldOp`, a `i ≤ φs.length` and a `k` in `φsΛ.uncontracted`, then
   `(φsΛ ↩Λ φ i (some k)).timeContract` is equal to the product of
@@ -75,6 +76,7 @@ lemma timeContract_insertAndContract_some
     ext a
     simp
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma timeContract_empty (φs : List 𝓕.FieldOp) :
     (@empty φs.length).timeContract = 1 := by
@@ -83,6 +85,7 @@ lemma timeContract_empty (φs : List 𝓕.FieldOp) :
 
 open FieldStatistic
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a list `φs = φ₀…φₙ` of `𝓕.FieldOp`, a Wick contraction `φsΛ` of `φs`, an element `φ` of
   `𝓕.FieldOp`, a `i ≤ φs.length` and a `k` in `φsΛ.uncontracted` such that `i ≤ k`, with the
   condition that `φ` has greater or equal time to `φs[k]`, then
@@ -127,6 +130,7 @@ lemma timeContract_insert_some_of_lt
     simp only [exchangeSign_mul_self]
     · exact ht
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a list `φs = φ₀…φₙ` of `𝓕.FieldOp`, a Wick contraction `φsΛ` of `φs`, an element `φ` of
   `𝓕.FieldOp`, a `i ≤ φs.length` and a `k` in `φsΛ.uncontracted` such that `k < i`, with the
   condition that `φs[k]` does not have time greater or equal to `φ`, then
@@ -190,6 +194,7 @@ lemma timeContract_insert_some_of_not_lt
   simp_all only [Fin.getElem_fin, Nat.succ_eq_add_one, not_lt, false_or]
   exact ht
 
+set_option backward.isDefEq.respectTransparency false in
 lemma timeContract_of_not_gradingCompliant (φs : List 𝓕.FieldOp)
     (φsΛ : WickContraction φs.length) (h : ¬ GradingCompliant φs φsΛ) :
     φsΛ.timeContract = 0 := by

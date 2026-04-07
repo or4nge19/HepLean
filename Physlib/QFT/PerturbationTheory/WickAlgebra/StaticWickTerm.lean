@@ -35,6 +35,7 @@ noncomputable section
 def staticWickTerm {φs : List 𝓕.FieldOp} (φsΛ : WickContraction φs.length) : 𝓕.WickAlgebra :=
   φsΛ.sign • φsΛ.staticContract * 𝓝(ofFieldOpList [φsΛ]ᵘᶜ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For the empty list `[]` of `𝓕.FieldOp`, the `staticWickTerm` of the Wick contraction
   corresponding to the empty set `∅` (the only Wick contraction of `[]`) is `1`. -/
 @[simp]
@@ -62,6 +63,7 @@ lemma staticWickTerm_insert_zero_none (φ : 𝓕.FieldOp) (φs : List 𝓕.Field
   simp only [staticContract_insert_none, insertAndContract_uncontractedList_none_zero,
     Algebra.smul_mul_assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a list `φs = φ₀…φₙ` of `𝓕.FieldOp`, a Wick contraction `φsΛ` of `φs`, an element `φ` of
   `𝓕.FieldOp`, and a `k` in `φsΛ.uncontracted`, `(φsΛ ↩Λ φ 0 (some k)).wickTerm` is equal
   to the product of
@@ -116,6 +118,7 @@ lemma staticWickTerm_insert_zero_some (φ : 𝓕.FieldOp) (φs : List 𝓕.Field
       rw [h1]
       simp
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 For a list `φs = φ₀…φₙ` of `𝓕.FieldOp`, a Wick contraction `φsΛ` of `φs`, the following relation
 holds

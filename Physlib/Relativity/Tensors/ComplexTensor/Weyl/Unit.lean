@@ -30,6 +30,7 @@ open CategoryTheory.MonoidalCategory
 def leftAltLeftUnitVal : (leftHanded ⊗ altLeftHanded).V :=
   leftAltLeftToMatrix.symm 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `leftAltLeftUnitVal` into the basis. -/
 lemma leftAltLeftUnitVal_expand_tmul : leftAltLeftUnitVal =
     leftBasis 0 ⊗ₜ[ℂ] altLeftBasis 0 + leftBasis 1 ⊗ₜ[ℂ] altLeftBasis 1 := by
@@ -38,6 +39,7 @@ lemma leftAltLeftUnitVal_expand_tmul : leftAltLeftUnitVal =
   simp only [Fin.sum_univ_two, Fin.isValue, one_apply_eq, one_smul, ne_eq, zero_ne_one,
     not_false_eq_true, one_apply_ne, zero_smul, add_zero, one_ne_zero, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left-alt-left unit `δᵃₐ` as a morphism `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ leftHanded ⊗ altLeftHanded `,
   manifesting the invariance under the `SL(2,ℂ)` action. -/
 def leftAltLeftUnit : 𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ leftHanded ⊗ altLeftHanded where
@@ -71,6 +73,7 @@ lemma leftAltLeftUnit_apply_one : leftAltLeftUnit.hom (1 : ℂ) = leftAltLeftUni
 def altLeftLeftUnitVal : (altLeftHanded ⊗ leftHanded).V :=
   altLeftLeftToMatrix.symm 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `altLeftLeftUnitVal` into the basis. -/
 lemma altLeftLeftUnitVal_expand_tmul : altLeftLeftUnitVal =
     altLeftBasis 0 ⊗ₜ[ℂ] leftBasis 0 + altLeftBasis 1 ⊗ₜ[ℂ] leftBasis 1 := by
@@ -79,6 +82,7 @@ lemma altLeftLeftUnitVal_expand_tmul : altLeftLeftUnitVal =
   simp only [Fin.sum_univ_two, Fin.isValue, one_apply_eq, one_smul, ne_eq, zero_ne_one,
     not_false_eq_true, one_apply_ne, zero_smul, add_zero, one_ne_zero, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The alt-left-left unit `δₐᵃ` as a morphism `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ altLeftHanded ⊗ leftHanded `,
   manifesting the invariance under the `SL(2,ℂ)` action. -/
 def altLeftLeftUnit : 𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ altLeftHanded ⊗ leftHanded where
@@ -115,6 +119,7 @@ lemma altLeftLeftUnit_apply_one : altLeftLeftUnit.hom (1 : ℂ) = altLeftLeftUni
 def rightAltRightUnitVal : (rightHanded ⊗ altRightHanded).V :=
   rightAltRightToMatrix.symm 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `rightAltRightUnitVal` into the basis. -/
 lemma rightAltRightUnitVal_expand_tmul : rightAltRightUnitVal =
     rightBasis 0 ⊗ₜ[ℂ] altRightBasis 0 + rightBasis 1 ⊗ₜ[ℂ] altRightBasis 1 := by
@@ -123,6 +128,7 @@ lemma rightAltRightUnitVal_expand_tmul : rightAltRightUnitVal =
   simp only [Fin.sum_univ_two, Fin.isValue, one_apply_eq, one_smul, ne_eq, zero_ne_one,
     not_false_eq_true, one_apply_ne, zero_smul, add_zero, one_ne_zero, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right-alt-right unit `δ^{dot a}_{dot a}` as a morphism
   `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ rightHanded ⊗ altRightHanded`, manifesting
   the invariance under the `SL(2,ℂ)` action. -/
@@ -164,6 +170,7 @@ lemma rightAltRightUnit_apply_one : rightAltRightUnit.hom (1 : ℂ) = rightAltRi
 def altRightRightUnitVal : (altRightHanded ⊗ rightHanded).V :=
   altRightRightToMatrix.symm 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `altRightRightUnitVal` into the basis. -/
 lemma altRightRightUnitVal_expand_tmul : altRightRightUnitVal =
     altRightBasis 0 ⊗ₜ[ℂ] rightBasis 0 + altRightBasis 1 ⊗ₜ[ℂ] rightBasis 1 := by
@@ -172,6 +179,7 @@ lemma altRightRightUnitVal_expand_tmul : altRightRightUnitVal =
   simp only [Fin.sum_univ_two, Fin.isValue, one_apply_eq, one_smul, ne_eq, zero_ne_one,
     not_false_eq_true, one_apply_ne, zero_smul, add_zero, one_ne_zero, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The alt-right-right unit `δ_{dot a}^{dot a}` as a morphism
   `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ altRightHanded ⊗ rightHanded`, manifesting
   the invariance under the `SL(2,ℂ)` action. -/
@@ -212,6 +220,7 @@ lemma altRightRightUnit_apply_one : altRightRightUnit.hom (1 : ℂ) = altRightRi
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `altLeftLeftUnit` does nothing. -/
 lemma contr_altLeftLeftUnit (x : leftHanded) :
     (λ_ leftHanded).hom.hom
@@ -236,6 +245,7 @@ lemma contr_altLeftLeftUnit (x : leftHanded) :
   erw [TensorProduct.lid_tmul, TensorProduct.lid_tmul]
   simp only [Fin.isValue, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `leftAltLeftUnit` does nothing. -/
 lemma contr_leftAltLeftUnit (x : altLeftHanded) :
     (λ_ altLeftHanded).hom.hom
@@ -260,6 +270,7 @@ lemma contr_leftAltLeftUnit (x : altLeftHanded) :
   erw [TensorProduct.lid_tmul, TensorProduct.lid_tmul]
   simp only [Fin.isValue, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `altRightRightUnit` does nothing. -/
 lemma contr_altRightRightUnit (x : rightHanded) :
     (λ_ rightHanded).hom.hom
@@ -284,6 +295,7 @@ lemma contr_altRightRightUnit (x : rightHanded) :
   erw [TensorProduct.lid_tmul, TensorProduct.lid_tmul]
   simp only [Fin.isValue, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `rightAltRightUnit` does nothing. -/
 lemma contr_rightAltRightUnit (x : altRightHanded) :
     (λ_ altRightHanded).hom.hom

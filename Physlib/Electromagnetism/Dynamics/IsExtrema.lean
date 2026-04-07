@@ -131,6 +131,7 @@ $$\frac{1}{\mu_0} \partial_\mu F^{\mu \nu} - J^{\nu} = 0.$$
 
 attribute [-simp] Nat.reduceAdd Nat.reduceSucc Fin.isValue
 
+set_option backward.isDefEq.respectTransparency false in
 lemma isExtrema_iff_tensors {𝓕 : FreeSpace}
     (A : ElectromagneticPotential d)
     (hA : ContDiff ℝ ∞ A) (J : LorentzCurrentDensity d) (hJ : ContDiff ℝ ∞ J) :
@@ -178,6 +179,7 @@ the speed with which an electromagnetic wave propagates is invariant under Loren
 -/
 
 set_option maxHeartbeats 600000 in
+set_option backward.isDefEq.respectTransparency false in
 lemma isExtrema_lorentzGroup_apply_iff {𝓕 : FreeSpace}
     (A : ElectromagneticPotential d)
     (hA : ContDiff ℝ ∞ A) (J : LorentzCurrentDensity d) (hJ : ContDiff ℝ ∞ J)
@@ -197,7 +199,7 @@ lemma isExtrema_lorentzGroup_apply_iff {𝓕 : FreeSpace}
       exact hA.of_le ENat.LEInfty.out)]
     rw [smul_comm]
     rw [Tensorial.toTensor_smul, Tensorial.toTensor_smul]
-    simp only [Nat.reduceAdd, Nat.reduceSucc, Fin.isValue, one_div, map_smul, actionT_smul,
+    simp only [one_div, map_smul, actionT_smul,
       contrT_equivariant, map_neg, permT_equivariant]
     rw [smul_comm, ← Tensor.actionT_neg, ← Tensor.actionT_add]
   apply Iff.intro
@@ -205,7 +207,7 @@ lemma isExtrema_lorentzGroup_apply_iff {𝓕 : FreeSpace}
     rw [isExtrema_iff_tensors A hA J hJ]
     intro x
     apply MulAction.injective Λ
-    simp only [Nat.reduceAdd, Nat.reduceSucc, Fin.isValue, one_div, map_smul, map_neg,
+    simp only [one_div, map_smul, map_neg,
       _root_.smul_add, actionT_smul, _root_.smul_neg, _root_.smul_zero]
     simpa using h (Λ • x)
   · intro h x
@@ -616,6 +618,7 @@ Here $\mathbf{B}$ is the magnetic field matrix.
 
 -/
 open Space
+set_option backward.isDefEq.respectTransparency false in
 lemma isExtrema_iff_space_time {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d)
     (J : DistLorentzCurrentDensity d) :
@@ -720,6 +723,7 @@ holds.
 -/
 open SpaceTime minkowskiMatrix
 set_option maxHeartbeats 600000 in
+set_option backward.isDefEq.respectTransparency false in
 lemma isExterma_iff_tensor {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d)
     (J : DistLorentzCurrentDensity d) :
@@ -759,6 +763,7 @@ A natural consequence of this is that the speed of light is the same in all iner
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma isExterma_equivariant {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d)
     (J : DistLorentzCurrentDensity d) (Λ : LorentzGroup d) :

@@ -22,6 +22,7 @@ namespace Lorentz
 def preContrMetricVal (d : ℕ := 3) : (Contr d ⊗ Contr d).V :=
   contrContrToMatrixRe.symm ((@minkowskiMatrix d))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `preContrMetricVal` into basis. -/
 lemma preContrMetricVal_expand_tmul {d : ℕ} : preContrMetricVal d =
     contrBasis d (Sum.inl 0) ⊗ₜ[ℝ] contrBasis d (Sum.inl 0) -
@@ -45,6 +46,7 @@ lemma preContrMetricVal_expand_tmul {d : ℕ} : preContrMetricVal d =
     exact fun a => hb (id (Eq.symm a))
   · simp
 
+set_option backward.isDefEq.respectTransparency false in
 lemma preContrMetricVal_expand_tmul_minkowskiMatrix {d : ℕ} : preContrMetricVal d =
     ∑ i, (minkowskiMatrix i i) • (contrBasis d i ⊗ₜ[ℝ] contrBasis d i) := by
   rw [preContrMetricVal_expand_tmul]
@@ -53,6 +55,7 @@ lemma preContrMetricVal_expand_tmul_minkowskiMatrix {d : ℕ} : preContrMetricVa
     minkowskiMatrix.inr_i_inr_i, neg_smul, Finset.sum_neg_distrib]
   abel
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `ηᵃᵃ` as a morphism `𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Contr d ⊗ Contr d`,
   making its invariance under the action of `LorentzGroup d`. -/
 def preContrMetric (d : ℕ := 3) : 𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Contr d ⊗ Contr d where
@@ -89,6 +92,7 @@ lemma preContrMetric_apply_one {d : ℕ} : (preContrMetric d).hom (1 : ℝ) = pr
 def preCoMetricVal (d : ℕ := 3) : (Co d ⊗ Co d).V :=
   coCoToMatrixRe.symm ((@minkowskiMatrix d))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `preContrMetricVal` into basis. -/
 lemma preCoMetricVal_expand_tmul {d : ℕ} : preCoMetricVal d =
     coBasis d (Sum.inl 0) ⊗ₜ[ℝ] coBasis d (Sum.inl 0) -
@@ -109,6 +113,7 @@ lemma preCoMetricVal_expand_tmul {d : ℕ} : preCoMetricVal d =
     exact fun a => hb (id (Eq.symm a))
   · simp
 
+set_option backward.isDefEq.respectTransparency false in
 lemma preCoMetricVal_expand_tmul_minkowskiMatrix {d : ℕ} : preCoMetricVal d =
     ∑ i, (minkowskiMatrix i i) • (coBasis d i ⊗ₜ[ℝ] coBasis d i) := by
   rw [preCoMetricVal_expand_tmul]
@@ -117,6 +122,7 @@ lemma preCoMetricVal_expand_tmul_minkowskiMatrix {d : ℕ} : preCoMetricVal d =
     minkowskiMatrix.inr_i_inr_i, neg_smul, Finset.sum_neg_distrib]
   abel
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `ηᵢᵢ` as a morphism `𝟙_ (Rep ℂ (LorentzGroup d))) ⟶ Co d ⊗ Co d`,
   making its invariance under the action of `LorentzGroup d`. -/
 def preCoMetric (d : ℕ := 3) : 𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Co d ⊗ Co d where
@@ -152,6 +158,7 @@ lemma preCoMetric_apply_one {d : ℕ} : (preCoMetric d).hom (1 : ℝ) = preCoMet
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma contrCoContract_apply_metric {d : ℕ} : (β_ (Contr d) (Co d)).hom.hom
     (((Contr d).V ◁ (λ_ (Co d).V).hom)
     (((Contr d).V ◁ contrCoContract.hom ▷ (Co d).V)
@@ -227,6 +234,7 @@ lemma contrCoContract_apply_metric {d : ℕ} : (β_ (Contr d) (Co d)).hom.hom
   rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
   simp [LinearMap.map_add]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma coContrContract_apply_metric {d : ℕ} : (β_ (Co d) (Contr d)).hom.hom
     (((Co d).V ◁ (λ_ (Contr d).V).hom)
     (((Co d).V ◁ coContrContract.hom ▷ (Contr d).V)

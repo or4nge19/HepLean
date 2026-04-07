@@ -23,6 +23,7 @@ open TensorProduct
 open CategoryTheory.MonoidalCategory
 namespace Lorentz
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bi-linear map corresponding to contraction of a contravariant Lorentz vector with a
   covariant Lorentz vector. -/
 def contrCoContrBi : complexContr →ₗ[ℂ] complexCo →ₗ[ℂ] ℂ where
@@ -47,6 +48,7 @@ def contrCoContrBi : complexContr →ₗ[ℂ] complexCo →ₗ[ℂ] ℂ where
     rw [smul_dotProduct]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bi-linear map corresponding to contraction of a covariant Lorentz vector with a
   contravariant Lorentz vector. -/
 def contrContrCoBi : complexCo →ₗ[ℂ] complexContr →ₗ[ℂ] ℂ where

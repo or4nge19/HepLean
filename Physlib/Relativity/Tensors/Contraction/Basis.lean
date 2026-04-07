@@ -102,6 +102,7 @@ lemma ofFin_mem_dropPairEmbSection {n : ℕ} {c : Fin (n + 1 + 1) → C}
   simp only [Fin.val_cast]
   rw [Pure.dropPairEmbPre_dropPairEmb]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The equivalence between `ContrSection b` and
   `Fin (S.repDim (c i)) × Fin (S.repDim (c (i.succAbove j)))`. -/
 def ofFinEquiv {n : ℕ} {c : Fin n.succ.succ → C}
@@ -143,6 +144,7 @@ end DropPairSection
 end ComponentIdx
 open ComponentIdx
 
+set_option backward.isDefEq.respectTransparency false in
 lemma Pure.dropPair_basisVector {n : ℕ} {c : Fin (n + 1 + 1) → C}
     {i j : Fin (n + 1 + 1)} (hij : i ≠ j) (b : ComponentIdx c) :
     Pure.dropPair i j hij (basisVector c b) =
@@ -150,6 +152,7 @@ lemma Pure.dropPair_basisVector {n : ℕ} {c : Fin (n + 1 + 1) → C}
   funext l
   simp [dropPair, basisVector]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma contrT_basis_repr_apply {n : ℕ} {c : Fin (n + 1 + 1) → C} {i j : Fin (n + 1 + 1)}
     (h : i ≠ j ∧ S.τ (c i) = c j) (t : Tensor S c)
     (b : ComponentIdx (c ∘ Pure.dropPairEmb i j)) :
@@ -209,6 +212,7 @@ lemma contrT_basis_repr_apply {n : ℕ} {c : Fin (n + 1 + 1) → C} {i j : Fin (
     funext x
     rw [← add_mul]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma contrT_basis_repr_apply_eq_sum_fin {n : ℕ} {c : Fin (n + 1 + 1) → C} {i j : Fin (n + 1 + 1)}
     (h : i ≠ j ∧ S.τ (c i) = c j) (t : Tensor S c)
     (b : ComponentIdx (c ∘ Pure.dropPairEmb i j)) :

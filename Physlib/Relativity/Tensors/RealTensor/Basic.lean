@@ -183,6 +183,7 @@ lemma τ_down_eq_up {d : ℕ} : (realLorentzTensor d).τ Color.down = Color.up :
 
 open TensorSpecies
 
+set_option backward.isDefEq.respectTransparency false in
 lemma contr_basis {d : ℕ} {c : realLorentzTensor.Color}
     (i : Fin ((realLorentzTensor d).repDim c))
     (j : Fin ((realLorentzTensor d).repDim ((realLorentzTensor d).τ c))) :

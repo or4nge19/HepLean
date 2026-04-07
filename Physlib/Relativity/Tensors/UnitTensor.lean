@@ -41,10 +41,10 @@ lemma unit_app_eq_dual_unit_app (c : C) :
   ext
   change (ConcreteCategory.hom (S.unit.app { as := c }).hom) (1 : k) = _
   rw [S.unit_symm c]
-  simp only [Action.β_hom_hom, Monoidal.tensorUnit_obj, Action.comp_hom, ModuleCat.hom_comp,
-    LinearMap.coe_comp, Function.comp_apply]
+  simp only [Action.β_hom_hom, Monoidal.tensorUnit_obj, Action.comp_hom]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The unit tensor is symmetric on dualing the color. -/
 lemma unitTensor_eq_permT_dual (c : C) :
     S.unitTensor c = permT ![1, 0] (And.intro (by decide) (fun i => by fin_cases i <;> simp))
@@ -81,6 +81,7 @@ lemma contrT_single_unitTensor {c : C} (x : Tensor S ![c]) :
   rw [← unit_fromSingleTContrFromPairT_eq_fromSingleT x]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma contrT_unitTensor_dual_single {c : C} (x : Tensor S ![S.τ c]) :
     contrT 1 1 2 (by simp; rfl) (prodT (unitTensor c) x) =
     permT id (by simp; rfl) x := by

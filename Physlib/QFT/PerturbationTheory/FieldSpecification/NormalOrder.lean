@@ -334,6 +334,7 @@ lemma sum_normalOrderList_length {M : Type} [AddCommMonoid M]
     ∑ (n : Fin (normalOrderList φs).length), f n = ∑ (n : Fin φs.length), f (normalOrderEquiv n) :=
   Eq.symm (Equiv.sum_comp normalOrderEquiv f)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma normalOrderList_get_normalOrderEquiv {φs : List 𝓕.CrAnFieldOp} (n : Fin φs.length) :
     (normalOrderList φs)[(normalOrderEquiv n).val] = φs[n.val] := by
@@ -342,6 +343,7 @@ lemma normalOrderList_get_normalOrderEquiv {φs : List 𝓕.CrAnFieldOp} (n : Fi
   erw [← Physlib.List.insertionSortEquiv_get]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma normalOrderList_eraseIdx_normalOrderEquiv {φs : List 𝓕.CrAnFieldOp} (n : Fin φs.length) :
     (normalOrderList φs).eraseIdx (normalOrderEquiv n).val =

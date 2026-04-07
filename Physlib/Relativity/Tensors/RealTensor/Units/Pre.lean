@@ -23,6 +23,7 @@ namespace Lorentz
 def preContrCoUnitVal (d : ℕ := 3) : (Contr d ⊗ Co d).V :=
   contrCoToMatrixRe.symm 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `preContrCoUnitVal` into basis. -/
 lemma preContrCoUnitVal_expand_tmul {d : ℕ} : preContrCoUnitVal d =
     ∑ i, contrBasis d i ⊗ₜ[ℝ] coBasis d i := by
@@ -42,6 +43,7 @@ lemma preContrCoUnitVal_expand_tmul {d : ℕ} : preContrCoUnitVal d =
     simp [hb]
   · simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The contra-co unit for complex lorentz vectors as a morphism
   `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ complexCo`, manifesting the invariance under
   the `SL(2, ℂ)` action. -/
@@ -78,6 +80,7 @@ lemma preContrCoUnit_apply_one {d : ℕ} : (preContrCoUnit d).hom (1 : ℝ) = pr
 def preCoContrUnitVal (d : ℕ := 3) : (Co d ⊗ Contr d).V :=
   coContrToMatrixRe.symm 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `preCoContrUnitVal` into basis. -/
 lemma preCoContrUnitVal_expand_tmul {d : ℕ} : preCoContrUnitVal d =
     ∑ i, coBasis d i ⊗ₜ[ℝ] contrBasis d i := by
@@ -97,6 +100,7 @@ lemma preCoContrUnitVal_expand_tmul {d : ℕ} : preCoContrUnitVal d =
     simp [hb]
   · simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The co-contra unit for complex lorentz vectors as a morphism
   `𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Co d ⊗ Contr d`, manifesting the invariance under
   the `LorentzGroup d` action. -/
@@ -136,8 +140,8 @@ lemma preCoContrUnit_apply_one {d : ℕ} : (preCoContrUnit d).hom (1 : ℝ) = pr
 ## Contraction of the units
 
 -/
-example (f : ℝ →ₗ[ℝ] ℝ )  (g : Fin d → ℝ) : f (∑ i, g i) = ∑ i, f (g i) := by
-  exact map_sum f g Finset.univ
+
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `contrCoUnit` does nothing. -/
 lemma contr_preContrCoUnit {d : ℕ} (x : Co d) :
     (λ_ (Co d)).hom.hom ((coContrContract ▷ (Co d)).hom
@@ -168,6 +172,7 @@ lemma contr_preContrCoUnit {d : ℕ} (x : Co d) :
   rw [map_sum]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `coContrUnit`. -/
 lemma contr_preCoContrUnit {d : ℕ} (x : (Contr d)) :
     (λ_ (Contr d)).hom.hom ((contrCoContract ▷ (Contr d)).hom
@@ -207,6 +212,7 @@ lemma contr_preCoContrUnit {d : ℕ} (x : (Contr d)) :
 
 open CategoryTheory
 
+set_option backward.isDefEq.respectTransparency false in
 lemma preContrCoUnit_symm {d : ℕ} :
     ((preContrCoUnit d).hom (1 : ℝ)) = ((Contr d) ◁ 𝟙 _).hom ((β_ (Co d) (Contr d)).hom.hom
     ((preCoContrUnit d).hom (1 : ℝ))) := by
@@ -214,6 +220,7 @@ lemma preContrCoUnit_symm {d : ℕ} :
   rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
   simp [LinearMap.map_add]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma preCoContrUnit_symm {d : ℕ} :
     ((preCoContrUnit d).hom (1 : ℝ)) = ((Co d) ◁ 𝟙 _).hom ((β_ (Contr d) (Co d)).hom.hom
     ((preContrCoUnit d).hom (1 : ℝ))) := by

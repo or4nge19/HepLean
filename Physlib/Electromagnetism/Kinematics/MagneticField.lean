@@ -603,6 +603,7 @@ open minkowskiMatrix SchwartzMap Lorentz
 attribute [-simp] Fintype.sum_sum_type
 attribute [-simp] Nat.succ_eq_add_one
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The magnetic field matrix of an electromagnetic potential which is a distribution. -/
 noncomputable def magneticFieldMatrix {d} (c : SpeedOfLight) :
     DistElectromagneticPotential d →ₗ[ℝ]
@@ -624,6 +625,7 @@ noncomputable def magneticFieldMatrix {d} (c : SpeedOfLight) :
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma magneticFieldMatrix_eq_vectorPotential {c : SpeedOfLight}
     (A : DistElectromagneticPotential d)
     (ε : 𝓢(Time × Space d, ℝ)) :
@@ -667,6 +669,7 @@ lemma magneticFieldMatrix_distSpaceDeriv_basis_repr_eq_vector_potential {c : Spe
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma magneticFieldMatrix_basis_repr_eq_fieldStrength {c : SpeedOfLight}
     (A : DistElectromagneticPotential d)
     (ε : 𝓢(Time × Space d, ℝ)) (i j : Fin d) :

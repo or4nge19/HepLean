@@ -281,6 +281,7 @@ lemma fermionicProjF_mem_fieldOpIdealSet_or_zero (x : FieldOpFreeAlgebra 𝓕)
 TODO "7ERJ3" "The lemma `bosonicProjF_mem_ideal` has a proof which is really long.
   We should either 1) split it up into smaller lemmas or 2) Put more comments into the proof."
 
+set_option backward.isDefEq.respectTransparency false in
 lemma bosonicProjF_mem_ideal (x : FieldOpFreeAlgebra 𝓕)
     (hx : x ∈ TwoSidedIdeal.span 𝓕.fieldOpIdealSet) :
     x.bosonicProjF.1 ∈ TwoSidedIdeal.span 𝓕.fieldOpIdealSet := by

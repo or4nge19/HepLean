@@ -326,6 +326,7 @@ lemma timeOrderF_eq_maxTimeField_mul (φ : 𝓕.FieldOp) (φs : List 𝓕.FieldO
   rw [timerOrderSign_of_eraseMaxTimeField, mul_assoc]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In the state algebra time, ordering obeys `T(φ₀φ₁…φₙ) = s * φᵢ * T(φ₀φ₁…φᵢ₋₁φᵢ₊₁…φₙ)`
   where `φᵢ` is the state
   which has maximum time and `s` is the exchange sign of `φᵢ` and `φ₀φ₁…φᵢ₋₁`.

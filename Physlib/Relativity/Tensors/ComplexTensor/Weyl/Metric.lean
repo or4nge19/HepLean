@@ -73,6 +73,7 @@ lemma metricRaw_comm_star (M : SL(2,ℂ)) : metricRaw * M.1.map star = ((M.1)⁻
 def leftMetricVal : (leftHanded ⊗ leftHanded).V :=
   leftLeftToMatrix.symm (- metricRaw)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `leftMetricVal` into the left basis. -/
 lemma leftMetricVal_expand_tmul : leftMetricVal =
     - leftBasis 0 ⊗ₜ[ℂ] leftBasis 1 + leftBasis 1 ⊗ₜ[ℂ] leftBasis 0 := by
@@ -82,6 +83,7 @@ lemma leftMetricVal_expand_tmul : leftMetricVal =
     Finset.sum_neg_distrib, Fin.sum_univ_two, Fin.isValue, cons_val_zero, cons_val_one, neg_add_rev,
     one_smul, zero_smul, neg_zero, add_zero, neg_neg, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `εᵃᵃ` as a morphism `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ leftHanded ⊗ leftHanded`,
   making manifest its invariance under the action of `SL(2,ℂ)`. -/
 def leftMetric : 𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ leftHanded ⊗ leftHanded where
@@ -117,6 +119,7 @@ lemma leftMetric_apply_one : leftMetric.hom (1 : ℂ) = leftMetricVal := by
 def altLeftMetricVal : (altLeftHanded ⊗ altLeftHanded).V :=
   altLeftaltLeftToMatrix.symm metricRaw
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `altLeftMetricVal` into the left basis. -/
 lemma altLeftMetricVal_expand_tmul : altLeftMetricVal =
     altLeftBasis 0 ⊗ₜ[ℂ] altLeftBasis 1 - altLeftBasis 1 ⊗ₜ[ℂ] altLeftBasis 0 := by
@@ -126,6 +129,7 @@ lemma altLeftMetricVal_expand_tmul : altLeftMetricVal =
     Fin.isValue, cons_val_zero, cons_val_one, zero_smul, one_smul, zero_add, neg_smul, add_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `εₐₐ` as a morphism `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ altLeftHanded ⊗ altLeftHanded`,
   making manifest its invariance under the action of `SL(2,ℂ)`. -/
 def altLeftMetric : 𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ altLeftHanded ⊗ altLeftHanded where
@@ -161,6 +165,7 @@ lemma altLeftMetric_apply_one : altLeftMetric.hom (1 : ℂ) = altLeftMetricVal :
 def rightMetricVal : (rightHanded ⊗ rightHanded).V :=
   rightRightToMatrix.symm (- metricRaw)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `rightMetricVal` into the left basis. -/
 lemma rightMetricVal_expand_tmul : rightMetricVal =
     - rightBasis 0 ⊗ₜ[ℂ] rightBasis 1 + rightBasis 1 ⊗ₜ[ℂ] rightBasis 0 := by
@@ -170,6 +175,7 @@ lemma rightMetricVal_expand_tmul : rightMetricVal =
     Finset.sum_neg_distrib, Fin.sum_univ_two, Fin.isValue, cons_val_zero, cons_val_one, neg_add_rev,
     one_smul, zero_smul, neg_zero, add_zero, neg_neg, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `ε^{dot a}^{dot a}` as a morphism `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ rightHanded ⊗ rightHanded`,
   making manifest its invariance under the action of `SL(2,ℂ)`. -/
 def rightMetric : 𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ rightHanded ⊗ rightHanded where
@@ -212,6 +218,7 @@ lemma rightMetric_apply_one : rightMetric.hom (1 : ℂ) = rightMetricVal := by
 def altRightMetricVal : (altRightHanded ⊗ altRightHanded).V :=
   altRightAltRightToMatrix.symm (metricRaw)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expansion of `rightMetricVal` into the left basis. -/
 lemma altRightMetricVal_expand_tmul : altRightMetricVal =
     altRightBasis 0 ⊗ₜ[ℂ] altRightBasis 1 - altRightBasis 1 ⊗ₜ[ℂ] altRightBasis 0 := by
@@ -221,6 +228,7 @@ lemma altRightMetricVal_expand_tmul : altRightMetricVal =
     Fin.isValue, cons_val_zero, cons_val_one, zero_smul, one_smul, zero_add, neg_smul, add_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `ε_{dot a}_{dot a}` as a morphism
   `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ altRightHanded ⊗ altRightHanded`,
   making manifest its invariance under the action of `SL(2,ℂ)`. -/
@@ -268,6 +276,7 @@ lemma altRightMetric_apply_one : altRightMetric.hom (1 : ℂ) = altRightMetricVa
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma leftAltContraction_apply_metric : (β_ leftHanded altLeftHanded).hom.hom
     ((leftHanded.V ◁ (λ_ altLeftHanded.V).hom)
     ((leftHanded.V ◁ leftAltContraction.hom ▷ altLeftHanded.V)
@@ -294,6 +303,7 @@ lemma leftAltContraction_apply_metric : (β_ leftHanded altLeftHanded).hom.hom
   rw [add_comm]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma altLeftContraction_apply_metric : (β_ altLeftHanded leftHanded).hom.hom
     ((altLeftHanded.V ◁ (λ_ leftHanded.V).hom)
     ((altLeftHanded.V ◁ altLeftContraction.hom ▷ leftHanded.V)
@@ -320,6 +330,7 @@ lemma altLeftContraction_apply_metric : (β_ altLeftHanded leftHanded).hom.hom
   rw [add_comm]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma rightAltContraction_apply_metric : (β_ rightHanded altRightHanded).hom.hom
     ((rightHanded.V ◁ (λ_ altRightHanded.V).hom)
     ((rightHanded.V ◁ rightAltContraction.hom ▷ altRightHanded.V)
@@ -346,6 +357,7 @@ lemma rightAltContraction_apply_metric : (β_ rightHanded altRightHanded).hom.ho
   rw [add_comm]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma altRightContraction_apply_metric : (β_ altRightHanded rightHanded).hom.hom
     ((altRightHanded.V ◁ (λ_ rightHanded.V).hom)
     ((altRightHanded.V ◁ altRightContraction.hom ▷ rightHanded.V)

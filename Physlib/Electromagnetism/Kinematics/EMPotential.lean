@@ -123,6 +123,7 @@ Under a Lorentz transformation `Λ`, this transforms as
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma spaceTime_deriv_action_eq_sum {d} {μ ν : Fin 1 ⊕ Fin d} {x : SpaceTime d}
     (Λ : LorentzGroup d) (A : ElectromagneticPotential d) (hA : Differentiable ℝ A) :
     ∂_ μ (fun x => Λ • A (Λ⁻¹ • x)) x ν =
@@ -209,6 +210,7 @@ and derive the equations of motion.
 -/
 
 open ContDiff
+set_option backward.isDefEq.respectTransparency false in
 lemma hasVarAdjDerivAt_component {d : ℕ} (μ : Fin 1 ⊕ Fin d) (A : SpaceTime d → Lorentz.Vector d)
     (hA : ContDiff ℝ ∞ A) :
         HasVarAdjDerivAt (fun (A' : SpaceTime d → Lorentz.Vector d) x => A' x μ)
@@ -417,10 +419,12 @@ attribute [-simp] Nat.succ_eq_add_one
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The derivative of a electromagnetic potential, which is a distribution. -/
 noncomputable def deriv {d} : DistElectromagneticPotential d →ₗ[ℝ]
     (SpaceTime d) →d[ℝ] Lorentz.CoVector d ⊗[ℝ] Lorentz.Vector d := distTensorDeriv
 
+set_option backward.isDefEq.respectTransparency false in
 lemma deriv_eq_sum_sum {d} (A : DistElectromagneticPotential d)
     (ε : 𝓢(SpaceTime d, ℝ)) :
     deriv A ε =∑ μ, ∑ ν, (SpaceTime.distDeriv μ A ε ν) •
@@ -490,6 +494,7 @@ lemma toTensor_deriv_basis_repr_apply {d} (A : DistElectromagneticPotential d)
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma deriv_equivariant {d} {A : DistElectromagneticPotential d}
     (Λ : LorentzGroup d) : deriv (Λ • A) = Λ • deriv A := by
   rw [deriv, distTensorDeriv_equivariant]

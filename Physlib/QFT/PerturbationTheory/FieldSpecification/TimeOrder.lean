@@ -432,6 +432,7 @@ def crAnSectionTimeOrder (φs : List 𝓕.FieldOp) (ψs : CrAnSection φs) :
     CrAnSection (timeOrderList φs) :=
   ⟨crAnTimeOrderList ψs.1, crAnTimeOrderList_crAnSection_is_crAnSection ψs⟩
 
+set_option backward.isDefEq.respectTransparency false in
 lemma orderedInsert_crAnTimeOrderRel_injective {ψ ψ' : 𝓕.CrAnFieldOp} (h : ψ.1 = ψ'.1) :
     {φs : List 𝓕.FieldOp} → (ψs ψs' : 𝓕.CrAnSection φs) →
     (ho : List.orderedInsert crAnTimeOrderRel ψ ψs.1 =
@@ -469,6 +470,7 @@ lemma orderedInsert_crAnTimeOrderRel_injective {ψ ψ' : 𝓕.CrAnFieldOp} (h : 
         rw [Subtype.ext_iff] at ih'
         exact ih'.2
 
+set_option backward.isDefEq.respectTransparency false in
 lemma crAnSectionTimeOrder_injective : {φs : List 𝓕.FieldOp} →
     Function.Injective (𝓕.crAnSectionTimeOrder φs)
   | [], ⟨[], _⟩, ⟨[], _⟩ => by

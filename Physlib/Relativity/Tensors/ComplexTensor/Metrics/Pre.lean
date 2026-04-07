@@ -26,6 +26,7 @@ namespace Lorentz
 def contrMetricVal : (complexContr ⊗ complexContr).V :=
   contrContrToMatrix.symm ((@minkowskiMatrix 3).map ofRealHom)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The expansion of `contrMetricVal` into basis vectors. -/
 lemma contrMetricVal_expand_tmul : contrMetricVal =
     complexContrBasis (Sum.inl 0) ⊗ₜ[ℂ] complexContrBasis (Sum.inl 0)
@@ -43,6 +44,7 @@ lemma contrMetricVal_expand_tmul : contrMetricVal =
   simp only [Fin.isValue, one_smul, neg_smul]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `ηᵃᵃ` as a morphism `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ complexContr`,
   making its invariance under the action of `SL(2,ℂ)`. -/
 def contrMetric : 𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ complexContr where
@@ -76,6 +78,7 @@ lemma contrMetric_apply_one : contrMetric.hom (1 : ℂ) = contrMetricVal := by
 def coMetricVal : (complexCo ⊗ complexCo).V :=
   coCoToMatrix.symm ((@minkowskiMatrix 3).map ofRealHom)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The expansion of `coMetricVal` into basis vectors. -/
 lemma coMetricVal_expand_tmul : coMetricVal =
     complexCoBasis (Sum.inl 0) ⊗ₜ[ℂ] complexCoBasis (Sum.inl 0)
@@ -93,6 +96,7 @@ lemma coMetricVal_expand_tmul : coMetricVal =
   simp only [Fin.isValue, one_smul, neg_smul]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The metric `ηᵢᵢ` as a morphism `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexCo ⊗ complexCo`,
   making its invariance under the action of `SL(2,ℂ)`. -/
 def coMetric : 𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexCo ⊗ complexCo where
@@ -130,6 +134,7 @@ lemma coMetric_apply_one : coMetric.hom (1 : ℂ) = coMetricVal := by
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma contrCoContraction_apply_metric : (β_ complexContr complexCo).hom.hom
     ((complexContr.V ◁ (λ_ complexCo.V).hom)
     ((complexContr.V ◁ contrCoContraction.hom ▷ complexCo.V)
@@ -155,6 +160,7 @@ lemma contrCoContraction_apply_metric : (β_ complexContr complexCo).hom.hom
   rw [coContrUnit_apply_one, coContrUnitVal_expand_tmul]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma coContrContraction_apply_metric : (β_ complexCo complexContr).hom.hom
     ((complexCo.V ◁ (λ_ complexContr.V).hom)
     ((complexCo.V ◁ coContrContraction.hom ▷ complexContr.V)

@@ -29,6 +29,7 @@ namespace complexLorentzTensor
 open TensorSpecies
 open Tensor
 
+set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 450000 in
 lemma antiSymm_contr_symm {A : ℂT[.up, .up]} {S : ℂT[.down, .down]}
     (hA : {A | μ ν = - (A | ν μ)}ᵀ) (hs : {S | μ ν = S | ν μ}ᵀ) :

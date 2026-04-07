@@ -41,6 +41,7 @@ lemma contrCoUnitVal_expand_tmul : contrCoUnitVal =
     one_ne_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The contra-co unit for complex lorentz vectors as a morphism
   `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ complexCo`, manifesting the invariance under
   the `SL(2, ℂ)` action. -/
@@ -89,6 +90,7 @@ lemma coContrUnitVal_expand_tmul : coContrUnitVal =
     one_ne_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The co-contra unit for complex lorentz vectors as a morphism
   `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexCo ⊗ complexContr`, manifesting the invariance under
   the `SL(2, ℂ)` action. -/
@@ -127,6 +129,7 @@ lemma coContrUnit_apply_one : coContrUnit.hom (1 : ℂ) = coContrUnitVal := by
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `contrCoUnit` does nothing. -/
 lemma contr_contrCoUnit (x : complexCo) :
     (λ_ complexCo).hom.hom
@@ -154,6 +157,7 @@ lemma contr_contrCoUnit (x : complexCo) :
   simp only [Fin.isValue, one_smul]
   repeat rw [add_assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Contraction on the right with `coContrUnit`. -/
 lemma contr_coContrUnit (x : complexContr) :
     (λ_ complexContr).hom.hom

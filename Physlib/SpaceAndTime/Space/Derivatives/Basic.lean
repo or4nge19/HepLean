@@ -123,6 +123,7 @@ TODO "3XMN6" "Make the version of the derivative described through
   equivalence with the current definition, under suitable conditions."
 
 open Manifold in
+set_option backward.isDefEq.respectTransparency false in
 /-- The spatial-derivative in terms of the derivative of functions between
   manifolds with the manifold structure `Space.manifoldStructure d`. -/
 lemma deriv_eq_mfderiv_manifoldStructure {M d} [NormedAddCommGroup M] [NormedSpace ℝ M]
@@ -302,6 +303,7 @@ lemma deriv_euclid {d ν μ} {f : Space d → EuclideanSpace ℝ (Fin n)}
   · fun_prop
   · fun_prop
 
+set_option backward.isDefEq.respectTransparency false in
 lemma deriv_lorentz_vector {d ν μ} {f : Space d → Lorentz.Vector d}
     (hf : Differentiable ℝ f) (x : Space d) :
     deriv ν (fun x => f x μ) x = deriv ν (fun x => f x) x μ := by

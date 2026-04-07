@@ -101,6 +101,7 @@ We show that the kinetic energy is Lorentz invariant.
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma kineticTerm_equivariant {d} {𝓕 : FreeSpace} (A : ElectromagneticPotential d)
     (Λ : LorentzGroup d)
     (hf : Differentiable ℝ A) (x : SpaceTime d) :
@@ -664,7 +665,7 @@ We rewrite the variational gradient as a simple double sum over
 second derivatives of the potential.
 
 -/
-
+set_option backward.isDefEq.respectTransparency false in
 lemma gradKineticTerm_eq_sum_sum {d} {𝓕 : FreeSpace}
     (A : ElectromagneticPotential d) (x : SpaceTime d) (ha : ContDiff ℝ ∞ A) :
     A.gradKineticTerm 𝓕 x = ∑ (ν : (Fin 1 ⊕ Fin d)), ∑ (μ : (Fin 1 ⊕ Fin d)),
@@ -1015,6 +1016,7 @@ lemma kineticTerm_hasVarGradientAt {d} {𝓕 : FreeSpace} (A : ElectromagneticPo
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 attribute [-simp] Nat.reduceAdd Nat.reduceSucc Fin.isValue in
 lemma gradKineticTerm_eq_tensorDeriv {d} {𝓕 : FreeSpace}
     (A : ElectromagneticPotential d) (x : SpaceTime d)
@@ -1144,6 +1146,7 @@ lemma gradKineticTerm_eq_sum_sum {d} {𝓕 : FreeSpace}
         (1 / (𝓕.μ₀) * (η μ μ * η ν ν * distDeriv μ (distDeriv μ A) ε ν -
         distDeriv μ (distDeriv ν A) ε μ)) • Lorentz.Vector.basis ν := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma gradKineticTerm_eq_fieldStrength {d} {𝓕 : FreeSpace} (A : DistElectromagneticPotential d)
     (ε : 𝓢(SpaceTime d, ℝ)) :
     A.gradKineticTerm 𝓕 ε = ∑ ν, (1/𝓕.μ₀ * η ν ν) •
@@ -1165,6 +1168,7 @@ lemma gradKineticTerm_eq_fieldStrength {d} {𝓕 : FreeSpace} (A : DistElectroma
   ring_nf
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 lemma gradKineticTerm_sum_inl_eq {d} {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d) (ε : 𝓢(SpaceTime d, ℝ)) :
     A.gradKineticTerm 𝓕 ε (Sum.inl 0) =
@@ -1186,6 +1190,7 @@ lemma gradKineticTerm_sum_inl_eq {d} {𝓕 : FreeSpace}
     simp
   field_simp
 
+set_option backward.isDefEq.respectTransparency false in
 lemma gradKineticTerm_sum_inr_eq {d} {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d) (ε : 𝓢(SpaceTime d, ℝ)) (i : Fin d) :
     A.gradKineticTerm 𝓕 ε (Sum.inr i) =
@@ -1219,6 +1224,7 @@ lemma gradKineticTerm_sum_inr_eq {d} {𝓕 : FreeSpace}
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 attribute [-simp] Nat.reduceAdd Nat.reduceSucc Fin.isValue in
 lemma gradKineticTerm_eq_distTensorDeriv {d} {𝓕 : FreeSpace}
     (A : DistElectromagneticPotential d) (ε : 𝓢(SpaceTime d, ℝ)) (ν : Fin 1 ⊕ Fin d) :

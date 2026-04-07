@@ -31,6 +31,7 @@ open TensorProduct
 -/
 open CategoryTheory.MonoidalCategory
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bi-linear map corresponding to contraction of a left-handed Weyl fermion with a
   alt-left-handed Weyl fermion. -/
 def leftAltBi : leftHanded →ₗ[ℂ] altLeftHanded →ₗ[ℂ] ℂ where
@@ -55,6 +56,7 @@ def leftAltBi : leftHanded →ₗ[ℂ] altLeftHanded →ₗ[ℂ] ℂ where
     rw [smul_dotProduct]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bi-linear map corresponding to contraction of a alt-left-handed Weyl fermion with a
   left-handed Weyl fermion. -/
 def altLeftBi : altLeftHanded →ₗ[ℂ] leftHanded →ₗ[ℂ] ℂ where
@@ -78,6 +80,7 @@ def altLeftBi : altLeftHanded →ₗ[ℂ] leftHanded →ₗ[ℂ] ℂ where
     simp only [_root_.map_smul, smul_dotProduct, vec2_dotProduct, Fin.isValue, smul_eq_mul,
       LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bi-linear map corresponding to contraction of a right-handed Weyl fermion with a
   alt-right-handed Weyl fermion. -/
 def rightAltBi : rightHanded →ₗ[ℂ] altRightHanded →ₗ[ℂ] ℂ where
@@ -102,6 +105,7 @@ def rightAltBi : rightHanded →ₗ[ℂ] altRightHanded →ₗ[ℂ] ℂ where
     rw [smul_dotProduct]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bi-linear map corresponding to contraction of a alt-right-handed Weyl fermion with a
   right-handed Weyl fermion. -/
 def altRightBi : altRightHanded →ₗ[ℂ] rightHanded →ₗ[ℂ] ℂ where

@@ -63,21 +63,25 @@ variable {d : ℕ} (i j k l : Fin d) (ε : ℝˣ) (s t : ℝ)
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma leibniz_lie (A B C : 𝓢(Space d, ℂ) →L[ℂ] 𝓢(Space d, ℂ)) :
     ⁅A ∘L B, C⁆ = A ∘L ⁅B, C⁆ + ⁅A, C⁆ ∘L B := by
   dsimp only [Bracket.bracket]
   simp only [ContinuousLinearMap.mul_def, comp_assoc, comp_sub, sub_comp, sub_add_sub_cancel]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma lie_leibniz (A B C : 𝓢(Space d, ℂ) →L[ℂ] 𝓢(Space d, ℂ)) :
     ⁅A, B ∘L C⁆ = B ∘L ⁅A, C⁆ + ⁅A, B⁆ ∘L C := by
   dsimp only [Bracket.bracket]
   simp only [ContinuousLinearMap.mul_def, comp_assoc, comp_sub, sub_comp, sub_add_sub_cancel']
 
+set_option backward.isDefEq.respectTransparency false in
 lemma comp_eq_comp_add_commute (A B : 𝓢(Space d, ℂ) →L[ℂ] 𝓢(Space d, ℂ)) :
     A ∘L B = B ∘L A + ⁅A, B⁆ := by
   dsimp only [Bracket.bracket]
   simp only [ContinuousLinearMap.mul_def, add_sub_cancel]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma comp_eq_comp_sub_commute (A B : 𝓢(Space d, ℂ) →L[ℂ] 𝓢(Space d, ℂ)) :
     A ∘L B = B ∘L A - ⁅B, A⁆ := by
   dsimp only [Bracket.bracket]
@@ -95,20 +99,24 @@ lemma comp_eq_comp_sub_commute (A B : 𝓢(Space d, ℂ) →L[ℂ] 𝓢(Space d,
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Position operators commute: `[xᵢ, xⱼ] = 0`. -/
 @[simp]
 lemma position_commutation_position : ⁅𝐱[i], 𝐱[j]⁆ = 0 := by
   ext
   simp [bracket, ← mul_assoc, mul_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma position_comp_commute : 𝐱[i] ∘L 𝐱[j] = 𝐱[j] ∘L 𝐱[i] := by
   rw [comp_eq_comp_add_commute, position_commutation_position, add_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma position_commutation_radiusRegPow : ⁅𝐱[i], 𝐫[d,ε,s]⁆ = 0 := by
   ext
   simp [bracket, ← mul_assoc, mul_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma position_comp_radiusRegPow_commute : 𝐱[i] ∘L 𝐫[ε,s] = 𝐫[ε,s] ∘L 𝐱[i] := by
   rw [comp_eq_comp_add_commute, position_commutation_radiusRegPow, add_zero]
 
@@ -122,6 +130,7 @@ lemma radiusRegPow_commutation_radiusRegPow : ⁅𝐫[d,ε,s], 𝐫[d,ε,t]⁆ =
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Momentum operators commute: `[pᵢ, pⱼ] = 0`. -/
 @[simp]
 lemma momentum_commutation_momentum : ⁅𝐩[i], 𝐩[j]⁆ = 0 := by
@@ -131,6 +140,7 @@ lemma momentum_commutation_momentum : ⁅𝐩[i], 𝐩[j]⁆ = 0 := by
   simp only [momentumOperator_apply_fun, Space.deriv_const_smul _ (hdiff _),
     Space.deriv_commute _ (ψ.smooth 2), sub_self]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma momentum_comp_commute : 𝐩[i] ∘L 𝐩[j] = 𝐩[j] ∘L 𝐩[i] := by
   rw [comp_eq_comp_add_commute, momentum_commutation_momentum, add_zero]
 
@@ -138,6 +148,7 @@ lemma momentum_comp_commute : 𝐩[i] ∘L 𝐩[j] = 𝐩[j] ∘L 𝐩[i] := by
 lemma momentumSqr_commutation_momentum : ⁅momentumOperatorSqr (d := d), 𝐩[i]⁆ = 0 := by
   simp [momentumOperatorSqr, sum_lie, leibniz_lie]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma momentumSqr_comp_momentum_commute : 𝐩² ∘L 𝐩[i] = 𝐩[i] ∘L 𝐩² := by
   rw [comp_eq_comp_add_commute, momentumSqr_commutation_momentum, add_zero]
 
@@ -147,6 +158,7 @@ lemma momentumSqr_comp_momentum_commute : 𝐩² ∘L 𝐩[i] = 𝐩[i] ∘L �
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical commutation relations: `[xᵢ, pⱼ] = iℏ δᵢⱼ𝟙`. -/
 lemma position_commutation_momentum : ⁅𝐱[i], 𝐩[j]⁆ =
     (I * ℏ) • δ[i,j] • ContinuousLinearMap.id ℂ 𝓢(Space d, ℂ) := by
@@ -161,24 +173,29 @@ lemma position_commutation_momentum : ⁅𝐱[i], 𝐩[j]⁆ =
   · simp
   · simp [eq_zero_of_ne hne, hne.symm]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma momentum_comp_position_eq : 𝐩[j] ∘L 𝐱[i] =
     𝐱[i] ∘L 𝐩[j] - (I * ℏ) • δ[i,j] • ContinuousLinearMap.id ℂ 𝓢(Space d, ℂ) := by
   rw [comp_eq_comp_sub_commute, position_commutation_momentum]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma position_position_commutation_momentum : ⁅𝐱[i] ∘L 𝐱[j], 𝐩[k]⁆ =
     (I * ℏ) • (δ[i,k] • 𝐱[j] + δ[j,k] • 𝐱[i]) := by
   simp only [leibniz_lie, position_commutation_momentum, comp_smul, smul_comp, comp_id, id_comp,
     smul_add, add_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma position_commutation_momentum_momentum : ⁅𝐱[i], 𝐩[j] ∘L 𝐩[k]⁆ =
     (I * ℏ) • (δ[i,k] • 𝐩[j] + δ[i,j] • 𝐩[k]) := by
   simp only [lie_leibniz, position_commutation_momentum, comp_smul, smul_comp, comp_id, id_comp,
     smul_add]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma position_commutation_momentumSqr : ⁅𝐱[i], 𝐩²⁆ = (2 * I * ℏ) • 𝐩[i] := by
   simp only [momentumOperatorSqr, lie_sum, lie_leibniz, position_commutation_momentum, comp_smul,
     smul_comp, comp_id, id_comp, ← two_smul ℂ, smul_smul, mul_assoc, ← Finset.smul_sum, sum_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma radiusRegPow_commutation_momentum :
     ⁅𝐫[d,ε,s], 𝐩[i]⁆ = (s * I * ℏ) • 𝐫[ε,s-2] ∘L 𝐱[i] := by
   ext ψ x
@@ -200,10 +217,12 @@ lemma radiusRegPow_commutation_momentum :
   rw [Space.deriv_eq, fderiv_comp x hdiff2 hdiff3, fderiv_add_const, fderiv_norm_sq_apply]
   simp [Real.deriv_rpow_const, mul_comm, ← mul_assoc, mul_div_cancel₀ s (NeZero.ne' 2).symm]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma momentum_comp_radiusRegPow_eq :
     𝐩[i] ∘L 𝐫[ε,s] = 𝐫[ε,s] ∘L 𝐩[i] - (s * I * ℏ) • 𝐫[ε,s-2] ∘L 𝐱[i] := by
   rw [comp_eq_comp_sub_commute, radiusRegPow_commutation_momentum]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma radiusRegPow_commutation_momentumSqr :
     ⁅𝐫[d,ε,s], momentumOperatorSqr (d := d)⁆ = (2 * s * I * ℏ) • 𝐫[ε,s-2] ∘L ∑ i, 𝐱[i] ∘L 𝐩[i]
     + (s * (d + s - 2) * ℏ ^ 2) • 𝐫[ε,s-2] - (ε ^ 2 * s * (s - 2) * ℏ ^ 2) • 𝐫[ε,s-4] := by
@@ -246,6 +265,7 @@ lemma radiusRegPow_commutation_momentumSqr :
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma angularMomentum_commutation_position :
     ⁅𝐋[i,j], 𝐱[k]⁆ = (I * ℏ) • (δ[i,k] • 𝐱[j] - δ[j,k] • 𝐱[i]) := by
   trans 𝐱[i] ∘L ⁅𝐩[j], 𝐱[k]⁆ - 𝐱[j] ∘L ⁅𝐩[i], 𝐱[k]⁆
@@ -253,6 +273,7 @@ lemma angularMomentum_commutation_position :
   simp only [← lie_skew 𝐩[_] 𝐱[_], comp_neg, sub_neg_eq_add, add_comm, ← sub_eq_add_neg,
     position_commutation_momentum, comp_smul, comp_id, smul_sub, symm k _]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma angularMomentum_commutation_radiusRegPow : ⁅𝐋[i,j], 𝐫[d,ε,s]⁆ = 0 := by
   trans 𝐱[i] ∘L ⁅𝐩[j], 𝐫[ε,s]⁆ - 𝐱[j] ∘L ⁅𝐩[i], 𝐫[ε,s]⁆
@@ -260,6 +281,7 @@ lemma angularMomentum_commutation_radiusRegPow : ⁅𝐋[i,j], 𝐫[d,ε,s]⁆ =
   simp [← lie_skew 𝐩[_] 𝐫[_,_], radiusRegPow_commutation_momentum, comp_neg,
     ← position_comp_radiusRegPow_commute, ← comp_assoc, position_comp_commute]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma angularMomentumSqr_commutation_radiusRegPow :
     ⁅angularMomentumOperatorSqr (d := d), 𝐫[d,ε,s]⁆ = 0 := by
@@ -271,25 +293,30 @@ lemma angularMomentumSqr_commutation_radiusRegPow :
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma angularMomentum_commutation_momentum : ⁅𝐋[i,j], 𝐩[k]⁆ =
     (I * ℏ) • (δ[i,k] • 𝐩[j] - δ[j,k] • 𝐩[i]) := by
   trans ⁅𝐱[i], 𝐩[k]⁆ ∘L 𝐩[j] - ⁅𝐱[j], 𝐩[k]⁆ ∘L 𝐩[i]
   · simp [angularMomentumOperator, leibniz_lie]
   simp only [position_commutation_momentum, smul_comp, id_comp, smul_sub]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma momentum_comp_angularMomentum_eq : 𝐩[k] ∘L 𝐋[i,j] =
     𝐋[i,j] ∘L 𝐩[k] - (I * ℏ) • (δ[i,k] • 𝐩[j] - δ[j,k] • 𝐩[i]) := by
   rw [comp_eq_comp_sub_commute, angularMomentum_commutation_momentum]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma angularMomentum_commutation_momentumSqr : ⁅𝐋[i,j], momentumOperatorSqr (d := d)⁆ = 0 := by
   simp only [momentumOperatorSqr, lie_sum, lie_leibniz, angularMomentum_commutation_momentum,
     comp_smul, comp_sub, smul_comp, sub_comp, ← smul_add, ← Finset.smul_sum, Finset.sum_add_distrib,
     Finset.sum_sub_distrib, sum_smul, sub_add_sub_cancel, sub_self, smul_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma momentumSqr_comp_angularMomentum_commute : 𝐩² ∘L 𝐋[i,j] = 𝐋[i,j] ∘L 𝐩² := by
   rw [comp_eq_comp_sub_commute, angularMomentum_commutation_momentumSqr, sub_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma angularMomentumSqr_commutation_momentumSqr :
     ⁅angularMomentumOperatorSqr (d := d), momentumOperatorSqr (d := d)⁆ = 0 := by
@@ -301,6 +328,7 @@ lemma angularMomentumSqr_commutation_momentumSqr :
 
 -/
 
+set_option backward.isDefEq.respectTransparency false in
 lemma angularMomentum_commutation_angularMomentum : ⁅𝐋[i,j], 𝐋[k,l]⁆ =
     (I * ℏ) • (δ[i,k] • 𝐋[j,l] - δ[i,l] • 𝐋[j,k] - δ[j,k] • 𝐋[i,l] + δ[j,l] • 𝐋[i,k]) := by
   nth_rw 2 [angularMomentumOperator]
@@ -313,12 +341,14 @@ lemma angularMomentum_commutation_angularMomentum : ⁅𝐋[i,j], 𝐋[k,l]⁆ =
     SchwartzMap.add_apply, smul_eq_mul, map_comp_sub]
   ring
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma angularMomentum_comp_antisymm_sum {d : ℕ} (a b : Fin d) :
     ∑ x : Fin d, 𝐋[x,a] ∘L 𝐋[b,x] = ∑ x : Fin d, 𝐋[a,x] ∘L 𝐋[x,b] := by
   congr 1; ext x
   rw [angularMomentumOperator_antisymm x a, angularMomentumOperator_antisymm x b]
   simp only [neg_comp, comp_neg]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma angularMomentumSqr_commutation_angularMomentum {d : ℕ} (i j : Fin d) :
     ⁅angularMomentumOperatorSqr (d := d), 𝐋[i,j]⁆ = 0 := by
   unfold angularMomentumOperatorSqr

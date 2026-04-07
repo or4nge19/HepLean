@@ -208,6 +208,7 @@ lemma ofFieldOpF_eq_crPartF_add_anPartF (φ : 𝓕.FieldOp) :
 noncomputable def ofCrAnListFBasis : Basis (List 𝓕.CrAnFieldOp) ℂ (FieldOpFreeAlgebra 𝓕) where
   repr := FreeAlgebra.equivMonoidAlgebraFreeMonoid.toLinearEquiv
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma ofListBasis_eq_ofList (φs : List 𝓕.CrAnFieldOp) :
     ofCrAnListFBasis φs = ofCrAnListF φs := by
