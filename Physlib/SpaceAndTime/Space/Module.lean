@@ -221,14 +221,24 @@ lemma vadd_zero_sub_vadd_zero {d} (v1 v2 : EuclideanSpace ℝ (Fin d)) :
   ext i
   simp [sub_apply, vadd_apply]
 
-noncomputable instance {d} : SeminormedAddCommGroup (Space d) where
 
 @[simp]
 lemma dist_eq_norm {d} (p q : Space d) :
     dist p q = ‖p - q‖ := rfl
 
-noncomputable instance : NormedAddCommGroup (Space d) where
+noncomputable instance {d} : SeminormedAddCommGroup (Space d) where
+  dist_eq x y := by
+    simp [dist_eq_norm, norm_eq]
+    congr
+    funext i
+    ring
 
+noncomputable instance : NormedAddCommGroup (Space d) where
+  dist_eq x y := by
+    simp [dist_eq_norm, norm_eq]
+    congr
+    funext i
+    ring
 
 instance {d} : Inner ℝ (Space d) where
   inner p q := ∑ i, p i * q i
@@ -691,7 +701,7 @@ lemma basis_eq_mfderiv_modelDiffeo_single (d : ℕ) (μ : Fin d) (x : Space d) :
   rw [fderiv_space_components _ _ (by fun_prop)]
   simp only [vadd_apply, fderiv_add_const]
   change _ = fderiv ℝ (EuclideanSpace.proj i) (x -ᵥ Classical.choice _) (EuclideanSpace.single μ 1)
-  simp [basis_apply]
+  simp only [basis_apply, ContinuousLinearMap.fderiv, PiLp.proj_apply, PiLp.single_apply]
   congr 1
   exact Eq.propIntro (fun a => Eq.symm a) fun a => (Eq.symm a)
 

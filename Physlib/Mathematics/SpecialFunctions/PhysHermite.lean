@@ -147,7 +147,7 @@ lemma physHermite_ne_zero {n : ℕ} : physHermite n ≠ 0 := by
   refine leadingCoeff_ne_zero.mp ?_
   simp
 
-instance : CoeFun (Polynomial ℤ) (fun _ ↦ ℝ → ℝ)where
+noncomputable instance : CoeFun (Polynomial ℤ) (fun _ ↦ ℝ → ℝ)where
   coe p := fun x => p.aeval x
 
 lemma physHermite_eq_aeval (n : ℕ) (x : ℝ) :
@@ -163,7 +163,7 @@ lemma physHermite_succ_fun (n : ℕ) :
     (physHermite (n + 1) : ℝ → ℝ) = 2 • (fun x => x) *
     (physHermite n : ℝ → ℝ)- (2 * n : ℝ) • (physHermite (n - 1) : ℝ → ℝ) := by
   ext x
-  simp [physHermite_succ', aeval, mul_assoc]
+  simp [physHermite_succ', aevalEquiv, aeval, mul_assoc]
 
 set_option backward.isDefEq.respectTransparency false in
 lemma physHermite_succ_fun' (n : ℕ) :
@@ -171,7 +171,7 @@ lemma physHermite_succ_fun' (n : ℕ) :
     physHermite n x -
     (2 * n : ℝ) • physHermite (n - 1) x := by
   ext x
-  simp [physHermite_succ', aeval, mul_assoc]
+  simp [physHermite_succ', aevalEquiv, aeval, mul_assoc]
 
 lemma iterated_deriv_physHermite_eq_aeval (n : ℕ) : (m : ℕ) →
     deriv^[m] (physHermite n) = fun x => (derivative^[m] (physHermite n)).aeval x
@@ -197,7 +197,7 @@ lemma deriv_physHermite (n : ℕ) :
     deriv (physHermite n) = 2 * n * (physHermite (n - 1)) := by
   ext x
   rw [Polynomial.deriv_aeval (physHermite n), derivative_physHermite]
-  simp [aeval, mul_assoc]
+  simp [aeval, aevalEquiv, mul_assoc]
 
 set_option backward.isDefEq.respectTransparency false in
 lemma fderiv_physHermite
@@ -211,8 +211,9 @@ lemma fderiv_physHermite
   ext dx
   simp only [h, Polynomial.fderiv_aeval, derivative_physHermite, nsmul_eq_mul, map_mul, map_natCast,
     ContinuousLinearMap.coe_comp', Function.comp_apply, ContinuousLinearMap.smulRight_apply,
-    ContinuousLinearMap.one_apply, smul_eq_mul, ContinuousLinearMap.coe_smul', Pi.smul_apply]
-  rw [aeval, eval₂AlgHom'_apply, eval₂_ofNat]
+    ContinuousLinearMap.one_apply,  smul_eq_mul, ContinuousLinearMap.coe_smul', Pi.smul_apply]
+  simp only [aeval, aevalEquiv, Equiv.coe_fn_mk, eval₂AlgHom_apply, Algebra.toRingHom_ofId,
+    algebraMap_int_eq, eval₂_ofNat]
   ring
 
 @[simp]
@@ -228,7 +229,7 @@ lemma physHermite_parity: (n : ℕ) → (x : ℝ) →
     physHermite n (-x) = (-1)^n * physHermite n x
   | 0, x => by simp
   | 1, x => by
-    simp [physHermite_one, aeval]
+    simp [physHermite_one, aeval, aevalEquiv]
   | n + 2, x => by
     rw [physHermite_succ_fun']
     have h1 := physHermite_parity (n + 1) x
@@ -263,7 +264,8 @@ lemma deriv_gaussian_eq_physHermite_mul_gaussian (n : ℕ) (x : ℝ) :
       simp only [neg_mul, mul_neg, mul_one, nsmul_eq_mul, cast_ofNat]
       simp only [Polynomial.deriv_aeval, derivative_physHermite, nsmul_eq_mul, map_mul, map_natCast,
         map_sub, aeval_X]
-      simp only [aeval, eval₂AlgHom'_apply, eval₂_ofNat]
+      simp only [aeval, aevalEquiv, Equiv.coe_fn_mk, eval₂AlgHom_apply, Algebra.toRingHom_ofId,
+        algebraMap_int_eq, eval₂_ofNat]
       ring
     · exact Polynomial.differentiable_aeval ..
     · simp [DifferentiableAt.exp]
@@ -384,7 +386,7 @@ lemma integral_physHermite_mul_physHermite_eq_integral_deriv_inductive (n m : �
         - ∫ (x : ℝ), deriv (deriv^[p] (physHermite n)) x *
         deriv^[m - (p + 1)] (fun x => Real.exp (-x ^ 2)) x := by
       apply MeasureTheory.integral_mul_deriv_eq_deriv_mul_of_integrable
-      · exact fun _ ↦ DifferentiableAt.hasDerivAt (deriv_physHermite_differentiableAt n p _)
+      · exact fun _ _ ↦ DifferentiableAt.hasDerivAt (deriv_physHermite_differentiableAt n p _)
       · intro x
         simp only [hasDerivAt_deriv_iff]
         have h1 : (deriv^[m - (p + 1)] fun x => Real.exp (-x ^ 2)) =
@@ -502,7 +504,7 @@ lemma polynomial_mem_physHermite_span_induction (P : Polynomial ℤ) : (n : ℕ)
       simp only [coeff_physHermite_self_succ, zsmul_eq_mul, Int.cast_pow, Int.cast_ofNat, map_sub,
         map_mul, map_pow, map_intCast, Pi.sub_apply, Pi.smul_apply, smul_eq_mul, sub_left_inj,
         mul_eq_mul_right_iff]
-      simp [aeval]
+      simp [aeval, aevalEquiv]
     rw [hl] at hP'mem
     rw [Submodule.sub_mem_iff_left] at hP'mem
     · rw [Submodule.smul_mem_iff] at hP'mem

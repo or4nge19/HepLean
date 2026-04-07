@@ -520,6 +520,7 @@ lemma involutionNoFixed_card_mul_two_plus_one : (n : ℕ) →
   | 0 => rfl
   | Nat.succ n => by
     erw [involutionNoFixed_card_succ, involutionNoFixed_card_mul_two_plus_one n]
+    ring
 
 lemma involutionNoFixed_card_even : (n : ℕ) → (he : Even n) →
     Fintype.card {f : Fin n → Fin n // Function.Involutive f ∧ (∀ i, f i ≠ i)} = (n - 1)‼ := by

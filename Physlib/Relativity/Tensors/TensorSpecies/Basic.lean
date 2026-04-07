@@ -108,7 +108,7 @@ lemma basis_congr_repr {c c1 : C} (h : c = c1) (i : Fin (S.repDim c))
   simp
 
 lemma FD_map_basis {c c1 : C} (h : c = c1) (i : Fin (S.repDim c)) :
-    (S.FD.map (Discrete.eqToHom h)).hom.hom (S.basis c i)
+    (S.FD.map (Discrete.eqToHom h)).hom.toLinearMap (S.basis c i)
     = S.basis c1 (Fin.cast (by simp [h]) i) := by
   subst h
   simp
@@ -164,7 +164,7 @@ def castFin0ToField {c : Fin 0 → C} : (S.F.obj (OverColor.mk c)).V →ₗ[k] k
 lemma castFin0ToField_tprod {c : Fin 0 → C}
     (x : (i : Fin 0) → S.FD.obj (Discrete.mk (c i))) :
     castFin0ToField S (PiTensorProduct.tprod k x) = 1 := by
-  simp only [castFin0ToField, mk_hom, LinearEquiv.coe_coe]
+  simp only [castFin0ToField, mk_hom]
   erw [PiTensorProduct.isEmptyEquiv_apply_tprod]
 
 /-!

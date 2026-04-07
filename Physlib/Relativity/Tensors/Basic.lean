@@ -668,7 +668,7 @@ lemma Pure.permP_basisVector {n m : ℕ} {c : Fin n → C} {c1 : Fin m → C}
   and a tensor `t`, `permT σ h t` is the tensor tensor permuted according to `σ`. -/
 noncomputable def permT {n m : ℕ} {c : Fin n → C} {c1 : Fin m → C}
     (σ : Fin m → Fin n) (h : PermCond c c1 σ) : S.Tensor c →ₗ[k] S.Tensor c1 where
-  toFun t := (ConcreteCategory.hom (S.F.map h.toHom).hom) t
+  toFun t := (S.F.map h.toHom).hom t
   map_add' t1 t2 := by
     simp
   map_smul' r t := by

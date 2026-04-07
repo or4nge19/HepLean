@@ -6,6 +6,7 @@ Authors: Afiq Hatta
 module
 
 public import Mathlib.Topology.Algebra.Polynomial
+public import Mathlib.Analysis.Calculus.Deriv.Polynomial
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 /-!
@@ -78,7 +79,7 @@ lemma iteratedDeriv_tanh_is_polynomial_of_tanh (n : ℕ) : ∃ P : Polynomial �
     use Polynomial.derivative P * (1 - Polynomial.X^2)
     intro x
     rw [deriv_comp, Polynomial.deriv, deriv_tanh]
-    simp only [Polynomial.eval_mul, Polynomial.eval_sub, Polynomial.eval_one, Polynomial.eval_pow,
+    simp only  [Polynomial.eval_mul, Polynomial.eval_sub, Polynomial.eval_one, Polynomial.eval_pow,
       Polynomial.eval_X]
     case h.hh =>
       have h': Real.tanh = (sinh / cosh) := by
