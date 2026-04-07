@@ -55,11 +55,11 @@ noncomputable def fromSingleT {c : C} : S.FD.obj {as := c} ≃ₗ[k] S.Tensor ![
   toFun x := (OverColor.forgetLiftAppCon S.FD c).symm.hom x
   invFun x := (OverColor.forgetLiftAppCon S.FD c).hom x
   map_add' x y := by
-    change ((forgetLiftAppCon S.FD c).inv).hom.hom (x + y) = _
+    change ((forgetLiftAppCon S.FD c).inv).hom (x + y) = _
     simp
     rfl
   map_smul' r x := by
-    change ((forgetLiftAppCon S.FD c).inv).hom.hom (r • x) = _
+    change ((forgetLiftAppCon S.FD c).inv).hom (r • x) = _
     simp
     rfl
   left_inv := by
@@ -73,7 +73,7 @@ lemma fromSingleT_symm_pure {c : C} (p : Pure S ![c]) :
     fromSingleT.symm p.toTensor = Pure.fromSingleP.symm p := by
   simp [fromSingleT]
   trans (forgetLiftApp S.FD c).hom.hom
-    (((lift.obj S.FD).mapIso (mkIso (by aesop))).hom.hom.hom p.toTensor)
+    (((lift.obj S.FD).mapIso (mkIso (by aesop))).hom.hom p.toTensor)
   · rfl
   rw [forgetLiftApp_hom_hom_apply_eq]
   simp [Pure.toTensor]
@@ -201,11 +201,11 @@ set_option backward.isDefEq.respectTransparency false in
 lemma fromPairT_map_right {c1 c2 c2' : C} (h :c2 = c2')
     (x : (S.FD.obj (Discrete.mk c1)).V ⊗[k] (S.FD.obj (Discrete.mk c2)).V) :
     fromPairT (TensorProduct.map LinearMap.id
-    (S.FD.map (eqToHom (congrArg Discrete.mk h))).hom.hom x) =
+    ((S.FD.map (eqToHom (congrArg Discrete.mk h))).hom.toLinearMap) x) =
     permT id (by simp [h])
     (fromPairT x) := by
   let P (x : (S.FD.obj (Discrete.mk c1)).V ⊗[k] (S.FD.obj (Discrete.mk c2)).V) : Prop :=
-    fromPairT (TensorProduct.map LinearMap.id (S.FD.map (eqToHom (by rw [h]))).hom.hom x) =
+    fromPairT (TensorProduct.map LinearMap.id (S.FD.map (eqToHom (by rw [h]))).hom.toLinearMap x) =
     permT id (by simp [h])
     (fromPairT x)
   change P x
@@ -601,9 +601,10 @@ lemma actionT_fromConstPair {c1 c2 : C}
     (g : G) : g • fromConstPair v = fromConstPair v := by
   rw [fromConstPair, actionT_fromPairT]
   congr 1
-  change ((v.hom ≫ (tensorObj (𝒞 := Action.instCategory) _ _).ρ g)) _ = _
-  rw [← v.comm g]
-  simp
+  have h := (Rep.hom_comm_apply v g (1 : k)).symm
+  simp only [Rep.tensorUnit_ρ, Representation.trivial_apply, Rep.tensor_ρ,
+    Representation.tprod_apply] at h
+  exact h
 
 @[simp]
 lemma fromConstPair_whiskerLeft {c1 c2 c2' : C} (h : c2 = c2')
@@ -614,7 +615,7 @@ lemma fromConstPair_whiskerLeft {c1 c2 c2' : C} (h : c2 = c2')
   rw [fromConstPair]
   simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Action.comp_hom, ModuleCat.hom_comp,
     LinearMap.coe_comp, Function.comp_apply]
-  change fromPairT (TensorProduct.map LinearMap.id (S.FD.map (eqToHom (by rw [h]))).hom.hom _) = _
+  change fromPairT (TensorProduct.map LinearMap.id (S.FD.map (eqToHom (by rw [h]))).hom.toLinearMap _) = _
   rw [fromPairT_map_right h]
   rfl
 
@@ -823,9 +824,10 @@ lemma actionT_fromConstTriple {c1 c2 c3 : C}
     (g : G) : g • fromConstTriple v = fromConstTriple v := by
   rw [fromConstTriple, actionT_fromTripleT]
   congr 1
-  change ((v.hom ≫ (tensorObj (𝒞 := Action.instCategory) _ _).ρ g)) _ = _
-  rw [← v.comm g]
-  simp
+  have h := (Rep.hom_comm_apply v g (1 : k)).symm
+  simp only [Rep.tensorUnit_ρ, Representation.trivial_apply, Rep.tensor_ρ,
+    Representation.tprod_apply] at h
+  exact h
 
 /-!
 
@@ -851,10 +853,9 @@ set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma actionT_fromConst {n : ℕ} {c : Fin n → C} (T : 𝟙_ (Rep k G) ⟶ S.F.obj (OverColor.mk c))
     (g : G) : g • fromConst T = fromConst T:= by
-  simp only [actionT_eq]
-  change ((T.hom ≫ ModuleCat.ofHom ((S.F.obj _).ρ g))) _ = _
-  erw [← T.comm g]
-  simp [fromConst]
+  simp only [actionT_eq, fromConst]
+  rw [← Rep.hom_comm_apply T g (1 : k)]
+  simp [Rep.tensorUnit_ρ]
 
 end Tensor
 
