@@ -3,9 +3,9 @@ open System Lake DSL
 
 package «Physlib»
 
-require «doc-gen4» from git "https://github.com/leanprover/doc-gen4" @ "v4.29.0-rc1"
+require «doc-gen4» from git "https://github.com/leanprover/doc-gen4" @ "v4.29.0"
 
-require "mathlib" from git "https://github.com/leanprover-community/mathlib4.git" @ "v4.29.0-rc1"
+require "mathlib" from git "https://github.com/leanprover-community/mathlib4.git" @ "v4.29.0"
 
 @[default_target]
 lean_lib Physlib where

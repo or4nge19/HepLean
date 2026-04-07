@@ -146,9 +146,9 @@ def pauliBasis : Basis (Fin 1 ⊕ Fin 3) ℝ (selfAdjoint (Matrix (Fin 2) (Fin 2
 def pauliSelfAdjoint' (i : Fin 1 ⊕ Fin 3) : selfAdjoint (Matrix (Fin 2) (Fin 2) ℂ) :=
   match i with
   | Sum.inl 0 => ⟨σ0, pauliMatrix_selfAdjoint _⟩
-  | Sum.inr 0 => ⟨-σ1, by rw [neg_mem_iff]; exact pauliMatrix_selfAdjoint _⟩
-  | Sum.inr 1 => ⟨-σ2, by rw [neg_mem_iff]; exact pauliMatrix_selfAdjoint _⟩
-  | Sum.inr 2 => ⟨-σ3, by rw [neg_mem_iff]; exact pauliMatrix_selfAdjoint _⟩
+  | Sum.inr 0 => ⟨-σ1, by rw [AddSubgroup.neg_mem_iff] ; exact pauliMatrix_selfAdjoint _⟩
+  | Sum.inr 1 => ⟨-σ2, by rw [AddSubgroup.neg_mem_iff]; exact pauliMatrix_selfAdjoint _⟩
+  | Sum.inr 2 => ⟨-σ3, by rw [AddSubgroup.neg_mem_iff]; exact pauliMatrix_selfAdjoint _⟩
 
 set_option backward.isDefEq.respectTransparency false in
 /-- The Pauli matrices where `σi` are negated are linearly independent. -/
