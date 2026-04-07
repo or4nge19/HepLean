@@ -106,6 +106,16 @@ def ComponentIdx.prodIndexEquiv {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 �
     Π (i : Fin n1 ⊕ Fin n2), Fin (S.repDim (Sum.elim c c1 i)) :=
   (Equiv.piCongr finSumFinEquiv (fun x => finCongr (by cases x <;> simp))).symm
 
+@[simp] lemma finSumFinEquiv_symm_castAdd {n1 n2 : ℕ} (i : Fin n1) :
+    finSumFinEquiv.symm (Fin.castAdd n2 i) = Sum.inl i := by
+  apply finSumFinEquiv.injective
+  simp [finSumFinEquiv_apply_left]
+
+@[simp] lemma finSumFinEquiv_symm_natAdd {n1 n2 : ℕ} (i : Fin n2) :
+    finSumFinEquiv.symm (Fin.natAdd n1 i) = Sum.inr i := by
+  apply finSumFinEquiv.injective
+  simp [finSumFinEquiv_apply_right]
+
 /-!
 
 ### A.2. The product of two index components
@@ -162,14 +172,13 @@ def ComponentIdx.prodEquiv {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 → C} 
     simp only
     · rw [ComponentIdx.prodIndexEquiv]
       rw [Equiv.piCongr_symm_apply]
-      simp only [Sum.elim_inl, finCongr_symm, finCongr_apply, Fin.val_cast]
+      simp only [Sum.elim_inl, finCongr_symm]
       rw [prod_apply_finSumFinEquiv]
       rfl
     · rw [ComponentIdx.prodIndexEquiv]
       simp only
       erw [Equiv.piCongr_symm_apply]
-      simp only [Sum.elim_inr, finCongr_symm,
-        finCongr_apply, Fin.val_cast]
+      simp only [Sum.elim_inr, finCongr_symm]
       rw [prod_apply_finSumFinEquiv]
       rfl
 
@@ -189,10 +198,34 @@ def ComponentIdx.prodEquiv {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 → C} 
   the type `Π (i : Fin n1 ⊕ Fin n2), S.FD.obj (Discrete.mk ((Sum.elim c c1) i))`. -/
 def Pure.prodIndexEquiv {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 → C} :
     Pure S (Fin.append c c1) ≃
-    Π (i : Fin n1 ⊕ Fin n2), S.FD.obj (Discrete.mk ((Sum.elim c c1) i)) :=
-  (Equiv.piCongr finSumFinEquiv
-  (fun x => ((Action.forget _ _).mapIso
-    (S.FD.mapIso (Discrete.eqToIso (by cases x <;> simp)))).toLinearEquiv.toEquiv)).symm
+    Π (i : Fin n1 ⊕ Fin n2), S.FD.obj (Discrete.mk ((Sum.elim c c1) i)) := by
+  simpa using
+    (Equiv.piCongr finSumFinEquiv fun x =>
+      (OverColor.lift.linearIsoOfEq S.FD (by cases x <;> simp)).toEquiv).symm
+
+lemma prodIndexEquiv_apply_eqToHom {c c' : C} (h : c = c') (x : S.FD.obj (Discrete.mk c)) :
+    (OverColor.lift.linearIsoOfEq S.FD h).toEquiv x =
+      (S.FD.map (Discrete.eqToHom h)).hom x := by
+  subst h
+  simp [OverColor.lift.linearIsoOfEq]
+
+lemma linearIsoOfEq_eq_of_subsingleton (F : Discrete C ⥤ Rep k G) {x y : Discrete C}
+    (h1 h2 : x.as = y.as) : OverColor.lift.linearIsoOfEq F h1 = OverColor.lift.linearIsoOfEq F h2 :=
+  congrArg (OverColor.lift.linearIsoOfEq F) (Subsingleton.elim h1 h2)
+
+@[simp] lemma Pure.prodIndexEquiv_apply_sum_inl {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 → C}
+    (p : Pure S (Fin.append c c1)) (i : Fin n1) :
+    Pure.prodIndexEquiv p (Sum.inl i) =
+      (OverColor.lift.linearIsoOfEq S.FD (by simp)).toEquiv.symm (p (Fin.castAdd n2 i)) := by
+  simp [Pure.prodIndexEquiv, OverColor.lift.linearIsoOfEq]
+  rfl
+
+@[simp] lemma Pure.prodIndexEquiv_apply_sum_inr {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 → C}
+    (p : Pure S (Fin.append c c1)) (i : Fin n2) :
+    Pure.prodIndexEquiv p (Sum.inr i) =
+      (OverColor.lift.linearIsoOfEq S.FD (by simp)).toEquiv.symm (p (Fin.natAdd n1 i)) := by
+  simp [Pure.prodIndexEquiv, OverColor.lift.linearIsoOfEq]
+  rfl
 
 /-!
 
@@ -225,9 +258,9 @@ lemma Pure.prodP_apply_finSumFinEquiv {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 �
   rw [Equiv.piCongr_apply_apply]
   match i with
   | Sum.inl i =>
-    rfl
+    simpa using prodIndexEquiv_apply_eqToHom (S := S) (by simp) (p1 i)
   | Sum.inr i =>
-    rfl
+    simpa using prodIndexEquiv_apply_eqToHom (S := S) (by simp) (p2 i)
 
 set_option backward.isDefEq.respectTransparency false in
 @[simp]
@@ -331,17 +364,11 @@ lemma Pure.prodP_equivariant {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → C}
   | Sum.inl i =>
     simp only [finSumFinEquiv_apply_left, prodP_apply_castAdd]
     generalize_proofs h
-    have h1 := (S.FD.map (eqToHom h)).comm g
-    have h1' := congrFun (congrArg (fun x => x.hom) h1) (p i)
-    simp only [Function.comp_apply, ModuleCat.hom_comp, Rep.ρ_hom, LinearMap.coe_comp] at h1'
-    exact h1'
+    exact Rep.hom_comm_apply (S.FD.map (eqToHom h)) g (p i)
   | Sum.inr i =>
     simp only [finSumFinEquiv_apply_right, prodP_apply_natAdd]
     generalize_proofs h
-    have h1 := (S.FD.map (eqToHom h)).comm g
-    have h1' := congrFun (congrArg (fun x => x.hom) h1) (p1 i)
-    simp only [Function.comp_apply, ModuleCat.hom_comp, Rep.ρ_hom, LinearMap.coe_comp] at h1'
-    exact h1'
+    exact Rep.hom_comm_apply (S.FD.map (eqToHom h)) g (p1 i)
 
 /-!
 
@@ -653,24 +680,41 @@ lemma Pure.prodP_assoc' {n n1 n2} {c : Fin n → C}
 ### C.1. Indexing tensors by `Fin n1 ⊕ Fin n2` rather than `Fin (n1 + n2)`
 -/
 
-/-- The equivalence between the type `S.F.obj (OverColor.mk (Sum.elim c c1))` and the type
-  `S.Tensor (Fin.append c c1)`. -/
-noncomputable def prodIndexEquiv {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → C} :
-    S.F.obj (OverColor.mk (Sum.elim c c1)) ≃ₗ[k] S.Tensor (Fin.append c c1) :=
-  ((Action.forget _ _).mapIso (S.F.mapIso
-    ((OverColor.equivToIso finSumFinEquiv).trans
+/-- Isomorphism of colorings identifying `Sum.elim c c1` on `Fin n1 ⊕ Fin n2` with
+`Fin.append c c1` on `Fin (n1 + n2)`. -/
+noncomputable def prodIndexEquivIso {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → C} :
+    OverColor.mk (Sum.elim c c1) ≅ OverColor.mk (Fin.append c c1) :=
+  (OverColor.equivToIso finSumFinEquiv).trans
     (OverColor.mkIso (by
       funext x
       revert x
       rw [Fin.forall_fin_add]
-      simp))))).toLinearEquiv
+      simp))
+
+lemma prodIndexEquivIso_hom_toEquiv {n1 n2 : ℕ} {χ : Fin n1 → C} {χ1 : Fin n2 → C} :
+    OverColor.Hom.toEquiv (prodIndexEquivIso (c := χ) (c1 := χ1)).hom = @finSumFinEquiv n1 n2 := by
+  simp [prodIndexEquivIso, CategoryTheory.Iso.trans_hom, equivToIso_homToEquiv, equivToIso_mkIso_hom,
+    Hom.toEquiv_comp]
+  exact Equiv.trans_refl finSumFinEquiv
+
+/-- Explicit `c`/`c1` arguments so `simp` can match under a section `c : Fin n → C`. -/
+lemma prodIndexEquivIso_hom_toEquiv_explicit (n1 n2 : ℕ) (c₀ : Fin n1 → C) (c₁ : Fin n2 → C) :
+    OverColor.Hom.toEquiv (prodIndexEquivIso (c := c₀) (c1 := c₁)).hom = @finSumFinEquiv n1 n2 :=
+  prodIndexEquivIso_hom_toEquiv (χ := c₀) (χ1 := c₁)
+
+/-- The equivalence between the type `S.F.obj (OverColor.mk (Sum.elim c c1))` and the type
+  `S.Tensor (Fin.append c c1)`. -/
+noncomputable def prodIndexEquiv {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → C} :
+    S.F.obj (OverColor.mk (Sum.elim c c1)) ≃ₗ[k] S.Tensor (Fin.append c c1) :=
+  (Representation.equivOfIso
+    (S.F.mapIso (prodIndexEquivIso (c := c) (c1 := c1)))).toLinearEquiv
 
 set_option backward.isDefEq.respectTransparency false in
 lemma prodIndexEquiv_symm_pure {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → C}
     (p : Pure S (Fin.append c c1)) :
     prodIndexEquiv.symm p.toTensor = PiTensorProduct.tprod k (Pure.prodIndexEquiv p) := by
   rw [prodIndexEquiv]
-  change (S.F.map _).hom p.toTensor = _
+  change (S.F.map prodIndexEquivIso.inv).hom p.toTensor = _
   rw [Pure.toTensor]
   simp only [F_def]
   rw [OverColor.lift.map_tprod]

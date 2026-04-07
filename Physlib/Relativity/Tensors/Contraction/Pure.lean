@@ -650,9 +650,13 @@ lemma contrPCoeff_update_fst_add {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fin
     (p : Pure S c) (x y : S.FD.obj (Discrete.mk (c i))) :
     contrPCoeff i j hij (p.update i (x + y)) =
     contrPCoeff i j hij (p.update i x) + contrPCoeff i j hij (p.update i y) := by
-  change ((S.contr.app { as := c i })).hom.hom' _ = ((S.contr.app { as := c i })).hom.hom' _
-    + ((S.contr.app { as := c i })).hom.hom' _
-  simp [Function.update_of_ne (Ne.symm hij.1), update, TensorProduct.add_tmul, LinearMap.map_add]
+  simp [contrPCoeff, update, Function.update_of_ne (Ne.symm hij.1), TensorProduct.add_tmul]
+  show (S.contr.app (Discrete.mk (c i))).hom
+      ((x ⊗ₜ[k] (S.FD.map (eqToHom (by simp [hij]))).hom (p j)) +
+        (y ⊗ₜ[k] (S.FD.map (eqToHom (by simp [hij]))).hom (p j))) =
+    (S.contr.app (Discrete.mk (c i))).hom (x ⊗ₜ[k] (S.FD.map (eqToHom (by simp [hij]))).hom (p j)) +
+      (S.contr.app (Discrete.mk (c i))).hom (y ⊗ₜ[k] (S.FD.map (eqToHom (by simp [hij]))).hom (p j))
+  exact map_add (S.contr.app (Discrete.mk (c i))).hom _ _
 
 set_option backward.isDefEq.respectTransparency false in
 @[simp]
@@ -661,18 +665,14 @@ lemma contrPCoeff_update_snd_add {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fin
     (p : Pure S c) (x y : S.FD.obj (Discrete.mk (c j))) :
     contrPCoeff i j hij (p.update j (x + y)) =
     contrPCoeff i j hij (p.update j x) + contrPCoeff i j hij (p.update j y) := by
-  simp only [contrPCoeff, Monoidal.tensorUnit_obj, Equivalence.symm_inverse,
-    Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    Functor.comp_obj, Discrete.functor_obj_eq_as, Function.comp_apply, update, Function.update_self]
-  change ((S.contr.app { as := c i })).hom.hom' _ = ((S.contr.app { as := c i })).hom.hom' _
-    + ((S.contr.app { as := c i })).hom.hom' _
-  rw [Function.update_of_ne hij.1, Function.update_of_ne hij.1,
-    Function.update_of_ne hij.1]
-  conv_lhs =>
-    enter [2, 3]
-    change ((S.FD.map (eqToHom _))).hom.hom' (x + y)
-  simp only [Monoidal.tensorUnit_obj, TensorProduct.tmul_add, LinearMap.map_add]
-  rfl
+  have hτ : Discrete.mk (c j) = Discrete.mk (S.τ (c i)) := by simpa using hij.2.symm
+  have hFD : (S.FD.map (eqToHom hτ)).hom (x + y) =
+      (S.FD.map (eqToHom hτ)).hom x + (S.FD.map (eqToHom hτ)).hom y :=
+    map_add (S.FD.map (eqToHom hτ)).hom _ _
+  simpa [contrPCoeff, update, hτ, Function.update_of_ne hij.1, hFD, TensorProduct.tmul_add]
+    using map_add (S.contr.app (Discrete.mk (c i))).hom
+      (p i ⊗ₜ[k] (S.FD.map (eqToHom hτ)).hom x)
+      (p i ⊗ₜ[k] (S.FD.map (eqToHom hτ)).hom y)
 
 set_option backward.isDefEq.respectTransparency false in
 @[simp]
@@ -681,15 +681,10 @@ lemma contrPCoeff_update_fst_smul {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fi
     (p : Pure S c) (r : k) (x : S.FD.obj (Discrete.mk (c i))) :
     contrPCoeff i j hij (p.update i (r • x)) =
     r * contrPCoeff i j hij (p.update i x) := by
-  simp only [contrPCoeff, Monoidal.tensorUnit_obj, Equivalence.symm_inverse,
-    Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    Functor.comp_obj, Discrete.functor_obj_eq_as, Function.comp_apply, update, Function.update_self,
-    TensorProduct.smul_tmul, TensorProduct.tmul_smul]
-  change ((S.contr.app { as := c i })).hom.hom' _ = r * _
-  simp only [Monoidal.tensorUnit_obj, LinearMap.map_smul, smul_eq_mul]
-  congr 1
-  change ((S.contr.app { as := c i })).hom.hom' _ = ((S.contr.app { as := c i })).hom.hom' _
-  rw [Function.update_of_ne (Ne.symm hij.1), Function.update_of_ne (Ne.symm hij.1)]
+  simpa [contrPCoeff, update, Function.update_of_ne (Ne.symm hij.1), TensorProduct.smul_tmul,
+    smul_eq_mul] using
+    (map_smul (S.contr.app (Discrete.mk (c i))).hom r
+      (x ⊗ₜ[k] (S.FD.map (eqToHom (by simp [hij]))).hom (p j)))
 
 set_option backward.isDefEq.respectTransparency false in
 @[simp]
@@ -698,16 +693,13 @@ lemma contrPCoeff_update_snd_smul {n : ℕ} [inst : DecidableEq (Fin n)] {c : Fi
     (p : Pure S c) (r : k) (x : S.FD.obj (Discrete.mk (c j))) :
     contrPCoeff i j hij (p.update j (r • x)) =
     r * contrPCoeff i j hij (p.update j x) := by
-  simp only [contrPCoeff, Monoidal.tensorUnit_obj, Equivalence.symm_inverse,
-    Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    Functor.comp_obj, Discrete.functor_obj_eq_as, Function.comp_apply, update, Function.update_self]
-  change ((S.contr.app { as := c i })).hom.hom' _ = r * _
-  rw [Function.update_of_ne hij.1, Function.update_of_ne hij.1]
-  conv_lhs =>
-    enter [2, 3]
-    change ((S.FD.map (eqToHom _))).hom.hom' (r • _)
-  simp only [Monoidal.tensorUnit_obj, LinearMap.map_smul, TensorProduct.tmul_smul, smul_eq_mul]
-  rfl
+  have hτ : Discrete.mk (c j) = Discrete.mk (S.τ (c i)) := by simpa using hij.2.symm
+  have hFD : (S.FD.map (eqToHom hτ)).hom (r • x) = r • (S.FD.map (eqToHom hτ)).hom x :=
+    map_smul (S.FD.map (eqToHom hτ)).hom _ _
+  simpa [contrPCoeff, update, hτ, Function.update_of_ne hij.1, hFD, TensorProduct.tmul_smul,
+    smul_eq_mul] using
+    map_smul (S.contr.app (Discrete.mk (c i))).hom r
+      (p i ⊗ₜ[k] (S.FD.map (eqToHom hτ)).hom x)
 
 lemma contrPCoeff_dropPair {n : ℕ} {c : Fin (n + 1 + 1) → C}
     (a b : Fin (n + 1 + 1)) (hab : a ≠ b)
@@ -725,7 +717,7 @@ lemma contrPCoeff_symm {n : ℕ} {c : Fin n → C} {i j : Fin n} {hij : i ≠ j 
   simp only [Monoidal.tensorUnit_obj, Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Action.FunctorCategoryEquivalence.functor_obj_obj,
     Functor.comp_obj, Discrete.functor_obj_eq_as, Function.comp_apply]
-  change _ = (ConcreteCategory.hom (S.contr.app { as := c j }).hom) _
+  change _ = ConcreteCategory.hom (S.contr.app { as := c j }) _
   congr 2
   · change ((S.FD.map (eqToHom _) ≫ S.FD.map (eqToHom _)).hom) _ = _
     rw [← S.FD.map_comp]
@@ -769,20 +761,16 @@ lemma contrPCoeff_invariant {n : ℕ} {c : Fin n → C} {i j : Fin n}
         simp only [Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
           Functor.comp_obj, Discrete.functor_obj_eq_as, Function.comp_apply,
           Action.FunctorCategoryEquivalence.functor_obj_obj]
-        have h1 := (S.FD.map (eqToHom (by simp [hij] : { as := c j } =
-          (Discrete.functor (Discrete.mk ∘ S.τ)).obj { as := c i }))).comm g
-        have h2 := congrFun (congrArg (fun x => x.hom) h1) (p j)
-        simp only [Discrete.functor_obj_eq_as, Function.comp_apply, ModuleCat.hom_comp, Rep.ρ_hom,
-          LinearMap.coe_comp] at h2
-        exact h2
-  have h1 := (S.contr.app (Discrete.mk (c i))).comm g
-  have h2 := congrFun (congrArg (fun x => x.hom) h1) ((p i) ⊗ₜ
-    ((S.FD.map (eqToHom (by simp [hij]))) (p j)))
-  simp only [Monoidal.tensorUnit_obj, ModuleCat.hom_comp, Rep.ρ_hom, Equivalence.symm_inverse,
+        exact Rep.hom_comm_apply
+          (S.FD.map (eqToHom (by simp [hij] : { as := c j } =
+            (Discrete.functor (Discrete.mk ∘ S.τ)).obj { as := c i }))) g (p j)
+  simpa only [Monoidal.tensorUnit_obj, Rep.tensorUnit_ρ, Rep.tensor_ρ, Rep.Hom.hom,
+    ConcreteCategory.hom, CategoryStruct.comp, Representation.IntertwiningMap.comp_toLinearMap,
+    Representation.IntertwiningMap.coe_toLinearMap, LinearMap.coe_comp, Equivalence.symm_inverse,
     Action.functorCategoryEquivalence_functor, Functor.comp_obj, Discrete.functor_obj_eq_as,
-    Function.comp_apply, Action.FunctorCategoryEquivalence.functor_obj_obj,
-    LinearMap.coe_comp] at h2
-  exact h2
+    Function.comp_apply, Action.FunctorCategoryEquivalence.functor_obj_obj] using
+    Rep.hom_comm_apply (S.contr.app (Discrete.mk (c i))) g ((p i) ⊗ₜ
+      ((S.FD.map (eqToHom (by simp [hij]))) (p j)))
 
 /-!
 
