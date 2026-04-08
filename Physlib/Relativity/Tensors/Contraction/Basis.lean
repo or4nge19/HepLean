@@ -174,7 +174,6 @@ lemma contrT_basis_repr_apply {n : ℕ} {c : Fin (n + 1 + 1) → C} {i j : Fin (
         simp [Pure.basisVector]
         rw [S.basis_congr (h.2 : S.τ (c i) = c j)]
         simp
-        rfl
       · intro b'' _ hb
         simp only [Basis.repr_self, Monoidal.tensorUnit_obj, Equivalence.symm_inverse,
           Action.functorCategoryEquivalence_functor,

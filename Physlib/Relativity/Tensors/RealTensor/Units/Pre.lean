@@ -47,34 +47,31 @@ set_option backward.isDefEq.respectTransparency false in
 /-- The contra-co unit for complex lorentz vectors as a morphism
   `𝟙_ (Rep ℂ SL(2,ℂ)) ⟶ complexContr ⊗ complexCo`, manifesting the invariance under
   the `SL(2, ℂ)` action. -/
-def preContrCoUnit (d : ℕ := 3) : 𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Contr d ⊗ Co d where
-  hom := ModuleCat.ofHom {
-    toFun := fun a => a • preContrCoUnitVal d,
-    map_add' := fun x y => by
-      simp only [add_smul],
-    map_smul' := fun m x => by
-      simp only [smul_smul]
-      rfl}
-  comm M := by
-    refine ModuleCat.hom_ext ?_
-    refine LinearMap.ext fun x : ℝ => ?_
-    simp only [Action.tensorObj_V, Action.tensorUnit_V, Action.tensorUnit_ρ,
-      CategoryTheory.Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
-      Action.FunctorCategoryEquivalence.functor_obj_obj, CategoryTheory.Category.id_comp,
-      ModuleCat.hom_ofHom, Action.tensor_ρ, ModuleCat.hom_comp, LinearMap.coe_comp,
-      Function.comp_apply]
-    change x • preContrCoUnitVal d =
-      (TensorProduct.map ((Contr d).ρ M) ((Co d).ρ M)) (x • preContrCoUnitVal d)
-    simp only [Action.tensorObj_V, map_smul]
-    apply congrArg
-    simp only [preContrCoUnitVal]
-    rw [contrCoToMatrixRe_ρ_symm]
-    apply congrArg
-    simp
+def preContrCoUnit (d : ℕ := 3) : 𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Contr d ⊗ Co d :=
+  CategoryTheory.ConcreteCategory.ofHom (C := Rep ℝ (LorentzGroup d))
+    (show (𝟙_ (Rep ℝ (LorentzGroup d))).ρ.IntertwiningMap (Contr d ⊗ Co d).ρ from
+     ⟨(LinearMap.id (R := ℝ) (M := ℝ)).smulRight (preContrCoUnitVal d),
+      fun M => LinearMap.ext fun x => by
+        simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.coe_smulRight,
+          Rep.tensorUnit_ρ, Rep.tensor_ρ, map_smul]
+        congr 1
+        simp only [preContrCoUnitVal]
+        have ht :
+            (((Contr d).ρ.tprod (Co d).ρ) M) (contrCoToMatrixRe.symm 1) =
+              TensorProduct.map ((Contr d).ρ M) ((Co d).ρ M) (contrCoToMatrixRe.symm 1) := rfl
+        calc
+          contrCoToMatrixRe.symm 1 =
+              contrCoToMatrixRe.symm
+                (M.1 * (1 : Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ) * M.1⁻¹) :=
+            congrArg _ (by simp)
+          _ = TensorProduct.map ((Contr d).ρ M) ((Co d).ρ M) (contrCoToMatrixRe.symm 1) :=
+            (contrCoToMatrixRe_ρ_symm (1 : Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ) M).symm
+          _ = (((Contr d).ρ.tprod (Co d).ρ) M) (contrCoToMatrixRe.symm 1) := ht.symm
+     ⟩)
 
 lemma preContrCoUnit_apply_one {d : ℕ} : (preContrCoUnit d).hom (1 : ℝ) = preContrCoUnitVal d := by
-  change (1 : ℝ) • preContrCoUnitVal d = preContrCoUnitVal d
-  rw [one_smul]
+  unfold preContrCoUnit
+  simp [Rep.hom_ofHom, LinearMap.smulRight_apply, one_smul]
 
 /-- The co-contra unit for complex lorentz vectors. Usually denoted `δᵢⁱ`. -/
 def preCoContrUnitVal (d : ℕ := 3) : (Co d ⊗ Contr d).V :=
@@ -104,36 +101,34 @@ set_option backward.isDefEq.respectTransparency false in
 /-- The co-contra unit for complex lorentz vectors as a morphism
   `𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Co d ⊗ Contr d`, manifesting the invariance under
   the `LorentzGroup d` action. -/
-def preCoContrUnit (d : ℕ) : 𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Co d ⊗ Contr d where
-  hom := ModuleCat.ofHom {
-    toFun := fun a => a • preCoContrUnitVal d,
-    map_add' := fun x y => by
-      simp only [add_smul],
-    map_smul' := fun m x => by
-      simp only [smul_smul]
-      rfl}
-  comm M := by
-    refine ModuleCat.hom_ext ?_
-    refine LinearMap.ext fun x : ℝ => ?_
-    simp only [Action.tensorObj_V, Action.tensorUnit_V, Action.tensorUnit_ρ,
-      CategoryTheory.Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
-      Action.FunctorCategoryEquivalence.functor_obj_obj, CategoryTheory.Category.id_comp,
-      ModuleCat.hom_ofHom, Action.tensor_ρ, ModuleCat.hom_comp, LinearMap.coe_comp,
-      Function.comp_apply]
-    change x • preCoContrUnitVal d =
-      (TensorProduct.map ((Co d).ρ M) ((Contr d).ρ M)) (x • preCoContrUnitVal d)
-    simp only [Action.tensorObj_V, map_smul]
-    apply congrArg
-    simp only [preCoContrUnitVal]
-    rw [coContrToMatrixRe_ρ_symm]
-    apply congrArg
-    symm
-    refine transpose_eq_one.mp ?h.h.h.a
-    simp
+def preCoContrUnit (d : ℕ) : 𝟙_ (Rep ℝ (LorentzGroup d)) ⟶ Co d ⊗ Contr d :=
+  CategoryTheory.ConcreteCategory.ofHom (C := Rep ℝ (LorentzGroup d))
+    (show (𝟙_ (Rep ℝ (LorentzGroup d))).ρ.IntertwiningMap (Co d ⊗ Contr d).ρ from
+     ⟨(LinearMap.id (R := ℝ) (M := ℝ)).smulRight (preCoContrUnitVal d),
+      fun M => LinearMap.ext fun x => by
+        simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.coe_smulRight,
+          Rep.tensorUnit_ρ, Rep.tensor_ρ, map_smul]
+        congr 1
+        simp only [preCoContrUnitVal]
+        have ht :
+            (((Co d).ρ.tprod (Contr d).ρ) M) (coContrToMatrixRe.symm 1) =
+              TensorProduct.map ((Co d).ρ M) ((Contr d).ρ M) (coContrToMatrixRe.symm 1) := rfl
+        calc
+          coContrToMatrixRe.symm 1 =
+              coContrToMatrixRe.symm
+                (M.1⁻¹ᵀ * (1 : Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ) * M.1ᵀ) :=
+            congrArg _ (by
+              simp only [Matrix.mul_one]
+              rw [← Matrix.transpose_mul (M := M.1) (N := M.1⁻¹), mul_inv_of_invertible M.1,
+                Matrix.transpose_one])
+          _ = TensorProduct.map ((Co d).ρ M) ((Contr d).ρ M) (coContrToMatrixRe.symm 1) :=
+            (coContrToMatrixRe_ρ_symm (1 : Matrix (Fin 1 ⊕ Fin d) (Fin 1 ⊕ Fin d) ℝ) M).symm
+          _ = (((Co d).ρ.tprod (Contr d).ρ) M) (coContrToMatrixRe.symm 1) := ht.symm
+     ⟩)
 
 lemma preCoContrUnit_apply_one {d : ℕ} : (preCoContrUnit d).hom (1 : ℝ) = preCoContrUnitVal d := by
-  change (1 : ℝ) • preCoContrUnitVal d = preCoContrUnitVal d
-  rw [one_smul]
+  unfold preCoContrUnit
+  simp [Rep.hom_ofHom, LinearMap.smulRight_apply, one_smul]
 
 /-!
 
@@ -148,18 +143,17 @@ lemma contr_preContrCoUnit {d : ℕ} (x : Co d) :
     ((α_ _ _ (Co d)).inv.hom (x ⊗ₜ[ℝ] (preContrCoUnit d).hom (1 : ℝ)))) = x := by
   have h1 : ((α_ (Co d) _ (Co d)).inv.hom (x ⊗ₜ[ℝ] (preContrCoUnit d).hom (1 : ℝ)))
       = ∑ i, (x ⊗ₜ[ℝ] contrBasis d i) ⊗ₜ[ℝ] coBasis d i := by
-    rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul]
-    simp only [Action.tensorObj_V, Action.associator_inv_hom,
-      CategoryTheory.Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
-      Action.FunctorCategoryEquivalence.functor_obj_obj, tmul_sum]
-    simp [LinearMap.map_add]
+    rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul, tmul_sum, map_sum]
+    congr 1
   rw [h1]
   have h2 : (coContrContract ▷ (Co d)).hom (∑ i, (x ⊗ₜ[ℝ] contrBasis d i) ⊗ₜ[ℝ] coBasis d i)
       = ∑ i, ((coContrContract).hom (x ⊗ₜ[ℝ] contrBasis d i)) ⊗ₜ[ℝ] coBasis d i := by
-    simp [LinearMap.map_add]
+    simp only [Rep.hom_whiskerRight]
+    rw [map_sum]
+    rfl
   rw [h2]
   obtain ⟨c, rfl⟩ := (Submodule.mem_span_range_iff_exists_fun ℝ).mp (Basis.mem_span (coBasis d) x)
-  have h3 (i : Fin 1 ⊕ Fin d) : (CategoryTheory.ConcreteCategory.hom coContrContract.hom)
+  have h3 (i : Fin 1 ⊕ Fin d) : coContrContract.hom
         ((∑ i : Fin 1 ⊕ Fin d, c i • (coBasis d) i) ⊗ₜ[ℝ] (contrBasis d) i) = c i := by
       simp only [sum_tmul, smul_tmul, tmul_smul, map_sum, _root_.map_smul, smul_eq_mul]
       conv_lhs =>
@@ -179,19 +173,18 @@ lemma contr_preCoContrUnit {d : ℕ} (x : (Contr d)) :
     ((α_ _ _ (Contr d)).inv.hom (x ⊗ₜ[ℝ] (preCoContrUnit d).hom (1 : ℝ)))) = x := by
   have h1 : ((α_ (Contr d) _ (Contr d)).inv.hom (x ⊗ₜ[ℝ] (preCoContrUnit d).hom (1 : ℝ)))
       = ∑ i, (x ⊗ₜ[ℝ] coBasis d i) ⊗ₜ[ℝ] contrBasis d i := by
-    rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
-    simp only [Action.tensorObj_V, Action.associator_inv_hom,
-      CategoryTheory.Equivalence.symm_inverse, Action.functorCategoryEquivalence_functor,
-      Action.FunctorCategoryEquivalence.functor_obj_obj, tmul_sum]
-    simp [LinearMap.map_add]
+    rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul, tmul_sum, map_sum]
+    congr 1
   rw [h1]
   have h2 : (contrCoContract ▷ (Contr d)).hom (∑ i, (x ⊗ₜ[ℝ] coBasis d i) ⊗ₜ[ℝ] contrBasis d i)
       = ∑ i, ((contrCoContract).hom (x ⊗ₜ[ℝ] coBasis d i)) ⊗ₜ[ℝ] contrBasis d i := by
-    simp [LinearMap.map_add]
+    simp only [Rep.hom_whiskerRight]
+    rw [map_sum]
+    rfl
   rw [h2]
   obtain ⟨c, rfl⟩ := (Submodule.mem_span_range_iff_exists_fun ℝ).mp
     (Basis.mem_span (contrBasis d) x)
-  have h3 (i : Fin 1 ⊕ Fin d) : (CategoryTheory.ConcreteCategory.hom contrCoContract.hom)
+  have h3 (i : Fin 1 ⊕ Fin d) : contrCoContract.hom
         ((∑ i : Fin 1 ⊕ Fin d, c i • (contrBasis d) i) ⊗ₜ[ℝ] (coBasis d) i) = c i := by
       simp only [sum_tmul, smul_tmul, tmul_smul, map_sum, _root_.map_smul, smul_eq_mul]
       conv_lhs =>
@@ -218,7 +211,7 @@ lemma preContrCoUnit_symm {d : ℕ} :
     ((preCoContrUnit d).hom (1 : ℝ))) := by
   rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul]
   rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
-  simp [LinearMap.map_add]
+  simp
 
 set_option backward.isDefEq.respectTransparency false in
 lemma preCoContrUnit_symm {d : ℕ} :
@@ -226,7 +219,7 @@ lemma preCoContrUnit_symm {d : ℕ} :
     ((preContrCoUnit d).hom (1 : ℝ))) := by
   rw [preContrCoUnit_apply_one, preContrCoUnitVal_expand_tmul]
   rw [preCoContrUnit_apply_one, preCoContrUnitVal_expand_tmul]
-  simp [LinearMap.map_add]
+  simp
 
 end Lorentz
 end

@@ -209,10 +209,6 @@ lemma prodIndexEquiv_apply_eqToHom {c c' : C} (h : c = c') (x : S.FD.obj (Discre
   subst h
   simp [OverColor.lift.linearIsoOfEq]
 
-lemma linearIsoOfEq_eq_of_subsingleton (F : Discrete C ⥤ Rep k G) {x y : Discrete C}
-    (h1 h2 : x.as = y.as) : OverColor.lift.linearIsoOfEq F h1 = OverColor.lift.linearIsoOfEq F h2 :=
-  congrArg (OverColor.lift.linearIsoOfEq F) (Subsingleton.elim h1 h2)
-
 @[simp] lemma Pure.prodIndexEquiv_apply_sum_inl {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 → C}
     (p : Pure S (Fin.append c c1)) (i : Fin n1) :
     Pure.prodIndexEquiv p (Sum.inl i) =
@@ -690,17 +686,6 @@ noncomputable def prodIndexEquivIso {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → 
       revert x
       rw [Fin.forall_fin_add]
       simp))
-
-lemma prodIndexEquivIso_hom_toEquiv {n1 n2 : ℕ} {χ : Fin n1 → C} {χ1 : Fin n2 → C} :
-    OverColor.Hom.toEquiv (prodIndexEquivIso (c := χ) (c1 := χ1)).hom = @finSumFinEquiv n1 n2 := by
-  simp [prodIndexEquivIso, CategoryTheory.Iso.trans_hom, equivToIso_homToEquiv, equivToIso_mkIso_hom,
-    Hom.toEquiv_comp]
-  exact Equiv.trans_refl finSumFinEquiv
-
-/-- Explicit `c`/`c1` arguments so `simp` can match under a section `c : Fin n → C`. -/
-lemma prodIndexEquivIso_hom_toEquiv_explicit (n1 n2 : ℕ) (c₀ : Fin n1 → C) (c₁ : Fin n2 → C) :
-    OverColor.Hom.toEquiv (prodIndexEquivIso (c := c₀) (c1 := c₁)).hom = @finSumFinEquiv n1 n2 :=
-  prodIndexEquivIso_hom_toEquiv (χ := c₀) (χ1 := c₁)
 
 /-- The equivalence between the type `S.F.obj (OverColor.mk (Sum.elim c c1))` and the type
   `S.Tensor (Fin.append c c1)`. -/
