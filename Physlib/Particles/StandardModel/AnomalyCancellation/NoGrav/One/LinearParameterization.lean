@@ -288,9 +288,15 @@ lemma cubic (S : linearParametersQENeqZero) :
   ring_nf
   have h1 : -216 + (-(S.v ^ 3 * 216) - S.w ^ 3 * 216) = - 216 *(S.v ^3 + S.w ^3 +1) := by
     ring
-  rw [h1]
-  simp_all
-  exact add_eq_zero_iff_eq_neg
+  constructor
+  · intro h
+    have h' : -216 * (S.v ^ 3 + S.w ^ 3 + 1) = 0 := by
+      nlinarith [h1, h]
+    nlinarith
+  · intro h
+    have hs : S.v ^ 3 + S.w ^ 3 + 1 = 0 := by
+      linarith
+    nlinarith [h1, hs]
 
 lemma cubic_v_or_w_zero (S : linearParametersQENeqZero) (h : accCube (bijection S).1.val = 0) :
     S.v = 0 ∨ S.w = 0 := by

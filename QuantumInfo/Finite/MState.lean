@@ -902,8 +902,25 @@ theorem pure_iff_rank_eq_one {d : Type*} [Fintype d] [DecidableEq d] (ρ : MStat
             rw [ Fintype.card_subtype ] at h_diag ; exact h_diag;
           obtain ⟨i, hi⟩ : ∃ i : d, h_herm.eigenvalues i ≠ 0 := by
             exact not_forall.mp fun h => by simp [ h ] at h_diag;
-          rw [ Finset.sum_eq_add_sum_diff_singleton ( Finset.mem_univ i ) ] at h_diag;
-          exact ⟨ i, hi, fun j hj => Classical.not_not.1 fun hj' => absurd h_diag ( by rw [ if_neg hi ] ; exact ne_of_gt ( lt_add_of_pos_right _ ( lt_of_lt_of_le ( by simp [ hj' ] ) ( Finset.single_le_sum ( fun x _ => by positivity ) ( Finset.mem_sdiff.2 ⟨ Finset.mem_univ j, by simp [ hj ] ⟩ ) ) ) ) ) ⟩;
+          rw [← Finset.add_sum_erase Finset.univ (fun j => if h_herm.eigenvalues j = 0 then 0 else 1)
+            (Finset.mem_univ i)] at h_diag;
+          have h1 : (if h_herm.eigenvalues i = 0 then 0 else 1) = 1 := by
+            split_ifs with h
+            · exact False.elim (hi h)
+            · rfl
+          rw [h1] at h_diag;
+          have hsum0 : ∑ j ∈ Finset.univ.erase i, (if h_herm.eigenvalues j = 0 then 0 else 1) = 0 := by
+            omega
+          refine ⟨i, hi, fun j hj => ?_⟩
+          by_cases hji : j = i
+          · exact (hj hji).elim
+          · have hj' : j ∈ Finset.univ.erase i :=
+              Finset.mem_erase.2 ⟨hji, Finset.mem_univ j⟩
+            have hterm : (if h_herm.eigenvalues j = 0 then 0 else 1) = 0 :=
+              (Finset.sum_eq_zero_iff_of_nonneg fun _ _ => by positivity).1 hsum0 j hj'
+            by_cases hej : h_herm.eigenvalues j = 0
+            · exact hej
+            · simp [hej] at hterm
         -- Since the diagonal matrix in the spectral theorem has exactly one non-zero entry, we can write ρ.m as |ψ⟩⟨ψ| for some ket ψ.
         use fun j => (h_herm.eigenvectorUnitary : Matrix d d ℂ) j i * Real.sqrt (h_herm.eigenvalues i);
         convert this using 1

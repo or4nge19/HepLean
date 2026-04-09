@@ -106,30 +106,43 @@ instance : Module ℝ ConfigurationSpace where
 instance : Norm ConfigurationSpace where
   norm x := ‖x.val‖
 
+lemma norm_eq_val (x : ConfigurationSpace) :
+    ‖x‖ = ‖x.val‖ := rfl
+
 instance : Dist ConfigurationSpace where
   dist x y := ‖x - y‖
 
 lemma dist_eq_val (x y : ConfigurationSpace) :
     dist x y = ‖x.val - y.val‖ := rfl
 
+lemma dist_eq_real_dist (x y : ConfigurationSpace) :
+    dist x y = dist x.val y.val := by
+  rfl
+
 instance : SeminormedAddCommGroup ConfigurationSpace where
-  dist_self x := by simp [dist_eq_val]
-  dist_comm x y := by
-    simpa [dist_eq_val, Real.dist_eq] using (dist_comm x.val y.val)
-  dist_triangle x y z := by
-    simpa [dist_eq_val, Real.dist_eq] using (dist_triangle x.val y.val z.val)
+  dist_self x := by simp [dist_eq_real_dist]
+  dist_comm x y := by simp [dist_eq_real_dist, dist_comm]
+  dist_triangle := by simp [dist_eq_real_dist, dist_triangle]
+  dist_eq x y := by
+    simp [dist_eq_val, norm_eq_val]
+    rw [abs_eq_iff_mul_self_eq]
+    ring
 
 instance : NormedAddCommGroup ConfigurationSpace where
   eq_of_dist_eq_zero := by
     intro a b h
+    simp [dist, norm_eq_val] at h
     ext
-    have h' : dist a.val b.val = 0 := by
-      simpa [dist_eq_val, Real.dist_eq] using h
-    exact dist_eq_zero.mp h'
+    rw [sub_eq_zero] at h
+    exact h
+  dist_eq x y := by
+    simp [dist_eq_val, norm_eq_val]
+    rw [abs_eq_iff_mul_self_eq]
+    ring
 
 instance : NormedSpace ℝ ConfigurationSpace where
   norm_smul_le r x := by
-    simp [norm, smul_val, abs_mul]
+    simp [abs_mul, norm_eq_val]
 
 open InnerProductSpace
 
@@ -141,21 +154,12 @@ lemma inner_def (x y : ConfigurationSpace) : ⟪x, y⟫_ℝ = x.val * y.val := r
 
 noncomputable instance : InnerProductSpace ℝ ConfigurationSpace where
   norm_sq_eq_re_inner := by
-    intro x
-    have hx : ‖x‖ ^ 2 = x.val ^ 2 := by
-      simp [norm, sq_abs]
-    simpa [inner_def, pow_two] using hx
-  conj_inner_symm := by
-    intro x y
-    simp [inner_def]
+    intros
+    simp [norm_eq_val]
     ring
-  add_left := by
-    intro x y z
-    simp [inner_def, add_mul]
-  smul_left := by
-    intro x y r
-    simp [inner_def]
-    ring
+  conj_inner_symm := by intros; simp [inner_def]; ring
+  add_left := by intros; simp [inner_def, add_mul]
+  smul_left := by intros; simp [inner_def]; ring
 
 @[fun_prop]
 lemma differentiable_inner_self :
@@ -196,33 +200,36 @@ noncomputable def fromRealLM : ℝ →ₗ[ℝ] ConfigurationSpace :=
       ext
       simp }
 
+/-- `ConfigurationSpace` is finite-dimensional over `ℝ`. -/
+instance : FiniteDimensional ℝ ConfigurationSpace := by
+  classical
+  refine FiniteDimensional.of_injective toRealLM ?_
+  intro x y h
+  ext
+  simpa using h
+
 /-- Continuous linear map sending a configuration space element to its underlying real value. -/
 noncomputable def toRealCLM : ConfigurationSpace →L[ℝ] ℝ :=
-  toRealLM.mkContinuous 1 (by
-    intro x
-    simp [toRealLM, norm])
+  LinearMap.toContinuousLinearMap
+  {
+    toFun := ConfigurationSpace.val
+    map_add' := by simp
+    map_smul' := by simp
+  }
 
-/-- Continuous linear map embedding a real value into the configuration space. -/
-noncomputable def fromRealCLM : ℝ →L[ℝ] ConfigurationSpace :=
-  fromRealLM.mkContinuous 1 (by
-    intro x
-    simp [fromRealLM, norm])
+/-- The continuous linear equivalence from `ConfigurationSpace` to `ℝ`. -/
+noncomputable def toRealCLE : ConfigurationSpace ≃L[ℝ] ℝ := LinearEquiv.toContinuousLinearEquiv
+  {
+    toFun := ConfigurationSpace.val
+    invFun := fun x => ⟨x⟩
+    left_inv x := by rfl
+    right_inv x := by rfl
+    map_add' := by simp
+    map_smul' := by simp
+  }
 
 /-- Homeomorphism between configuration space and `ℝ` given by `ConfigurationSpace.val`. -/
-noncomputable def valHomeomorphism : ConfigurationSpace ≃ₜ ℝ where
-  toFun := ConfigurationSpace.val
-  invFun := fun t => ⟨t⟩
-  left_inv := by
-    intro t
-    cases t
-    rfl
-  right_inv := by
-    intro t
-    rfl
-  continuous_toFun := by
-    simpa [toRealCLM, toRealLM] using toRealCLM.continuous
-  continuous_invFun := by
-    simpa [fromRealCLM, fromRealLM] using fromRealCLM.continuous
+noncomputable def valHomeomorphism : ConfigurationSpace ≃ₜ ℝ := toRealCLE.toHomeomorph
 
 /-- The structure of a charted space on `ConfigurationSpace`. -/
 noncomputable instance : ChartedSpace ℝ ConfigurationSpace where
@@ -244,16 +251,8 @@ noncomputable instance : IsManifold 𝓘(ℝ, ℝ) ω ConfigurationSpace where
     subst h1 h2
     exact symm_trans_mem_contDiffGroupoid valHomeomorphism.toOpenPartialHomeomorph
 
-instance : FiniteDimensional ℝ ConfigurationSpace := by
-  classical
-  refine FiniteDimensional.of_injective toRealLM ?_
-  intro x y h
-  ext
-  simpa using h
-
 instance : CompleteSpace ConfigurationSpace := by
-  classical
-  simpa using (FiniteDimensional.complete ℝ ConfigurationSpace)
+  infer_instance
 
 /-!
 ## Map to space

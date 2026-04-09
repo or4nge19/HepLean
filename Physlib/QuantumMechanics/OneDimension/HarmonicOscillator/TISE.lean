@@ -77,8 +77,9 @@ lemma deriv_eigenfunction_zero' : deriv (Q.eigenfunction 0) =
   simp only [Complex.ofReal_div, Complex.ofReal_neg, Complex.ofReal_one, Complex.ofReal_pow,
     eigenfunction_eq, pow_zero, factorial_zero, cast_one, mul_one, Real.sqrt_one, ne_eq,
     one_ne_zero, not_false_eq_true, div_self, Real.sqrt_nonneg, Real.sqrt_mul, Complex.ofReal_mul,
-    one_div, mul_inv_rev, one_mul, Polynomial.aeval, physHermite_zero, eq_intCast, Int.cast_one,
-    Polynomial.eval₂AlgHom'_apply, Polynomial.eval₂_one, Complex.ofReal_exp, Complex.ofReal_ofNat,
+    one_div, mul_inv_rev, one_mul, Polynomial.aeval_def,
+    physHermite_zero, eq_intCast, Int.cast_one,
+    Polynomial.eval₂_one, Complex.ofReal_exp, Complex.ofReal_ofNat,
     Pi.mul_apply, Pi.smul_apply, smul_eq_mul, pow_one, factorial_one, physHermite_one,
     Polynomial.eval₂_mul, Polynomial.eval₂_ofNat, Polynomial.eval₂_X]
   ring_nf
@@ -232,7 +233,9 @@ lemma deriv_deriv_eigenfunction (n : ℕ) (x : ℝ) :
         simp only [nsmul_eq_mul, cast_ofNat, derivative_physHermite, map_sub, map_mul,
           Polynomial.aeval_X, map_natCast, Complex.ofReal_sub, Complex.ofReal_mul,
           Complex.ofReal_natCast]
-        rw [show (Polynomial.aeval (x / Q.ξ)) 2 = 2 by simp [Polynomial.aeval]]
+        simp_rw [(show Polynomial.aeval (x / Q.ξ) (2 : Polynomial ℤ) = (2 : ℝ) by
+          rw [@Polynomial.aeval_def (R := ℤ) (A := ℝ) (x := x / Q.ξ) (p := (2 : Polynomial ℤ))]
+          exact @Polynomial.eval₂_natCast ℤ ℝ _ _ (algebraMap ℤ ℝ) (x / Q.ξ) 2)]
         simp only [one_div, Complex.ofReal_ofNat, Complex.ofReal_div]
         field_simp
       ring

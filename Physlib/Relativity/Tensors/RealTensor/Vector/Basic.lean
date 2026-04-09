@@ -63,11 +63,21 @@ def equivEuclid (d : ℕ) :
 lemma equivEuclid_apply (d : ℕ) (v : Vector d) (i : Fin 1 ⊕ Fin d) :
     equivEuclid d v i = v i := rfl
 
-instance (d : ℕ) : Norm (Vector d) where
-  norm := fun v => ‖equivEuclid d v‖
+instance isNormedAddCommGroup (d : ℕ) : NormedAddCommGroup (Vector d) :=
+  AddGroupNorm.toNormedAddCommGroup
+  { toFun := fun v => ‖equivEuclid d v‖
+    map_zero' := by simp [map_zero]
+    neg' := fun v => by
+      rw [show ‖equivEuclid d (-v)‖ = ‖-equivEuclid d v‖ by rw [map_neg]]
+      rw [norm_neg]
+    add_le' := fun x y => by
+      simpa [map_add] using norm_add_le (equivEuclid d x) (equivEuclid d y)
+    eq_zero_of_map_eq_zero' := fun x hx => by
+      refine (equivEuclid d).injective ?_
+      exact (norm_eq_zero (E := EuclideanSpace ℝ (Fin 1 ⊕ Fin d))).1 hx }
 
 lemma norm_eq_equivEuclid (d : ℕ) (v : Vector d) :
-    ‖v‖ = ‖equivEuclid d v‖ := rfl
+    ‖v‖ = ‖(equivEuclid d v : EuclideanSpace ℝ (Fin 1 ⊕ Fin d))‖ := rfl
 
 @[simp]
 lemma abs_component_le_norm {d : ℕ} (v : Vector d) (i : Fin 1 ⊕ Fin d) :
@@ -78,23 +88,10 @@ lemma abs_component_le_norm {d : ℕ} (v : Vector d) (i : Fin 1 ⊕ Fin d) :
   · simp
   refine Finset.sum_le_univ_sum_of_nonneg (fun i => by positivity)
 
-instance isNormedAddCommGroup (d : ℕ) : NormedAddCommGroup (Vector d) where
-  dist_self x := by simp [norm_eq_equivEuclid]
-  dist_comm x y := by
-    simpa [norm_eq_equivEuclid] using dist_comm ((equivEuclid d) x) _
-  dist_triangle x y z := by
-    simpa [norm_eq_equivEuclid] using dist_triangle
-      ((equivEuclid d) x) ((equivEuclid d) y) ((equivEuclid d) z)
-  eq_of_dist_eq_zero {x y} := by
-    simp only [norm_eq_equivEuclid, map_sub]
-    intro h
-    apply (equivEuclid d).injective
-    exact (eq_of_dist_eq_zero h)
-
 set_option backward.isDefEq.respectTransparency false in
 instance isNormedSpace (d : ℕ) : NormedSpace ℝ (Vector d) where
   norm_smul_le c v := by
-    simp only [norm_eq_equivEuclid, map_smul]
+    rw [norm_eq_equivEuclid, LinearEquiv.map_smul]
     exact norm_smul_le c (equivEuclid d v)
 open InnerProductSpace
 
@@ -107,16 +104,16 @@ lemma inner_eq_equivEuclid (d : ℕ) (v w : Vector d) :
 /-- The Euclidean inner product structure on `CoVector`. -/
 instance innerProductSpace (d : ℕ) : InnerProductSpace ℝ (Vector d) where
   norm_sq_eq_re_inner v := by
-    simp only [inner_eq_equivEuclid, norm_eq_equivEuclid]
+    rw [inner_eq_equivEuclid, norm_eq_equivEuclid]
     exact InnerProductSpace.norm_sq_eq_re_inner (equivEuclid d v)
   conj_inner_symm x y := by
-    simp only [inner_eq_equivEuclid]
+    rw [inner_eq_equivEuclid]
     exact InnerProductSpace.conj_inner_symm (equivEuclid d x) (equivEuclid d y)
   add_left x y z := by
-    simp only [inner_eq_equivEuclid, map_add]
+    rw [inner_eq_equivEuclid, LinearEquiv.map_add]
     exact InnerProductSpace.add_left (equivEuclid d x) (equivEuclid d y) (equivEuclid d z)
   smul_left x y r := by
-    simp only [inner_eq_equivEuclid, map_smul]
+    rw [inner_eq_equivEuclid, LinearEquiv.map_smul]
     exact InnerProductSpace.smul_left (equivEuclid d x) (equivEuclid d y) r
 
 /-- The instance of a `ChartedSpace` on `Vector d`. -/
@@ -165,13 +162,15 @@ lemma zero_apply {d : ℕ} (i : Fin 1 ⊕ Fin d) :
     (0 : Vector d) i = 0 := rfl
 
 /-- The continuous linear map from a Lorentz vector to one of its coordinates. -/
-def coordCLM {d : ℕ} (i : Fin 1 ⊕ Fin d) : Vector d →L[ℝ] ℝ := LinearMap.toContinuousLinearMap {
-  toFun v := v i
-  map_add' := by simp
-  map_smul' := by simp}
+def coordCLM {d : ℕ} (i : Fin 1 ⊕ Fin d) : Vector d →L[ℝ] ℝ :=
+  LinearMap.toContinuousLinearMap
+    ({ toFun := fun v : Vector d => v i
+       map_add' := fun _ _ => rfl
+       map_smul' := fun _ _ => rfl } : Vector d →ₗ[ℝ] ℝ)
 
 lemma coordCLM_apply {d : ℕ} (i : Fin 1 ⊕ Fin d) (v : Vector d) :
-    coordCLM i v = v i := rfl
+    coordCLM i v = v i := by
+  simp [coordCLM, LinearMap.coe_toContinuousLinearMap]
 
 @[fun_prop]
 lemma coord_continuous {d : ℕ} (i : Fin 1 ⊕ Fin d) :
@@ -204,7 +203,8 @@ def equivPi (d : ℕ) :
 
 @[simp]
 lemma equivPi_apply {d : ℕ} (v : Vector d) (i : Fin 1 ⊕ Fin d) :
-    equivPi d v i = v i := rfl
+    equivPi d v i = v i :=
+  rfl
 
 @[fun_prop]
 lemma continuous_of_apply {d : ℕ} {α : Type*} [TopologicalSpace α]
@@ -512,6 +512,7 @@ lemma _root_.LorentzGroup.eq_of_action_vector_eq {d : ℕ}
 def actionCLM {d : ℕ} (Λ : LorentzGroup d) :
     Vector d →L[ℝ] Vector d :=
   LinearMap.toContinuousLinearMap
+    (show Vector d →ₗ[ℝ] Vector d from
     { toFun := fun v => Λ • v
       map_add' := smul_add Λ
       map_smul' := fun c v => by
@@ -523,10 +524,11 @@ def actionCLM {d : ℕ} (Λ : LorentzGroup d) :
         rw [Finset.mul_sum]
         congr
         funext j
-        ring}
+        ring})
 
 lemma actionCLM_apply {d : ℕ} (Λ : LorentzGroup d) (p : Vector d) :
-    actionCLM Λ p = Λ • p := rfl
+    actionCLM Λ p = Λ • p := by
+  simp [actionCLM, LinearMap.coe_toContinuousLinearMap]
 
 lemma actionCLM_injective {d : ℕ} (Λ : LorentzGroup d) :
     Function.Injective (actionCLM Λ) := by
@@ -594,10 +596,9 @@ lemma spatialCLM_basis_sum_inl {d : ℕ} :
 lemma spatialCLM_basis_sum_inr {d : ℕ} (i : Fin d) :
     spatialCLM d (basis (Sum.inr i)) = EuclideanSpace.basisFun (Fin d) ℝ i := by
   ext j
-  rw [spatialCLM_apply_eq_spatialPart, spatialPart_basis_sum_inr i j]
-  simp [Finsupp.single_apply]
-  congr 1
-  exact Eq.propIntro (fun a => id (Eq.symm a)) fun a => id (Eq.symm a)
+  simp [spatialCLM_apply_eq_spatialPart, spatialPart_basis_sum_inr i j, EuclideanSpace.basisFun_apply,
+    PiLp.single_apply]
+  split_ifs with h <;> simp_all [eq_comm]
 
 /-!
 
@@ -617,13 +618,11 @@ lemma timeComponent_basis_sum_inl {d : ℕ} :
 
 /-- The temporal part of a Lorentz vector as a continuous linear map. -/
 def temporalCLM (d : ℕ) : Vector d →L[ℝ] ℝ :=
-  LinearMap.toContinuousLinearMap {
-    toFun := fun v => v (Sum.inl 0)
-    map_add' := by simp
-    map_smul' := by simp}
+  coordCLM (Sum.inl 0)
 
 lemma temporalCLM_apply_eq_timeComponent {d : ℕ} (v : Vector d) :
-    temporalCLM d v = timeComponent v := rfl
+    temporalCLM d v = timeComponent v := by
+  simp [temporalCLM, timeComponent, coordCLM_apply]
 
 @[simp]
 lemma temporalCLM_basis_sum_inr {d : ℕ} (i : Fin d) :

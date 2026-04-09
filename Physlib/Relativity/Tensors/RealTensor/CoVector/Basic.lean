@@ -59,29 +59,26 @@ def equivEuclid (d : ℕ) :
     CoVector d ≃ₗ[ℝ] EuclideanSpace ℝ (Fin 1 ⊕ Fin d) :=
   (WithLp.linearEquiv _ _ _).symm
 
-instance (d : ℕ) : Norm (CoVector d) where
-  norm := fun v => ‖equivEuclid d v‖
+instance isNormedAddCommGroup (d : ℕ) : NormedAddCommGroup (CoVector d) :=
+  AddGroupNorm.toNormedAddCommGroup
+  { toFun := fun v => ‖equivEuclid d v‖
+    map_zero' := by simp [map_zero]
+    neg' := fun v => by
+      rw [show ‖equivEuclid d (-v)‖ = ‖-equivEuclid d v‖ by rw [map_neg]]
+      rw [norm_neg]
+    add_le' := fun x y => by
+      simpa [map_add] using norm_add_le (equivEuclid d x) (equivEuclid d y)
+    eq_zero_of_map_eq_zero' := fun x hx => by
+      refine (equivEuclid d).injective ?_
+      exact (norm_eq_zero (E := EuclideanSpace ℝ (Fin 1 ⊕ Fin d))).1 hx }
 
 lemma norm_eq_equivEuclid (d : ℕ) (v : CoVector d) :
-    ‖v‖ = ‖equivEuclid d v‖ := rfl
-
-instance isNormedAddCommGroup (d : ℕ) : NormedAddCommGroup (CoVector d) where
-  dist_self x := by simp [norm_eq_equivEuclid]
-  dist_comm x y := by
-    simpa [norm_eq_equivEuclid] using dist_comm ((equivEuclid d) x) _
-  dist_triangle x y z := by
-    simpa [norm_eq_equivEuclid] using dist_triangle
-      ((equivEuclid d) x) ((equivEuclid d) y) ((equivEuclid d) z)
-  eq_of_dist_eq_zero {x y} := by
-    simp only [norm_eq_equivEuclid, map_sub]
-    intro h
-    apply (equivEuclid d).injective
-    exact (eq_of_dist_eq_zero h)
+    ‖v‖ = ‖(equivEuclid d v : EuclideanSpace ℝ (Fin 1 ⊕ Fin d))‖ := rfl
 
 set_option backward.isDefEq.respectTransparency false in
 instance isNormedSpace (d : ℕ) : NormedSpace ℝ (CoVector d) where
   norm_smul_le c v := by
-    simp only [norm_eq_equivEuclid, map_smul]
+    rw [norm_eq_equivEuclid, LinearEquiv.map_smul]
     exact norm_smul_le c (equivEuclid d v)
 
 open InnerProductSpace
@@ -94,16 +91,16 @@ lemma inner_eq_equivEuclid (d : ℕ) (v w : CoVector d) :
 /-- The Euclidean inner product structure on `CoVector`. -/
 instance innerProductSpace (d : ℕ) : InnerProductSpace ℝ (CoVector d) where
   norm_sq_eq_re_inner v := by
-    simp only [inner_eq_equivEuclid, norm_eq_equivEuclid]
+    rw [inner_eq_equivEuclid, norm_eq_equivEuclid]
     exact InnerProductSpace.norm_sq_eq_re_inner (equivEuclid d v)
   conj_inner_symm x y := by
-    simp only [inner_eq_equivEuclid]
+    rw [inner_eq_equivEuclid]
     exact InnerProductSpace.conj_inner_symm (equivEuclid d x) (equivEuclid d y)
   add_left x y z := by
-    simp only [inner_eq_equivEuclid, map_add]
+    rw [inner_eq_equivEuclid, LinearEquiv.map_add]
     exact InnerProductSpace.add_left (equivEuclid d x) (equivEuclid d y) (equivEuclid d z)
   smul_left x y r := by
-    simp only [inner_eq_equivEuclid, map_smul]
+    rw [inner_eq_equivEuclid, LinearEquiv.map_smul]
     exact InnerProductSpace.smul_left (equivEuclid d x) (equivEuclid d y) r
 
 /-- The instance of a `ChartedSpace` on `Vector d`. -/
@@ -339,6 +336,7 @@ lemma smul_neg {d : ℕ} (Λ : LorentzGroup d) (p : CoVector d) :
 def actionCLM {d : ℕ} (Λ : LorentzGroup d) :
     CoVector d →L[ℝ] CoVector d :=
   LinearMap.toContinuousLinearMap
+    (show CoVector d →ₗ[ℝ] CoVector d from
     { toFun := fun v => Λ • v
       map_add' := smul_add Λ
       map_smul' := fun c v => by
@@ -350,10 +348,11 @@ def actionCLM {d : ℕ} (Λ : LorentzGroup d) :
         rw [Finset.mul_sum]
         congr
         funext j
-        ring}
+        ring})
 
 lemma actionCLM_apply {d : ℕ} (Λ : LorentzGroup d) (p : CoVector d) :
-    actionCLM Λ p = Λ • p := rfl
+    actionCLM Λ p = Λ • p := by
+  simp [actionCLM, LinearMap.coe_toContinuousLinearMap]
 
 set_option backward.isDefEq.respectTransparency false in
 lemma smul_basis {d : ℕ} (Λ : LorentzGroup d) (μ : Fin 1 ⊕ Fin d) :

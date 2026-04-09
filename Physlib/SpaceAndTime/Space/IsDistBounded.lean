@@ -316,23 +316,25 @@ lemma integrable_time_space {d : ℕ} {f : Space d → F} (hf : IsDistBounded f)
   suffices h0 : ∀ (p : ℤ) (hp : - (d - 1 : ℕ) ≤ p) (η : 𝓢(Time × Space d, ℝ)),
       Integrable (fun x : Time × Space d => η x * ‖x.2‖ ^ p) volume by
     intro p hp c η
+    let z : Time × Space d := ((0 : Time), c)
+    have hz : ‖z‖ = ‖c‖ := by
+      simp [z, Prod.norm_mk, norm_zero, max_eq_right (norm_nonneg c)]
     suffices h1 : Integrable (fun (x : Time × Space d) =>
-        η ((x + (0, c)) - (0, c)) * ‖(x + (0, c)).2‖ ^ p) (volume.prod volume) by
-      simpa using h1
-    apply MeasureTheory.Integrable.comp_add_right (g := (0, c))
-      (f := fun x => η (x - (0, c)) * ‖x.2‖ ^ p)
+        η ((x + z) - z) * ‖(x + z).2‖ ^ p) (volume.prod volume) by
+      simpa [z] using h1
+    apply MeasureTheory.Integrable.comp_add_right (g := z)
+      (f := fun x => η (x - z) * ‖x.2‖ ^ p)
     apply h0 p hp (η.compCLM (𝕜 := ℝ) ?_ ?_)
     · apply Function.HasTemperateGrowth.of_fderiv (k := 1) (C := 1 + ‖c‖)
       · convert Function.HasTemperateGrowth.const (ContinuousLinearMap.id ℝ (Time × Space d))
         simp [fderiv_sub_const]
       · fun_prop
-      · refine fun x => (norm_sub_le _ _).trans (le_of_sub_nonneg ?_)
+      · refine fun x => (norm_sub_le x z).trans (le_of_sub_nonneg ?_)
+        rw [hz]
         ring_nf
-        simp only [Prod.norm_mk, norm_zero, norm_nonneg, sup_of_le_right,
-          add_add_sub_cancel]
         positivity
-    · refine ⟨1, (1 + ‖((0, c) : Time × Space d)‖),
-        fun x => (norm_le_norm_add_norm_sub' x (0,c)).trans (le_of_sub_nonneg ?_)⟩
+    · refine ⟨1, (1 + ‖c‖), fun x => (norm_le_norm_add_norm_sub' x z).trans (le_of_sub_nonneg ?_)⟩
+      rw [hz]
       ring_nf
       positivity
   /- Proving `Integrable (fun x : Space d => η x * ‖x.2‖ ^ p)` -/

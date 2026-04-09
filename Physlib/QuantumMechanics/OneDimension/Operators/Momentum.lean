@@ -185,9 +185,10 @@ lemma momentumOperatorUnbounded_isSelfAdjoint : momentumOperatorUnbounded.IsSelf
       rw [ContinuousLinearEquiv.integrable_comp_iff]
       exact SchwartzMap.integrable (ψ1)
     · exact SchwartzMap.memLp_top (ψ2) MeasureTheory.volume
-  · apply Differentiable.star
-    exact SchwartzMap.differentiable (ψ1)
-  · exact SchwartzMap.differentiable (ψ2)
+  · intro x _hx
+    simpa using (SchwartzMap.differentiableAt ψ1).star
+  · intro x _hx
+    exact SchwartzMap.differentiableAt ψ2
 
 end
 end OneDimension

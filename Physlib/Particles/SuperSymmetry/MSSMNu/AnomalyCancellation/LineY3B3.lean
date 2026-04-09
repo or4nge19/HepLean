@@ -81,7 +81,7 @@ lemma doublePoint_Y₃_B₃ (R : MSSMACC.LinSols) :
   simp only [Fin.isValue, Fin.sum_univ_three, Prod.mk_zero_zero, LinearMap.coe_mk, AddHom.coe_mk,
     Prod.mk_one_one] at h1 h2 h3
   linear_combination (norm := ring_nf) -(12 * h2) + 9 * h1 + 3 * h3
-  simp only [Fin.isValue, Prod.mk_zero_zero, Prod.mk_one_one, add_add_sub_cancel, add_neg_cancel]
+  norm_num [finProdFinEquiv]
 
 set_option backward.isDefEq.respectTransparency false in
 lemma lineY₃B₃_doublePoint (R : MSSMACC.LinSols) (a b : ℚ) :

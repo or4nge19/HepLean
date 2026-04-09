@@ -71,6 +71,10 @@ def toSelfAdjointMap (M : SL(2, ℂ)) :
     noncomm_ring [selfAdjoint.val_smul, Algebra.mul_smul_comm, Algebra.smul_mul_assoc,
       RingHom.id_apply]
 
+/-- `toSelfAdjointMap` agrees with `toSelfAdjointMap'` on the underlying matrix. -/
+lemma toSelfAdjointMap_eq' (M : SL(2, ℂ)) : toSelfAdjointMap M = toSelfAdjointMap' M.1 :=
+  LinearMap.ext fun A => Subtype.ext rfl
+
 lemma toSelfAdjointMap_apply_det (M : SL(2, ℂ)) (A : selfAdjoint (Matrix (Fin 2) (Fin 2) ℂ)) :
     det ((toSelfAdjointMap M) A).1 = det A.1 := by
   simp only [toSelfAdjointMap, LinearMap.coe_mk, AddHom.coe_mk, det_mul, det_conjTranspose]
@@ -146,11 +150,9 @@ def toMatrix : SL(2, ℂ) →* Matrix (Fin 1 ⊕ Fin 3) (Fin 1 ⊕ Fin 3) ℝ wh
     erw [LinearMap.toMatrix_one]
   map_mul' M N := by
     rw [← LinearMap.toMatrix_mul]
-    apply congrArg
-    ext1 x
-    simp only [toSelfAdjointMap, SpecialLinearGroup.coe_mul, conjTranspose_mul,
-      LinearMap.coe_mk, AddHom.coe_mk, Module.End.mul_apply, Subtype.mk.injEq]
-    noncomm_ring
+    refine congrArg (LinearMap.toMatrix PauliMatrix.pauliBasis' PauliMatrix.pauliBasis') ?_
+    rw [toSelfAdjointMap_eq' (M * N), SpecialLinearGroup.coe_mul, toSelfAdjointMap_mul,
+      ← Module.End.mul_eq_comp, ← toSelfAdjointMap_eq' M, ← toSelfAdjointMap_eq' N]
 
 open Lorentz in
 lemma toMatrix_apply_contrMod (M : SL(2, ℂ)) (v : ContrMod 3) :

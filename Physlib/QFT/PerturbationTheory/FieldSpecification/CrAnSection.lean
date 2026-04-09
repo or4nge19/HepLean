@@ -174,7 +174,8 @@ lemma card_eq_mul : {φs : List 𝓕.FieldOp} → Fintype.card (CrAnSection φs)
       rw [card_cons_eq]
       rw [card_eq_mul]
       simp only [fieldOpToCrAnType, CreateAnnihilate.CreateAnnihilate_card_eq_two]
-      ring
+      rw [mul_comm]
+      rfl
   | FieldOp.inAsymp x_ :: φs => by
       simp only [statesIsPosition, Bool.false_eq_true, not_false_eq_true, List.countP_cons_of_neg]
       rw [card_cons_eq]

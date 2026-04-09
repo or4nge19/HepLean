@@ -134,21 +134,21 @@ lemma deriv_euclid { μ} {f : Time→ EuclideanSpace ℝ (Fin n)}
     (hf : Differentiable ℝ f) (t : Time) :
     deriv (fun t => f t μ) t = deriv (fun t => f t) t μ := by
   rw [deriv_eq]
-  change fderiv ℝ (EuclideanSpace.proj μ ∘ fun x => f x) t 1 = _
-  rw [fderiv_comp]
-  · simp
-    rw [← deriv_eq]
-  · fun_prop
-  · fun_prop
+  change fderiv ℝ (fun y => EuclideanSpace.proj μ (f y)) t 1 = _
+  rw [fderiv_comp' (x := t) (EuclideanSpace.proj μ).differentiableAt hf.differentiableAt]
+  rw [ContinuousLinearMap.fderiv (𝕜 := ℝ) (f := EuclideanSpace.proj μ) (x := f t)]
+  simp only [ContinuousLinearMap.comp_apply, EuclideanSpace.coe_proj]
+  refine congrArg (fun v : EuclideanSpace ℝ (Fin n) => v μ) ?_
+  refine congrArg (fun H : Time →L[ℝ] EuclideanSpace ℝ (Fin n) => H 1) ?_
+  exact congrArg (fun φ : Time → EuclideanSpace ℝ (Fin n) => fderiv ℝ φ t) (funext fun _ => rfl)
 
 lemma fderiv_euclid { μ} {f : Time→ EuclideanSpace ℝ (Fin n)}
     (hf : Differentiable ℝ f) (t dt : Time) :
     fderiv ℝ (fun t => f t μ) t dt = fderiv ℝ (fun t => f t) t dt μ := by
-  change fderiv ℝ (EuclideanSpace.proj μ ∘ fun x => f x) t dt = _
-  rw [fderiv_comp]
-  · simp
-  · fun_prop
-  · fun_prop
+  change fderiv ℝ (fun y => EuclideanSpace.proj μ (f y)) t dt = _
+  rw [fderiv_comp' (x := t) (EuclideanSpace.proj μ).differentiableAt hf.differentiableAt]
+  rw [ContinuousLinearMap.fderiv (𝕜 := ℝ) (f := EuclideanSpace.proj μ) (x := f t)]
+  simp only [ContinuousLinearMap.comp_apply, EuclideanSpace.coe_proj]
 
 set_option backward.isDefEq.respectTransparency false in
 lemma deriv_lorentzVector {d : ℕ} {f : Time → Lorentz.Vector d}

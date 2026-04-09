@@ -374,7 +374,8 @@ lemma fderivD_const [hμ : Measure.IsAddHaarMeasure (volume (α := E))]
   · simp
   · apply MeasureTheory.Integrable.smul_const
     exact integrable η
-  · exact SchwartzMap.differentiable η
+  · intro x _hx
+    exact SchwartzMap.differentiableAt η
   · simp
 
 end

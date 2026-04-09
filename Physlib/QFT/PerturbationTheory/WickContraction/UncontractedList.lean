@@ -131,8 +131,12 @@ lemma fin_list_sorted_indexOf_mem :
     (hi : i ∈ l) →
     l.idxOf i = (l.filter (fun x => x.1 < i.1)).length := by
   intro l hl i hi
-  conv_lhs => rw [fin_list_sorted_split l hl i]
-  rw [List.idxOf_append_of_notMem]
+  rw [fin_list_sorted_split l hl i.1]
+  have hi' : i ∉ l.filter (fun x => x.1 < i.1) := by
+    intro hmem
+    simp only [List.mem_filter, decide_eq_true_iff] at hmem
+    exact Nat.lt_irrefl i.1 hmem.2
+  rw [List.idxOf_append_of_notMem hi']
   erw [fin_list_sorted_indexOf_filter_le_mem l hl i hi]
   simp
 

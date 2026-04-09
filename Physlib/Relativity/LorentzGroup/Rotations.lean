@@ -6,6 +6,7 @@ Authors: Joseph Tooby-Smith
 module
 
 public import Physlib.Relativity.LorentzGroup.Boosts.Generalized
+public import Mathlib.LinearAlgebra.Matrix.SchurComplement
 /-!
 # Rotations
 
@@ -68,11 +69,19 @@ def ofSpecialOrthogonal {d} :
     have ha := A.2
     rw [Matrix.mem_specialOrthogonalGroup_iff, Matrix.mem_orthogonalGroup_iff'] at ha
     rw [ha.1]
-    simp⟩, by
-      simp [mem_rotations_iff]
-      have hA := A.2
-      rw [Matrix.mem_specialOrthogonalGroup_iff] at hA
-      exact hA.2⟩
+    ext i j
+    rcases i with i0 | id <;> rcases j with j0 | jd <;>
+      simp [Matrix.fromBlocks_apply₁₁, Matrix.fromBlocks_apply₁₂, Matrix.fromBlocks_apply₂₁,
+        Matrix.fromBlocks_apply₂₂, Matrix.one_apply, neg_neg, Fin.default_eq_zero]⟩, by
+      refine And.intro ?_ ?_
+      · show (Matrix.fromBlocks (1 : Matrix (Fin 1) (Fin 1) ℝ) 0 0 (A : Matrix (Fin d) (Fin d) ℝ))
+            (Sum.inl 0) (Sum.inl 0) = 1
+        rw [Matrix.fromBlocks_apply₁₁, Matrix.one_apply]
+        rfl
+      · rw [IsProper]
+        have hA := A.2
+        rw [Matrix.mem_specialOrthogonalGroup_iff] at hA
+        simpa [Matrix.det_fromBlocks_one₁₁, hA.2]⟩
   invFun Λ := ⟨fun i j => Λ.1.1 (Sum.inr i) (Sum.inr j),
     by
     match Λ with
@@ -110,21 +119,39 @@ def ofSpecialOrthogonal {d} :
         simp [minkowskiMatrix.dual] at hΛ
         rw [minkowskiMatrix.as_block] at hΛ
         simp [Matrix.fromBlocks_transpose, Matrix.fromBlocks_multiply] at hΛ
-        ext i j
-        trans (Matrix.fromBlocks (1 : Matrix (Fin 1) (Fin 1) ℝ) 0 0 (M * M.transpose))
-          (Sum.inr i) (Sum.inr j)
-        · simp [M]
-        · rw [hΛ, Matrix.one_apply, Matrix.one_apply]
-          simp
+        refine Matrix.ext fun i j => ?_
+        simpa [Matrix.fromBlocks_apply₂₂, Matrix.neg_apply, neg_neg, Matrix.one_apply,
+          Sum.inr.injEq] using congr_fun (congr_fun hΛ (Sum.inr i)) (Sum.inr j)
       · trans Λ.1.det
         · rw [← h1]
           simp
         · exact h.2⟩
   map_mul' A B := by
     apply Subtype.ext
-    simp only [Submonoid.coe_mul, MulMemClass.mk_mul_mk]
     apply Subtype.ext
-    simp [Matrix.fromBlocks_multiply]
+    simp only [Subgroup.coe_mul, lorentzGroupIsGroup_mul_coe, Submonoid.coe_mul, MulMemClass.mk_mul_mk,
+      Matrix.fromBlocks_multiply]
+    refine Matrix.ext fun i j => ?_
+    rcases i with i0 | id <;> rcases j with j0 | jd
+    · rw [Subsingleton.elim i0 0, Subsingleton.elim j0 0]
+      simp [Matrix.fromBlocks_apply₁₁, Matrix.fromBlocks_apply₁₂, Matrix.fromBlocks_apply₂₁,
+        Matrix.fromBlocks_apply₂₂, Matrix.add_apply, Matrix.mul_apply, mul_zero, zero_mul, add_zero,
+        zero_add, one_mul, mul_one, Matrix.zero_apply, Matrix.one_apply, Fintype.sum_sum_type,
+        Finset.sum_const_zero, Finset.univ_unique, Fin.default_eq_zero, reduceIte]
+    · rw [Subsingleton.elim i0 0]
+      simp [Matrix.fromBlocks_apply₁₁, Matrix.fromBlocks_apply₁₂, Matrix.fromBlocks_apply₂₁,
+        Matrix.fromBlocks_apply₂₂, Matrix.add_apply, Matrix.mul_apply, mul_zero, zero_mul, add_zero,
+        zero_add, one_mul, mul_one, Matrix.zero_apply, Matrix.one_apply, Fintype.sum_sum_type,
+        Finset.sum_const_zero, Finset.univ_unique, Fin.default_eq_zero]
+    · rw [Subsingleton.elim j0 0]
+      simp [Matrix.fromBlocks_apply₁₁, Matrix.fromBlocks_apply₁₂, Matrix.fromBlocks_apply₂₁,
+        Matrix.fromBlocks_apply₂₂, Matrix.add_apply, Matrix.mul_apply, mul_zero, zero_mul, add_zero,
+        zero_add, one_mul, mul_one, Matrix.zero_apply, Matrix.one_apply, Fintype.sum_sum_type,
+        Finset.sum_const_zero, Finset.univ_unique, Fin.default_eq_zero]
+    · simp [Matrix.fromBlocks_apply₁₁, Matrix.fromBlocks_apply₁₂, Matrix.fromBlocks_apply₂₁,
+        Matrix.fromBlocks_apply₂₂, Matrix.add_apply, Matrix.mul_apply, mul_zero, zero_mul, add_zero,
+        zero_add, one_mul, mul_one, Matrix.zero_apply, Matrix.one_apply, Fintype.sum_sum_type,
+        Finset.sum_const_zero, Finset.univ_unique, Fin.default_eq_zero]
   left_inv Λ := by
     simp
   right_inv Λ := by

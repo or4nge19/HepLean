@@ -127,11 +127,22 @@ lemma example1_properTimeTwinA : example1.properTimeTwinA = 15 := by
 
 @[simp]
 lemma example1_properTimeTwinB : example1.properTimeTwinB = 9 := by
-  simp only [properTimeTwinB, properTime, example1, sub_zero, minkowskiProduct_toCoord,
-    Fin.sum_univ_three, MulZeroClass.mul_zero, _root_.add_zero, map_sub, Finset.sum_const_zero]
-  norm_num
-  rw [show √81 = 9 from sqrt_eq_cases.mpr (by norm_num)]
-  rw [show √4 = 2 from sqrt_eq_cases.mpr (by norm_num)]
+  have hmid :
+      ⟪example1.twinBMid - example1.startPoint, example1.twinBMid - example1.startPoint⟫ₘ =
+        (9 / 2 : ℝ) ^ 2 := by
+    rw [minkowskiProduct_toCoord]
+    simp only [example1, sub_zero, Fin.sum_univ_three, MulZeroClass.mul_zero, _root_.add_zero,
+      sub_self, map_sub]
+    norm_num
+  have hsecond :
+      ⟪example1.endPoint - example1.twinBMid, example1.endPoint - example1.twinBMid⟫ₘ =
+        (9 / 2 : ℝ) ^ 2 := by
+    rw [minkowskiProduct_toCoord]
+    simp only [example1, Fin.sum_univ_three, MulZeroClass.mul_zero, _root_.add_zero, map_sub]
+    norm_num
+  simp only [properTimeTwinB, properTime, hmid, hsecond]
+  have hsq : √((9 / 2 : ℝ) ^ 2) = 9 / 2 := Real.sqrt_sq (by norm_num)
+  rw [hsq]
   norm_num
 
 lemma example1_ageGap : example1.ageGap = 6 := by

@@ -133,7 +133,7 @@ def ofCliffordAlgebra : CliffordAlgebra diracForm →ₐ[ℝ] diracAlgebra :=
 lemma ofCliffordAlgebra_ι_single (i : Fin 4) (r : ℝ) :
     ofCliffordAlgebra (CliffordAlgebra.ι _ (Pi.single i r)) = r • ⟨γ i, γ_in_diracAlgebra _⟩ :=
   CliffordAlgebra.lift_ι_apply _ _ _ |>.trans <| Subtype.ext <| by
-    simp +contextual [Fintype.sum_eq_single i, -γ]
+    fin_cases i <;> simp [Fin.sum_univ_four, -γ]
 
 /-! ### Surjectivity of ofCliffordAlgebra -/
 

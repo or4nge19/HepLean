@@ -242,7 +242,6 @@ lemma contrT_basis_repr_apply_eq_fin {n d: ℕ} {c : Fin (n + 1 + 1) → realLor
   rw [← e.symm.sum_comp]
   congr
   funext x
-  simp only
   rw [Finset.sum_eq_single (Fin.cast (by simp) x)]
   · erw [contr_basis]
     simp [e]

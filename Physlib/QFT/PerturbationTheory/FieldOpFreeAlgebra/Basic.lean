@@ -192,11 +192,17 @@ lemma anPartF_posAsymp (φ : (Σ f, 𝓕.AsymptoticLabel f) × Momentum) :
 
 lemma ofFieldOpF_eq_crPartF_add_anPartF (φ : 𝓕.FieldOp) :
     ofFieldOpF φ = crPartF φ + anPartF φ := by
-  rw [ofFieldOpF]
   cases φ with
-  | inAsymp φ => simp [fieldOpToCrAnType]
-  | position φ => simp [fieldOpToCrAnType, CreateAnnihilate.sum_eq]
-  | outAsymp φ => simp [fieldOpToCrAnType]
+  | inAsymp φ => simp [ofFieldOpF, fieldOpToCrAnType, crPartF, anPartF]
+  | position φ =>
+    simp only [ofFieldOpF, crPartF, anPartF, fieldOpToCrAnType]
+    -- Match `CreateAnnihilate.sum_eq`: reduce `Fintype` sum to `Finset` on `{create, annihilate}`.
+    change ∑ x ∈ ({CreateAnnihilate.create, CreateAnnihilate.annihilate} : Finset CreateAnnihilate),
+        ofCrAnOpF ⟨FieldOp.position φ, x⟩ =
+      ofCrAnOpF ⟨FieldOp.position φ, CreateAnnihilate.create⟩ +
+        ofCrAnOpF ⟨FieldOp.position φ, CreateAnnihilate.annihilate⟩
+    simp
+  | outAsymp φ => simp [ofFieldOpF, fieldOpToCrAnType, crPartF, anPartF]
 
 /-!
 

@@ -654,72 +654,141 @@ The proof uses the resolvent approach and compactness.
 5. For B with ‖B - A₀‖ < δ: spectrum ℝ B.mat ⊆ Metric.closedBall 0 M (by step 1) and spectrum ℝ B.mat ∩ K = ∅ (by step 4). So spectrum ℝ B.mat ⊆ Metric.closedBall 0 M \ K ⊆ U.
 Note: we need to connect spectrum ℝ B.mat (the real spectrum) to IsUnit in the complex matrix ring. Use that for self-adjoint elements, t ∈ spectrum ℝ A.mat iff algebraMap ℝ (Matrix d d ℂ) t ∈ spectrum ℂ A.mat, and the resolvent set is open. We can use spectrum.isOpen_resolventSet or the characterization via IsUnit.
 -/
+lemma cfc_matrix_setOf_isUnit_isOpen :
+    IsOpen {M : Matrix d d ℂ | IsUnit M} := by
+  have hpre :
+      {M : Matrix d d ℂ | IsUnit M} = Matrix.det ⁻¹' ({0}ᶜ : Set ℂ) := by
+    ext M
+    simp [Matrix.isUnit_iff_isUnit_det, isUnit_iff_ne_zero, ne_eq]
+  rw [hpre]
+  exact isOpen_compl_singleton.preimage continuous_id.matrix_det
+
+lemma cfc_continuous_hermPair_sub_algebraMap :
+    Continuous fun p : HermitianMat d ℂ × ℝ =>
+      p.1.mat - algebraMap ℝ (Matrix d d ℂ) p.2 := by
+  have h_alg : Continuous fun s : ℝ => algebraMap ℝ (Matrix d d ℂ) s := by
+    refine continuous_matrix fun i j => ?_
+    by_cases hij : i = j
+    · subst hij
+      simp [Matrix.algebraMap_matrix_apply]
+      exact Complex.continuous_ofReal.comp continuous_id
+    · simpa [Matrix.algebraMap_matrix_apply, hij] using continuous_const
+  exact continuous_sub.comp
+    ((continuous_subtype_val.comp continuous_fst).prodMk (h_alg.comp continuous_snd))
+
 set_option backward.isDefEq.respectTransparency false in
+set_option maxHeartbeats 800000 in
 lemma spectrum_subset_of_isOpen (A₀ : HermitianMat d ℂ) (U : Set ℝ)
     (hU : IsOpen U) (hAU : spectrum ℝ A₀.mat ⊆ U) :
     ∀ᶠ B in nhds A₀, spectrum ℝ B.mat ⊆ U := by
-  -- Let $M = \|A₀\| + 1$. For $B$ in a ball of radius $1$ around $A₀$, $\|B\| \leq M$, so $\sigma(B) \subseteq \overline{B(0, M)}$.
-  obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ B : HermitianMat d ℂ, ‖B - A₀‖ < 1 → spectrum ℝ B.mat ⊆ Metric.closedBall 0 M := by
-    use ‖A₀‖ + 1
-    intro B hB
-    have h_norm : ‖B‖ ≤ ‖A₀‖ + 1 := by
-      have := norm_sub_norm_le B A₀; linarith!;
-    generalize_proofs at *; (exact spectrum_subset_closedBall B |> fun h => h.trans <| Metric.closedBall_subset_closedBall h_norm)
-  generalize_proofs at *; (
-  -- Let $K = \overline{B(0, M)} \setminus U$. Then $K$ is compact and $K \cap \sigma(A₀) = \emptyset$.
-  set K : Set ℝ := Metric.closedBall 0 M \ U
-  have hK_compact : IsCompact K := by
-    exact IsCompact.diff ( ProperSpace.isCompact_closedBall _ _ ) hU
-  have hK_disjoint : K ∩ spectrum ℝ A₀.mat = ∅ := by
-    exact Set.eq_empty_of_forall_notMem fun x hx => hx.1.2 <| hAU hx.2
-  generalize_proofs at *; (
-  -- For each $t \in K$, there exist $\delta_t > 0$ and $\epsilon_t > 0$ such that for $\|B - A₀\| < \delta_t$ and $|s - t| < \epsilon_t$, $B.mat - algebraMap ℝ _ s$ is a unit.
-  have h_unitary : ∀ t ∈ K, ∃ δ_t > 0, ∃ ε_t > 0, ∀ B : HermitianMat d ℂ, ‖B - A₀‖ < δ_t → ∀ s : ℝ, |s - t| < ε_t → IsUnit (B.mat - algebraMap ℝ (Matrix d d ℂ) s) := by
+  classical
+  let M : ℝ := ‖A₀‖ + 1
+  let K : Set ℝ := Metric.closedBall (0 : ℝ) M \ U
+  have hK_closed : IsClosed K :=
+    IsClosed.inter Metric.isClosed_closedBall hU.isClosed_compl
+  have hK_cpct : IsCompact K :=
+    IsCompact.of_isClosed_subset (isCompact_closedBall (0 : ℝ) M) hK_closed fun x hx =>
+      (Set.mem_diff x).mp hx |>.1
+  have h_units_open := @cfc_matrix_setOf_isUnit_isOpen d _ _
+  let f : HermitianMat d ℂ × ℝ → Matrix d d ℂ := fun p =>
+    p.1.mat - algebraMap ℝ (Matrix d d ℂ) p.2
+  have hf : Continuous f := cfc_continuous_hermPair_sub_algebraMap
+  by_cases hK_empty : K = ∅
+  · have hU_cover : Metric.closedBall (0 : ℝ) M ⊆ U := by
+      intro x hx
+      by_contra hxU
+      have hxK : x ∈ K := ⟨hx, hxU⟩
+      rw [hK_empty] at hxK
+      cases hxK
+    filter_upwards [Metric.ball_mem_nhds A₀ zero_lt_one] with B hB
+    intro s hs
+    have hb : ‖B - A₀‖ < 1 := by rwa [Metric.mem_ball, dist_eq_norm] at hB
+    have hB_le : ‖B‖ ≤ M := by
+      have hle : ‖B‖ ≤ ‖B - A₀‖ + ‖A₀‖ := by
+        convert norm_add_le (B - A₀) A₀ using 1
+        rw [sub_add_cancel]
+      have hsum : ‖B - A₀‖ + ‖A₀‖ ≤ M := by
+        have hM : M = ‖A₀‖ + 1 := rfl
+        have hlt : ‖B - A₀‖ + ‖A₀‖ < ‖A₀‖ + 1 := by linarith [hb]
+        rw [hM]
+        exact le_of_lt hlt
+      exact hle.trans hsum
+    exact hU_cover ((spectrum_subset_closedBall B).trans (Metric.closedBall_subset_closedBall hB_le) hs)
+  have h_key :
+      ∀ t ∈ K, ∃ ρ > 0, Metric.ball (A₀, t) ρ ⊆ f ⁻¹' {M : Matrix d d ℂ | IsUnit M} := by
     intro t ht
-    have h_unitary : IsUnit (A₀.mat - algebraMap ℝ (Matrix d d ℂ) t) := by
-      simp_all [ Set.ext_iff, spectrum.mem_iff ];
-      simpa using hK_disjoint t ht |> IsUnit.neg |> IsUnit.mul <| isUnit_one
-    generalize_proofs at *; (
-    -- The set of units is open in the space of matrices.
-    have h_unitary_open : IsOpen {B : Matrix d d ℂ | IsUnit B} := by
-      exact Units.isOpen
-    generalize_proofs at *; (
-    have h_unitary_cont : Continuous (fun p : HermitianMat d ℂ × ℝ => p.1.mat - algebraMap ℝ (Matrix d d ℂ) p.2) := by
-      refine' Continuous.sub _ _ <;> fun_prop (disch := solve_by_elim)
-    generalize_proofs at *; (
-    have := Metric.isOpen_iff.mp ( h_unitary_open.preimage h_unitary_cont ) ( A₀, t ) h_unitary
-    generalize_proofs at *; (
-    obtain ⟨ ε, ε_pos, hε ⟩ := this; exact ⟨ ε, ε_pos, ε, ε_pos, fun B hB s hs => hε ( show ( B, s ) ∈ Metric.ball ( A₀, t ) ε from by simpa [ Prod.dist_eq ] using max_lt hB hs ) ⟩ ;))))
-  generalize_proofs at *; (
-  -- By compactness of $K$, finitely many $\epsilon$-balls cover $K$. Take $\delta = \min(1, \min_j \delta_j)$.
-  obtain ⟨δ, hδ_pos, hδ⟩ : ∃ δ > 0, ∀ t ∈ K, ∃ ε_t > 0, ∀ B : HermitianMat d ℂ, ‖B - A₀‖ < δ → ∀ s : ℝ, |s - t| < ε_t → IsUnit (B.mat - algebraMap ℝ (Matrix d d ℂ) s) := by
-    choose! δ hδ ε hε h using h_unitary
-    generalize_proofs at *; (
-    have := hK_compact.elim_nhds_subcover ( fun t => Metric.ball t ( ε t ) ) fun t ht => Metric.ball_mem_nhds t ( hε t ht ) ; simp_all [ Set.subset_def ] ; (
-    obtain ⟨ t, ht₁, ht₂ ⟩ := this
-    generalize_proofs at *; (
-    -- Let $\delta = \min(1, \min_{i \in t} \delta_i)$.
-    obtain ⟨δ_min, hδ_min_pos, hδ_min⟩ : ∃ δ_min > 0, ∀ i ∈ t, δ_min ≤ δ i := by
-      by_cases ht : t.Nonempty <;> simp_all [ Finset.Nonempty ];
-      · exact ⟨ Finset.min' ( t.image δ ) ⟨ _, Finset.mem_image_of_mem δ ht.choose_spec ⟩, by have := Finset.min'_mem ( t.image δ ) ⟨ _, Finset.mem_image_of_mem δ ht.choose_spec ⟩ ; aesop, fun i hi => Finset.min'_le _ _ ( Finset.mem_image_of_mem δ hi ) ⟩;
-      · exact ⟨ 1, zero_lt_one ⟩
-    generalize_proofs at *; (
-    refine' ⟨ Min.min δ_min 1, lt_min hδ_min_pos zero_lt_one, fun x hx => _ ⟩
-    generalize_proofs at *; (
-    obtain ⟨ i, hi, hi' ⟩ := ht₂ x hx
-    generalize_proofs at *; (
-    exact ⟨ ε i - |x - i|, sub_pos.mpr ( by simpa [ abs_sub_comm ] using hi' ), fun B hB s hs => h i ( ht₁ i hi ) B ( lt_of_lt_of_le hB ( min_le_of_left_le ( hδ_min i hi ) ) ) s ( by rw [ abs_lt ] at *; constructor <;> linarith [ abs_le.mp ( show |x - i| ≤ |x - i| by rfl ) ] ) ⟩))))))
-  generalize_proofs at *; (
-  -- For any $B$ with $\|B - A₀\| < \delta$, if $t \in \sigma(B)$, then $t \notin K$.
-  have h_not_in_K : ∀ B : HermitianMat d ℂ, ‖B - A₀‖ < δ → ∀ t ∈ spectrum ℝ B.mat, t ∉ K := by
-    intro B hB t ht htK
-    obtain ⟨ε_t, hε_t_pos, hε_t⟩ := hδ t htK
-    have h_unit : IsUnit (B.mat - algebraMap ℝ (Matrix d d ℂ) t) := by
-      exact hε_t B hB t ( by simpa using hε_t_pos )
-    generalize_proofs at *; (
-    exact ht ( by simpa [ sub_eq_iff_eq_add ] using h_unit.neg ))
-  generalize_proofs at *; (
-  filter_upwards [ Metric.ball_mem_nhds A₀ ( show 0 < Min.min δ 1 by positivity ) ] with B hB using fun t ht => Classical.not_not.1 fun h => h_not_in_K B ( lt_of_lt_of_le hB ( min_le_left _ _ ) ) t ht ⟨ hM B ( lt_of_lt_of_le hB ( min_le_right _ _ ) ) ht, h ⟩)))))
+    have ht_spec : t ∉ spectrum ℝ A₀.mat := fun hts =>
+      (Set.mem_diff t).mp ht |>.2 (hAU hts)
+    have h_isUnit : IsUnit (A₀.mat - algebraMap ℝ (Matrix d d ℂ) t) := by
+      convert (spectrum.notMem_iff.mp ht_spec).neg using 1
+      abel
+    have hmem : (A₀, t) ∈ f ⁻¹' {M : Matrix d d ℂ | IsUnit M} := by
+      simpa [f, Set.mem_preimage] using h_isUnit
+    obtain ⟨ρ, ρ_pos, hball⟩ :=
+      Metric.isOpen_iff.mp (h_units_open.preimage hf) _ hmem
+    exact ⟨ρ, ρ_pos, hball⟩
+  choose! ρ hρ_pos hρ_ball using h_key
+  obtain ⟨T, hTK, hcov⟩ :=
+    hK_cpct.elim_nhds_subcover (fun t : ℝ => Metric.ball t (ρ t / 2)) fun t ht =>
+      Metric.ball_mem_nhds t (half_pos (hρ_pos t ht))
+  have hTne : T.Nonempty := by
+    by_contra h
+    simp [Finset.not_nonempty_iff_eq_empty] at h
+    subst h
+    have hempty : (⋃ x ∈ (∅ : Finset ℝ), Metric.ball x (ρ x / 2)) = ∅ := by
+      ext y
+      simp
+    have hKsub : K ⊆ ∅ := hcov.trans (by rw [hempty])
+    rcases Set.nonempty_iff_ne_empty.mpr hK_empty with ⟨y, hy⟩
+    exact False.elim ((Set.mem_empty_iff_false y).1 (hKsub hy))
+  let img : Finset ℝ := T.image fun t => ρ t / 2
+  have himg_ne : img.Nonempty := hTne.image _
+  let rε : ℝ := img.min' himg_ne
+  have hrε_pos : 0 < rε := by
+    refine (Finset.lt_min'_iff _ _).2 fun x hx => ?_
+    rcases Finset.mem_image.mp hx with ⟨t, htT, rfl⟩
+    exact half_pos (hρ_pos t (hTK t htT))
+  let r : ℝ := min 1 rε
+  have hr_pos : 0 < r := lt_min zero_lt_one hrε_pos
+  filter_upwards [Metric.ball_mem_nhds A₀ hr_pos] with B hB
+  intro s hs
+  by_contra hsU
+  have hb : ‖B - A₀‖ < r := by rwa [Metric.mem_ball, dist_eq_norm] at hB
+  have hB_le : ‖B‖ ≤ M := by
+    have hb1 : ‖B - A₀‖ < 1 := lt_of_lt_of_le hb (min_le_left _ _)
+    have hle : ‖B‖ ≤ ‖B - A₀‖ + ‖A₀‖ := by
+      convert norm_add_le (B - A₀) A₀ using 1
+      rw [sub_add_cancel]
+    have hsum : ‖B - A₀‖ + ‖A₀‖ ≤ M := by
+      have hM : M = ‖A₀‖ + 1 := rfl
+      have hlt : ‖B - A₀‖ + ‖A₀‖ < ‖A₀‖ + 1 := by linarith [hb1]
+      rw [hM]
+      exact le_of_lt hlt
+    exact hle.trans hsum
+  have hsball : s ∈ Metric.closedBall (0 : ℝ) M :=
+    (spectrum_subset_closedBall B).trans (Metric.closedBall_subset_closedBall hB_le) hs
+  have hsK : s ∈ K := ⟨hsball, hsU⟩
+  rcases Set.mem_iUnion₂.mp (hcov hsK) with ⟨i, hiT, his⟩
+  have hρi_pos : 0 < ρ i := hρ_pos i (hTK i hiT)
+  have hBi : ‖B - A₀‖ < ρ i / 2 := by
+    have : rε ≤ ρ i / 2 := img.min'_le (ρ i / 2) (Finset.mem_image.mpr ⟨i, hiT, rfl⟩)
+    exact lt_of_lt_of_le (lt_of_lt_of_le hb (min_le_right _ _)) this
+  have hsi : |s - i| < ρ i / 2 := his
+  have hBi' : ‖B - A₀‖ < ρ i := lt_trans hBi (half_lt_self hρi_pos)
+  have hsi' : |s - i| < ρ i := lt_trans hsi (half_lt_self hρi_pos)
+  have hdist : dist (B, s) (A₀, i) < ρ i := by
+    rw [Prod.dist_eq, dist_eq_norm, Real.dist_eq]
+    exact max_lt hBi' hsi'
+  have hmem_ball : (B, s) ∈ Metric.ball (A₀, i) (ρ i) :=
+    Metric.mem_ball.mpr hdist
+  have h_unit : IsUnit (B.mat - algebraMap ℝ (Matrix d d ℂ) s) := by
+    have := hρ_ball i (hTK i hiT) hmem_ball
+    simpa [f, Set.mem_preimage] using this
+  have hspec := spectrum.mem_iff.mp hs
+  have hun : IsUnit ((algebraMap ℝ (Matrix d d ℂ)) s - B.mat) := by
+    convert h_unit.neg using 1
+    abel
+  exact hspec hun
 
 /-
 PROBLEM
