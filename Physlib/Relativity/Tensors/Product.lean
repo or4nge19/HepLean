@@ -106,16 +106,6 @@ def ComponentIdx.prodIndexEquiv {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 �
     Π (i : Fin n1 ⊕ Fin n2), Fin (S.repDim (Sum.elim c c1 i)) :=
   (Equiv.piCongr finSumFinEquiv (fun x => finCongr (by cases x <;> simp))).symm
 
-@[simp] lemma finSumFinEquiv_symm_castAdd {n1 n2 : ℕ} (i : Fin n1) :
-    finSumFinEquiv.symm (Fin.castAdd n2 i) = Sum.inl i := by
-  apply finSumFinEquiv.injective
-  simp [finSumFinEquiv_apply_left]
-
-@[simp] lemma finSumFinEquiv_symm_natAdd {n1 n2 : ℕ} (i : Fin n2) :
-    finSumFinEquiv.symm (Fin.natAdd n1 i) = Sum.inr i := by
-  apply finSumFinEquiv.injective
-  simp [finSumFinEquiv_apply_right]
-
 /-!
 
 ### A.2. The product of two index components
@@ -172,13 +162,14 @@ def ComponentIdx.prodEquiv {n1 n2 : ℕ} {c : Fin n1 → C} {c1 : Fin n2 → C} 
     simp only
     · rw [ComponentIdx.prodIndexEquiv]
       rw [Equiv.piCongr_symm_apply]
-      simp only [Sum.elim_inl, finCongr_symm]
+      simp only [Sum.elim_inl, finCongr_symm, finCongr_apply, Fin.val_cast]
       rw [prod_apply_finSumFinEquiv]
       rfl
     · rw [ComponentIdx.prodIndexEquiv]
       simp only
       erw [Equiv.piCongr_symm_apply]
-      simp only [Sum.elim_inr, finCongr_symm]
+      simp only [Sum.elim_inr, finCongr_symm,
+        finCongr_apply, Fin.val_cast]
       rw [prod_apply_finSumFinEquiv]
       rfl
 
@@ -254,9 +245,9 @@ lemma Pure.prodP_apply_finSumFinEquiv {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 �
   rw [Equiv.piCongr_apply_apply]
   match i with
   | Sum.inl i =>
-    simpa using prodIndexEquiv_apply_eqToHom (S := S) (by simp) (p1 i)
+    rfl
   | Sum.inr i =>
-    simpa using prodIndexEquiv_apply_eqToHom (S := S) (by simp) (p2 i)
+    rfl
 
 set_option backward.isDefEq.respectTransparency false in
 @[simp]
@@ -691,15 +682,20 @@ noncomputable def prodIndexEquivIso {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → 
   `S.Tensor (Fin.append c c1)`. -/
 noncomputable def prodIndexEquiv {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → C} :
     S.F.obj (OverColor.mk (Sum.elim c c1)) ≃ₗ[k] S.Tensor (Fin.append c c1) :=
-  (Representation.equivOfIso
-    (S.F.mapIso (prodIndexEquivIso (c := c) (c1 := c1)))).toLinearEquiv
+  ((Action.forget _ _).mapIso (S.F.mapIso
+    ((OverColor.equivToIso finSumFinEquiv).trans
+    (OverColor.mkIso (by
+      funext x
+      revert x
+      rw [Fin.forall_fin_add]
+      simp))))).toLinearEquiv
 
 set_option backward.isDefEq.respectTransparency false in
 lemma prodIndexEquiv_symm_pure {n1 n2} {c : Fin n1 → C} {c1 : Fin n2 → C}
     (p : Pure S (Fin.append c c1)) :
     prodIndexEquiv.symm p.toTensor = PiTensorProduct.tprod k (Pure.prodIndexEquiv p) := by
   rw [prodIndexEquiv]
-  change (S.F.map prodIndexEquivIso.inv).hom p.toTensor = _
+  change (S.F.map _).hom p.toTensor = _
   rw [Pure.toTensor]
   simp only [F_def]
   rw [OverColor.lift.map_tprod]

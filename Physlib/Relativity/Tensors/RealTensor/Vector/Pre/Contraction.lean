@@ -431,7 +431,7 @@ lemma same_eq_det_toSelfAdjoint (x : ContrMod 3) :
     cons_val', cons_val_zero, cons_val_fin_one, sub_zero, cons_val_one, sub_neg_eq_add, ne_eq,
     zero_ne_one, not_false_eq_true, one_apply_ne, zero_sub, one_ne_zero]
   ring_nf
-  simp [sub_eq_add_neg]
+  simp
 
 end contrContrContractField
 
@@ -444,7 +444,7 @@ end contrContrContractField
 lemma contrCoContract_basis {d : ℕ} (i j : Fin 1 ⊕ Fin d) :
     contrCoContract.hom (contrBasis d i ⊗ₜ coBasis d j) = if i = j then (1 : ℝ) else 0 := by
   rw [contrCoContract_hom_tmul]
-  simp only [contrBasis_toFin1dℝ, coBasis_toFin1dℝ, dotProduct_single, mul_one]
+  simp only [Action.tensorUnit_V, contrBasis_toFin1dℝ, coBasis_toFin1dℝ, dotProduct_single, mul_one]
   rw [Pi.single_apply]
   congr 1
   simp [eq_comm]
@@ -452,7 +452,7 @@ lemma contrCoContract_basis {d : ℕ} (i j : Fin 1 ⊕ Fin d) :
 lemma coContrContract_basis {d : ℕ} (i j : Fin 1 ⊕ Fin d) :
     coContrContract.hom (coBasis d i ⊗ₜ[ℝ] contrBasis d j) = if i = j then (1 : ℝ) else 0 := by
   rw [coContrContract_hom_tmul]
-  simp only [coBasis_toFin1dℝ, contrBasis_toFin1dℝ, dotProduct_single, mul_one]
+  simp only [Action.tensorUnit_V, coBasis_toFin1dℝ, contrBasis_toFin1dℝ, dotProduct_single, mul_one]
   rw [Pi.single_apply]
   congr 1
   simp [eq_comm]
