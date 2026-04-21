@@ -16,8 +16,8 @@ This file records the Lorentzian condition (index `1`) for a pseudo-Riemannian m
 
 ## Main definitions
 
-* `PseudoRiemannianMetric.IsLorentzianMetric`: the Prop-valued predicate asserting
-  `QuadraticForm.sigNeg (g.toQuadraticForm x) = 1` for all `x`.
+* `PseudoRiemannianMetric.IsLorentzianMetric`: the Prop-valued predicate asserting that a
+  pseudo-Riemannian metric has index `1` at every point.
 
 ## Tags
 
@@ -28,32 +28,19 @@ namespace PseudoRiemannianMetric
 
 noncomputable section
 
-section
-
 variable {E : Type v} [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable {H : Type w} [TopologicalSpace H]
-variable {M : Type w} [TopologicalSpace M] [ChartedSpace H M]
+variable {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
 variable {I : ModelWithCorners ℝ E H} {n : WithTop ℕ∞}
 variable [IsManifold I (n + 1) M]
 variable [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)]
 
 /-- Predicate asserting that a pseudo-Riemannian metric has index `1` at every point. -/
 class IsLorentzianMetric (g : _root_.PseudoRiemannianMetric E H M n I) : Prop where
-  sigNeg_eq_one : ∀ x : M, sigNeg (g.toQuadraticForm x) = 1
+  /-- A Lorentzian metric has index `1` at every point. -/
+  index_eq_one : ∀ x : M, g.index x = 1
 
-namespace IsLorentzianMetric
-
-variable (g : _root_.PseudoRiemannianMetric E H M n I)
-
-/-- For a Lorentzian metric, the index is `1` at every point. -/
-lemma index_eq_one (x : M) [IsLorentzianMetric (g := g)] :
-    g.index x = 1 := by
-  simpa [_root_.PseudoRiemannianMetric.index] using
-    (IsLorentzianMetric.sigNeg_eq_one (g := g) x)
-
-end IsLorentzianMetric
-
-end
+attribute [simp] IsLorentzianMetric.index_eq_one
 
 end
 
