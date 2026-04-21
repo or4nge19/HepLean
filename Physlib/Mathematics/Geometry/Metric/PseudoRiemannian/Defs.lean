@@ -57,7 +57,7 @@ section PseudoRiemannianMetric
 open Bundle Set Finset Function Filter Module Topology ContinuousLinearMap
 open scoped Manifold Bundle LinearMap Dual
 
-/-! ## Bundle-level infrastructure (Mathlib-style) -/
+/-! ## Bundle-level infrastructure -/
 
 namespace Bundle
 
@@ -692,11 +692,11 @@ associated quadratic form `v ↦ gₓ(v,v)`.
 
 This is a pointwise invariant; it need not be locally constant. -/
 noncomputable def index (g : MetricTensor E H M n I) (x : M) : ℕ :=
-  QuadraticForm.sigNeg (g.toQuadraticForm x)
+  sigNeg (g.toQuadraticForm x)
 
 @[simp]
 lemma index_def (g : MetricTensor E H M n I) (x : M) :
-    g.index x = QuadraticForm.sigNeg (g.toQuadraticForm x) :=
+    g.index x = sigNeg (g.toQuadraticForm x) :=
   rfl
 
 end MetricTensor
@@ -723,7 +723,7 @@ structure PseudoRiemannianMetric
   sigNeg_isLocallyConstant :
     IsLocallyConstant (fun x : M =>
       have : FiniteDimensional ℝ (TangentSpace I x) := inferInstance
-      QuadraticForm.sigNeg (PseudoRiemannianMetric.valToQuadraticForm val symm x))
+      sigNeg (PseudoRiemannianMetric.valToQuadraticForm val symm x))
 
 namespace PseudoRiemannianMetric
 
@@ -767,11 +767,11 @@ lemma toQuadraticForm_apply (g : PseudoRiemannianMetric E H M n I) (x : M)
 /-- The (negative) index of a pseudo-Riemannian metric at a point, defined as the negative index of
 the associated quadratic form `v ↦ gₓ(v,v)`. -/
 noncomputable def index (g : PseudoRiemannianMetric E H M n I) (x : M) : ℕ :=
-  QuadraticForm.sigNeg (g.toQuadraticForm x)
+  sigNeg (g.toQuadraticForm x)
 
 @[simp]
 lemma index_def (g : PseudoRiemannianMetric E H M n I) (x : M) :
-    g.index x = QuadraticForm.sigNeg (g.toQuadraticForm x) :=
+    g.index x = sigNeg (g.toQuadraticForm x) :=
   rfl
 
 lemma index_isLocallyConstant (g : PseudoRiemannianMetric E H M n I) :
@@ -929,15 +929,9 @@ theorem cotangentToQuadraticForm_equivalent_toQuadraticForm (g : PseudoRiemannia
     (MetricTensor.cotangentToQuadraticForm_equivalent_toQuadraticForm
       (g := (g.toMetricTensor : MetricTensor E H M n I)) x)
 
-theorem cotangent_signature_eq (g : PseudoRiemannianMetric E H M n I) (x : M) :
-    (g.cotangentToQuadraticForm x).signature = (g.toQuadraticForm x).signature := by
-  exact
-    QuadraticForm.signature_eq_of_equivalent (E := (TangentSpace I x →L[ℝ] ℝ))
-      (E₂ := TangentSpace I x) (cotangentToQuadraticForm_equivalent_toQuadraticForm (g := g) x)
-
 theorem cotangent_sigNeg_eq (g : PseudoRiemannianMetric E H M n I) (x : M) :
-    QuadraticForm.sigNeg (g.cotangentToQuadraticForm x) =
-      QuadraticForm.sigNeg (g.toQuadraticForm x) := by
+    sigNeg (g.cotangentToQuadraticForm x) =
+      sigNeg (g.toQuadraticForm x) := by
   simpa using (cotangentToQuadraticForm_equivalent_toQuadraticForm (g := g) x).sigNeg_eq
 
 end PseudoRiemannianMetric

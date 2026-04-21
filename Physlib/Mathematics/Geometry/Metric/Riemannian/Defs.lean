@@ -5,9 +5,10 @@ Authors: Matteo Cipollina
 -/
 module
 
-import Physlib.Mathematics.Geometry.Metric.PseudoRiemannian.Defs
+import all Physlib.Mathematics.Geometry.Metric.PseudoRiemannian.Defs
 import Mathlib.Geometry.Manifold.VectorBundle.Riemannian
 import Mathlib.Geometry.Manifold.VectorBundle.Tangent
+import Mathlib.LinearAlgebra.QuadraticForm.Signature
 /-!
 # Riemannian metrics (tangent bundle)
 
@@ -41,10 +42,10 @@ variable {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
 variable {I : ModelWithCorners ℝ E H} {n : WithTop ℕ∞}
 variable [IsManifold I (n + 1) M] [IsManifold I 1 M]
 
-private theorem sigNeg_eq_zero_of_posDef
+private lemma sigNeg_eq_zero_of_posDef
     {F : Type*} [AddCommGroup F] [Module ℝ F] [FiniteDimensional ℝ F]
-    {Q : QuadraticForm ℝ F} (hQ : Q.PosDef) : QuadraticForm.sigNeg Q = 0 := by
-  obtain ⟨W, hW, hWneg⟩ := QuadraticForm.exists_finrank_eq_sigNeg_and_negDef (Q := Q)
+    {Q : QuadraticForm ℝ F} (hQ : Q.PosDef) : sigNeg Q = 0 := by
+  obtain ⟨W, hW, hWneg⟩ := exists_finrank_eq_sigNeg_and_negDef (Q := Q)
   have hWbot : W = ⊥ := by
     rw [Submodule.eq_bot_iff]
     intro x hx
@@ -63,7 +64,7 @@ private theorem sigNeg_eq_zero_of_posDef
     simp [hWbot]
   exact hW.symm.trans hfin0
 
-/-- A `C^n` Riemannian metric on `M`, packaged using Mathlib's modern bundle API. -/
+/-- A `C^n` Riemannian metric on `M`. -/
 abbrev RiemannianMetric
     (I : ModelWithCorners ℝ E H) (n : WithTop ℕ∞) (M : Type*)
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I 1 M] :=
@@ -75,10 +76,9 @@ variable (g : RiemannianMetric (I := I) (n := n) M)
 variable [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)]
 
 /-- Forget the positivity to get a pseudo-Riemannian metric. The index is (locally constantly) `0`.
-This is the bridge that makes pseudo-Riemannian API (musical isomorphisms, etc.) usable for a
-Riemannian metric. -/
+It makes pseudo-Riemannian API (musical isomorphisms, etc.) usable for a Riemannian metric. -/
 def toPseudoRiemannianMetric (g : RiemannianMetric (I := I) (n := n) M)  :
-    PseudoRiemannianMetric E H M n I where
+    _root_.PseudoRiemannianMetric E H M n I where
   val := g.inner
   symm := g.symm
   nondegenerate := by
@@ -93,29 +93,29 @@ def toPseudoRiemannianMetric (g : RiemannianMetric (I := I) (n := n) M)  :
     -- On a Riemannian metric, the associated quadratic form is positive definite, so `sigNeg = 0`.
     refine IsLocallyConstant.of_constant _ (fun x y => ?_)
     have hx :
-        QuadraticForm.sigNeg (PseudoRiemannianMetric.valToQuadraticForm g.inner g.symm x) = 0 := by
+        sigNeg (_root_.PseudoRiemannianMetric.valToQuadraticForm g.inner g.symm x) = 0 := by
       apply sigNeg_eq_zero_of_posDef
       intro v hv
-      simpa [PseudoRiemannianMetric.valToQuadraticForm] using g.pos x v hv
+      simpa [_root_.PseudoRiemannianMetric.valToQuadraticForm] using g.pos x v hv
     have hy :
-        QuadraticForm.sigNeg (PseudoRiemannianMetric.valToQuadraticForm g.inner g.symm y) = 0 := by
+        sigNeg (_root_.PseudoRiemannianMetric.valToQuadraticForm g.inner g.symm y) = 0 := by
       apply sigNeg_eq_zero_of_posDef
       intro v hv
-      simpa [PseudoRiemannianMetric.valToQuadraticForm] using g.pos y v hv
+      simpa [_root_.PseudoRiemannianMetric.valToQuadraticForm] using g.pos y v hv
     simp [hx, hy]
 
 lemma toPseudoRiemannianMetric_index (g : RiemannianMetric (I := I) (n := n) M) (x : M) :
     (toPseudoRiemannianMetric (I := I) (n := n) (M := M) g).index x = 0 := by
-  have hx : QuadraticForm.sigNeg (PseudoRiemannianMetric.valToQuadraticForm g.inner g.symm x) = 0 := by
+  have hx : sigNeg (_root_.PseudoRiemannianMetric.valToQuadraticForm g.inner g.symm x) = 0 := by
     apply sigNeg_eq_zero_of_posDef
     intro v hv
-    simpa [PseudoRiemannianMetric.valToQuadraticForm] using g.pos x v hv
-  simpa [PseudoRiemannianMetric.index, PseudoRiemannianMetric.toQuadraticForm,
+    simpa [_root_.PseudoRiemannianMetric.valToQuadraticForm] using g.pos x v hv
+  simpa [_root_.PseudoRiemannianMetric.index, _root_.PseudoRiemannianMetric.toQuadraticForm,
     toPseudoRiemannianMetric] using hx
 
 instance :
     Coe (RiemannianMetric (I := I) (n := n) M)
-      (PseudoRiemannianMetric E H M n I) :=
+      (_root_.PseudoRiemannianMetric E H M n I) :=
   ⟨fun g => toPseudoRiemannianMetric (I := I) (n := n) (M := M) g⟩
 
 end RiemannianMetric
@@ -127,7 +127,7 @@ by forgetting positivity. -/
 theorem nonempty_pseudoRiemannianMetric_of_nonempty_riemannianMetric
     [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)]
     (h : Nonempty (RiemannianMetric (I := I) (n := n) M)) :
-    Nonempty (PseudoRiemannianMetric E H M n I) := by
+    Nonempty (_root_.PseudoRiemannianMetric E H M n I) := by
   rcases h with ⟨g⟩
   exact ⟨RiemannianMetric.toPseudoRiemannianMetric (I := I) (n := n) (M := M) g⟩
 

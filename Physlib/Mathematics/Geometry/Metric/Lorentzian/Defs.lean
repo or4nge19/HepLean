@@ -5,7 +5,9 @@ Authors: Matteo Cipollina
 -/
 module
 
-import Physlib.Mathematics.Geometry.Metric.PseudoRiemannian.Defs
+import all Physlib.Mathematics.Geometry.Metric.PseudoRiemannian.Defs
+import Mathlib.Geometry.Manifold.VectorBundle.Tangent
+import Mathlib.LinearAlgebra.QuadraticForm.Signature
 
 /-!
 # Lorentzian metrics
@@ -26,8 +28,6 @@ namespace PseudoRiemannianMetric
 
 noncomputable section
 
-open scoped Manifold
-
 section
 
 variable {E : Type v} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -38,17 +38,17 @@ variable [IsManifold I (n + 1) M]
 variable [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)]
 
 /-- Predicate asserting that a pseudo-Riemannian metric has index `1` at every point. -/
-class IsLorentzianMetric (g : PseudoRiemannianMetric E H M n I) : Prop where
-  sigNeg_eq_one : ∀ x : M, QuadraticForm.sigNeg (g.toQuadraticForm x) = 1
+class IsLorentzianMetric (g : _root_.PseudoRiemannianMetric E H M n I) : Prop where
+  sigNeg_eq_one : ∀ x : M, sigNeg (g.toQuadraticForm x) = 1
 
 namespace IsLorentzianMetric
 
-variable (g : PseudoRiemannianMetric E H M n I)
+variable (g : _root_.PseudoRiemannianMetric E H M n I)
 
 /-- For a Lorentzian metric, the index is `1` at every point. -/
 lemma index_eq_one (x : M) [IsLorentzianMetric (g := g)] :
     g.index x = 1 := by
-  simpa [PseudoRiemannianMetric.index] using
+  simpa [_root_.PseudoRiemannianMetric.index] using
     (IsLorentzianMetric.sigNeg_eq_one (g := g) x)
 
 end IsLorentzianMetric
@@ -58,5 +58,3 @@ end
 end
 
 end PseudoRiemannianMetric
-
-#lint
