@@ -16,7 +16,7 @@ This file records the Lorentzian condition (index `1`) for a pseudo-Riemannian m
 
 ## Main definitions
 
-* `PseudoRiemannianMetric.IsLorentzianMetric`: the Prop-valued predicate asserting that a
+p0* `PseudoRiemannianMetric.IsLorentzianMetric`: the Prop-valued predicate asserting that a
   pseudo-Riemannian metric has index `1` at every point.
 
 ## Tags
@@ -38,7 +38,7 @@ variable [∀ x : M, FiniteDimensional ℝ (TangentSpace I x)]
 /-- Predicate asserting that a pseudo-Riemannian metric has index `1` at every point. -/
 class IsLorentzianMetric (g : _root_.PseudoRiemannianMetric E H M n I) : Prop where
   /-- A Lorentzian metric has index `1` at every point. -/
-  index_eq_one : ∀ x : M, g.index x = 1
+  index_eq_one : ∀ x : M, sigNeg (g.toQuadraticForm x) = 1
 
 attribute [simp] IsLorentzianMetric.index_eq_one
 
