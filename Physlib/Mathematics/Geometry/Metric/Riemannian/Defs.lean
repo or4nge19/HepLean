@@ -91,12 +91,12 @@ def toPseudoRiemannianMetric (g : RiemannianMetric I n M) :
 
 @[simp]
 lemma index_toPseudoRiemannianMetric (g : RiemannianMetric I n M) (x : M) :
-    g.toPseudoRiemannianMetric.index x = 0 := by
+    sigNeg (g.toPseudoRiemannianMetric.toQuadraticForm x) = 0 := by
   have hx : sigNeg (_root_.PseudoRiemannianMetric.valToQuadraticForm g.inner g.symm x) = 0 :=
     sigNeg_eq_zero_of_posDef fun v hv => by
       simpa [_root_.PseudoRiemannianMetric.valToQuadraticForm] using g.pos x v hv
-  simpa [_root_.PseudoRiemannianMetric.index, _root_.PseudoRiemannianMetric.toQuadraticForm,
-    toPseudoRiemannianMetric] using hx
+  simpa [_root_.PseudoRiemannianMetric.toQuadraticForm, toPseudoRiemannianMetric,
+    MetricTensor.toQuadraticForm] using hx
 
 instance : Coe (RiemannianMetric I n M) (_root_.PseudoRiemannianMetric E H M n I) :=
   ⟨toPseudoRiemannianMetric⟩
