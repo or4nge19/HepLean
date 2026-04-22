@@ -5,11 +5,11 @@ Authors: Matteo Cipollina
 -/
 module
 
-import Mathlib.Geometry.Manifold.VectorBundle.Riemannian
-import Mathlib.Geometry.Manifold.VectorBundle.Tangent
-import Mathlib.LinearAlgebra.BilinearForm.Properties
-import Mathlib.LinearAlgebra.QuadraticForm.Signature
-import Mathlib.Topology.LocallyConstant.Basic
+public import Mathlib.Geometry.Manifold.VectorBundle.Riemannian
+public import Mathlib.Geometry.Manifold.VectorBundle.Tangent
+public import Mathlib.LinearAlgebra.BilinearForm.Properties
+public import Mathlib.LinearAlgebra.QuadraticForm.Signature
+public import Mathlib.Topology.LocallyConstant.Basic
 
 /-!
 # Pseudo-Riemannian metrics
@@ -36,7 +36,9 @@ tangent space, whose index (negative inertia) is locally constant. The index is 
 
 Smoothness is stated as a `ContMDiff` assumption for a bundled map `x ↦ TotalSpace.mk' … x (gₓ)` as
 in Mathlib. Index-type constructions use `QuadraticForm.sigNeg` and therefore require
-finite-dimensional tangent spaces.
+finite-dimensional tangent spaces. For now, local constancy of the index is packaged as part of the
+definition of `PseudoRiemannianMetric`; deriving it from smooth nondegenerate variation would
+require additional topological linear algebra about continuous families of symmetric bilinear forms.
 
 If the fibers already carry a topology (e.g. the tangent bundle), we register the fiberwise metric
 through `Bundle.PseudoRiemannianBundle` to avoid introducing diamonds in typeclass inference, in the
@@ -51,6 +53,8 @@ pseudo-Riemannian, metric tensor, musical isomorphisms, index
 * Barrett O'Neill, *Semi-Riemannian Geometry with Applications to Relativity*, Academic
 Press (1983).
 -/
+
+@[expose] public section
 
 section PseudoRiemannianMetric
 
@@ -264,6 +268,65 @@ lemma ContMDiff.pseudoInner_bundle
 
 end ContMDiffPairing
 
+section MDifferentiablePairing
+
+variable
+  {EM : Type*} [NormedAddCommGroup EM] [NormedSpace ℝ EM]
+  {HM : Type*} [TopologicalSpace HM] {IM : ModelWithCorners ℝ EM HM}
+  {M : Type*} [TopologicalSpace M] [ChartedSpace HM M]
+  [h : IsContMDiffPseudoRiemannianBundle (IB := IB) (n := (1 : WithTop ℕ∞)) (F := F) (E := E)]
+  {b : M → B} {v w : ∀ x, E (b x)} {s : Set M} {x : M}
+
+/-- Given two differentiable maps into the same fibers of a pseudo-Riemannian bundle, their
+pairing is differentiable. -/
+lemma MDifferentiableWithinAt.pseudoInner_bundle
+    (hv : MDifferentiableWithinAt IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (v m : TotalSpace F E)) s x)
+    (hw : MDifferentiableWithinAt IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (w m : TotalSpace F E)) s x) :
+    MDifferentiableWithinAt IM 𝓘(ℝ)
+      (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) s x := by
+  rcases h.exists_contMDiff with ⟨g, hg⟩
+  have hb : MDifferentiableWithinAt IM IB b s x := by
+    simp only [mdifferentiableWithinAt_totalSpace] at hv
+    exact hv.1
+  have hpair : MDifferentiableWithinAt IM (IB.prod 𝓘(ℝ))
+      (fun m ↦ TotalSpace.mk' ℝ (E := Bundle.Trivial B ℝ) (b m)
+        (g.metric (b m) (v m) (w m))) s x := by
+    apply MDifferentiableWithinAt.clm_bundle_apply₂ (F₁ := F) (F₂ := F)
+    · exact MDifferentiableAt.comp_mdifferentiableWithinAt x
+        (g.contMDiff.mdifferentiableAt one_ne_zero) hb
+    · exact hv
+    · exact hw
+  have hrewrite :
+      (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) =
+        (fun m ↦ g.metric (b m) (v m) (w m)) := by
+    funext m
+    simpa [Bundle.pseudoInner] using (hg (b m) (v m) (w m))
+  simp only [mdifferentiableWithinAt_totalSpace] at hpair
+  simpa [hrewrite] using hpair.2
+
+lemma MDifferentiableAt.pseudoInner_bundle
+    (hv : MDifferentiableAt IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (v m : TotalSpace F E)) x)
+    (hw : MDifferentiableAt IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (w m : TotalSpace F E)) x) :
+    MDifferentiableAt IM 𝓘(ℝ)
+      (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) x :=
+  MDifferentiableWithinAt.pseudoInner_bundle (IB := IB) (F := F) (E := E) hv hw
+
+lemma MDifferentiableOn.pseudoInner_bundle
+    (hv : MDifferentiableOn IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (v m : TotalSpace F E)) s)
+    (hw : MDifferentiableOn IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (w m : TotalSpace F E)) s) :
+    MDifferentiableOn IM 𝓘(ℝ)
+      (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) s :=
+  fun x hx ↦ (hv x hx).pseudoInner_bundle (IB := IB) (F := F) (E := E) (hw x hx)
+
+lemma MDifferentiable.pseudoInner_bundle
+    (hv : MDifferentiable IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (v m : TotalSpace F E)))
+    (hw : MDifferentiable IM (IB.prod 𝓘(ℝ, F)) (fun m ↦ (w m : TotalSpace F E))) :
+    MDifferentiable IM 𝓘(ℝ)
+      (fun m ↦ pseudoInner (B := B) (E := E) (b m) (v m) (w m)) :=
+  fun x ↦ (hv x).pseudoInner_bundle (IB := IB) (F := F) (E := E) (hw x)
+
+end MDifferentiablePairing
+
 end ContMDiff
 
 end Bundle
@@ -428,7 +491,7 @@ lemma ContMDiffWithinAt.inner
       (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x)
     (hw : ContMDiffWithinAt IM (I.prod 𝓘(ℝ, E)) n
       (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x) :
-    ContMDiffWithinAt IM 𝓘(ℝ) n (fun m ↦ g.val (b m) (v m) (w m)) s x := by
+    ContMDiffWithinAt IM 𝓘(ℝ) n (fun m ↦ g.inner (b m) (v m) (w m)) s x := by
   have hb : ContMDiffWithinAt IM I n b s x := by
     simp only [contMDiffWithinAt_totalSpace] at hv
     exact hv.1
@@ -440,9 +503,102 @@ lemma ContMDiffWithinAt.inner
     · exact hv
     · exact hw
   simp only [contMDiffWithinAt_totalSpace] at this
-  exact this.2
+  simpa [MetricTensor.inner] using this.2
+
+lemma ContMDiffAt.inner
+    (g : MetricTensor E H M n I)
+    (hv : ContMDiffAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x)
+    (hw : ContMDiffAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    ContMDiffAt IM 𝓘(ℝ) n (fun m ↦ g.inner (b m) (v m) (w m)) x :=
+  ContMDiffWithinAt.inner (g := g) hv hw
+
+lemma ContMDiffOn.inner
+    (g : MetricTensor E H M n I)
+    (hv : ContMDiffOn IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s)
+    (hw : ContMDiffOn IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    ContMDiffOn IM 𝓘(ℝ) n (fun m ↦ g.inner (b m) (v m) (w m)) s :=
+  fun x hx ↦ ContMDiffWithinAt.inner (g := g) (x := x) (hv x hx) (hw x hx)
+
+lemma ContMDiff.inner
+    (g : MetricTensor E H M n I)
+    (hv : ContMDiff IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)))
+    (hw : ContMDiff IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    ContMDiff IM 𝓘(ℝ) n (fun m ↦ g.inner (b m) (v m) (w m)) :=
+  fun x ↦ ContMDiffAt.inner (g := g) (x := x) (hv x) (hw x)
 
 end PairingSmoothness
+
+section MDifferentiablePairing
+
+variable
+  {EM : Type*} [NormedAddCommGroup EM] [NormedSpace ℝ EM]
+  {HM : Type*} [TopologicalSpace HM] {IM : ModelWithCorners ℝ EM HM}
+  {M' : Type*} [TopologicalSpace M'] [ChartedSpace HM M']
+  {b : M' → M} {v w : ∀ x, TangentSpace I (b x)} {s : Set M'} {x : M'}
+
+lemma MDifferentiableWithinAt.inner
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x)
+    (hw : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x) :
+    MDifferentiableWithinAt IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) s x := by
+  have hb : MDifferentiableWithinAt IM I b s x := by
+    simp only [mdifferentiableWithinAt_totalSpace] at hv
+    exact hv.1
+  have hpair : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ))
+      (fun m ↦ TotalSpace.mk' ℝ (E := Bundle.Trivial M ℝ) (b m)
+        ((g.val (b m)) (v m) (w m))) s x := by
+    apply MDifferentiableWithinAt.clm_bundle_apply₂ (F₁ := E) (F₂ := E)
+    · exact MDifferentiableAt.comp_mdifferentiableWithinAt x
+        ((g.contMDiff.of_le hn).mdifferentiableAt one_ne_zero) hb
+    · exact hv
+    · exact hw
+  simp only [mdifferentiableWithinAt_totalSpace] at hpair
+  simpa [MetricTensor.inner] using hpair.2
+
+lemma MDifferentiableAt.inner
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x)
+    (hw : MDifferentiableAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    MDifferentiableAt IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) x :=
+  MDifferentiableWithinAt.inner (g := g) hn hv hw
+
+lemma MDifferentiableOn.inner
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableOn IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s)
+    (hw : MDifferentiableOn IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    MDifferentiableOn IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) s :=
+  fun x hx ↦ MDifferentiableWithinAt.inner (g := g) (x := x) hn (hv x hx) (hw x hx)
+
+lemma MDifferentiable.inner
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiable IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)))
+    (hw : MDifferentiable IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    MDifferentiable IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) :=
+  fun x ↦ MDifferentiableAt.inner (g := g) (x := x) hn (hv x) (hw x)
+
+end MDifferentiablePairing
 
 /-! ## Flat / sharp (musical isomorphisms) -/
 
@@ -475,9 +631,172 @@ lemma flat_inj (g : MetricTensor E H M n I) (x : M) : Function.Injective (flat g
 lemma flatL_inj (g : MetricTensor E H M n I) (x : M) : Function.Injective (flatL g x) :=
   flat_inj g x
 
+/-- Index lowering on the total space of the tangent bundle. -/
+noncomputable abbrev flatBundleMap (g : MetricTensor E H M n I) :
+    Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y) →
+      Bundle.TotalSpace (E →L[ℝ] ℝ) (fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+  | ⟨x, v⟩ => ⟨x, g.flatL x v⟩
+
+lemma flatBundleMap_apply (g : MetricTensor E H M n I) (x : M) (v : TangentSpace I x) :
+    g.flatBundleMap ⟨x, v⟩ = ⟨x, g.flatL x v⟩ := rfl
+
+/-! ### Smoothness of index lowering -/
+
+/-- The family `x ↦ g.flatL x` is a smooth section of the bundle of continuous linear maps from the
+tangent bundle to the cotangent bundle. -/
+lemma contMDiff_flatL [IsManifold I 1 M] (g : MetricTensor E H M n I) :
+    ContMDiff I (I.prod 𝓘(ℝ, E →L[ℝ] E →L[ℝ] ℝ)) n
+      (fun x ↦ TotalSpace.mk' (E →L[ℝ] E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] (TangentSpace I y →L[ℝ] ℝ))
+        x (g.flatL x)) := by
+  simpa [flatL] using g.contMDiff
+
+section FlatSmoothness
+
+variable
+  {EM : Type*} [NormedAddCommGroup EM] [NormedSpace ℝ EM]
+  {HM : Type*} [TopologicalSpace HM] {IM : ModelWithCorners ℝ EM HM}
+  {M' : Type*} [TopologicalSpace M'] [ChartedSpace HM M']
+  {b : M' → M} {v : ∀ x, TangentSpace I (b x)} {s : Set M'} {x : M'}
+
+/-- Lowering an index with a smooth metric tensor sends smooth vector fields to smooth covector
+fields. -/
+lemma ContMDiffWithinAt.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hv : ContMDiffWithinAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x) :
+    ContMDiffWithinAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s x := by
+  have hv' := hv
+  simp only [contMDiffWithinAt_totalSpace] at hv'
+  have hflat : ContMDiffWithinAt IM (I.prod 𝓘(ℝ, E →L[ℝ] E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] (TangentSpace I y →L[ℝ] ℝ))
+        (b m) (g.flatL (b m))) s x := by
+    exact ContMDiffAt.comp_contMDiffWithinAt x (contMDiff_flatL (g := g)).contMDiffAt hv'.1
+  exact ContMDiffWithinAt.clm_bundle_apply (F₁ := E) (F₂ := E →L[ℝ] ℝ) hflat hv
+
+lemma ContMDiffAt.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hv : ContMDiffAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    ContMDiffAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) x :=
+  ContMDiffWithinAt.flatL (g := g) hv
+
+lemma ContMDiffOn.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hv : ContMDiffOn IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    ContMDiffOn IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s :=
+  fun x hx ↦ ContMDiffWithinAt.flatL (g := g) (hv x hx)
+
+lemma ContMDiff.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hv : ContMDiff IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    ContMDiff IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) :=
+  fun x ↦ ContMDiffAt.flatL (g := g) (hv x)
+
+section MDifferentiableFlat
+
+lemma MDifferentiableWithinAt.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x) :
+    MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s x := by
+  have hv' := hv
+  simp only [mdifferentiableWithinAt_totalSpace] at hv'
+  have hflat : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E →L[ℝ] E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] (TangentSpace I y →L[ℝ] ℝ))
+        (b m) (g.flatL (b m))) s x := by
+    exact MDifferentiableAt.comp_mdifferentiableWithinAt x
+      (((contMDiff_flatL (g := g)).of_le hn).mdifferentiableAt one_ne_zero) hv'.1
+  exact MDifferentiableWithinAt.clm_bundle_apply (F₁ := E) (F₂ := E →L[ℝ] ℝ) hflat hv
+
+lemma MDifferentiableAt.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    MDifferentiableAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) x :=
+  MDifferentiableWithinAt.flatL (g := g) hn hv
+
+lemma MDifferentiableOn.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableOn IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    MDifferentiableOn IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s :=
+  fun x hx ↦ MDifferentiableWithinAt.flatL (g := g) hn (hv x hx)
+
+lemma MDifferentiable.flatL
+    [IsManifold I 1 M]
+    (g : MetricTensor E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiable IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    MDifferentiable IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) :=
+  fun x ↦ MDifferentiableAt.flatL (g := g) hn (hv x)
+
+end MDifferentiableFlat
+end FlatSmoothness
+
+/-- Index lowering is smooth on the total space of the tangent bundle. -/
+lemma contMDiff_flatBundleMap [IsManifold I 1 M] (g : MetricTensor E H M n I) :
+    ContMDiff (I.prod 𝓘(ℝ, E)) (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n g.flatBundleMap := by
+  simpa [flatBundleMap] using
+    (ContMDiff.flatL (g := g)
+      (b := fun p : Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y) => p.1)
+      (v := fun p => p.2) contMDiff_id)
+
+/-- Index lowering is differentiable on the total space of the tangent bundle. -/
+lemma mdifferentiable_flatBundleMap [IsManifold I 1 M]
+    (g : MetricTensor E H M n I) (hn : (1 : WithTop ℕ∞) ≤ n) :
+    MDifferentiable (I.prod 𝓘(ℝ, E)) (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) g.flatBundleMap := by
+  simpa [flatBundleMap] using
+    (MDifferentiable.flatL (g := g)
+      (b := fun p : Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y) => p.1)
+      (v := fun p => p.2) hn mdifferentiable_id)
+
 section FiniteDimensional
 
 variable [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)]
+
+/-! In finite dimensions, nondegeneracy implies that `flatL` is automatically surjective, so the
+musical isomorphisms can be packaged as inverse continuous linear equivalences. In infinite
+dimensions, one would need a stronger nondegeneracy hypothesis to obtain such equivalences. -/
 
 lemma flatL_surj (g : MetricTensor E H M n I) (x : M) : Function.Surjective (g.flatL x) := by
   haveI : FiniteDimensional ℝ (TangentSpace I x) := inst_tangent_findim x
@@ -502,7 +821,10 @@ lemma flatL_surj (g : MetricTensor E H M n I) (x : M) : Function.Surjective (g.f
   exact
     (LinearMap.injective_iff_surjective_of_finrank_eq_finrank h_finrank_eq).mp (flatL_inj g x)
 
-/-- `flatEquiv` as a continuous linear equivalence. -/
+/-- `flatEquiv` as a continuous linear equivalence.
+
+In finite dimensions, nondegeneracy of the metric implies surjectivity of `flatL`, so no extra
+data are required. -/
 noncomputable def flatEquiv (g : MetricTensor E H M n I) (x : M) :
     TangentSpace I x ≃L[ℝ] (TangentSpace I x →L[ℝ] ℝ) :=
   LinearEquiv.toContinuousLinearEquiv <|
@@ -512,7 +834,10 @@ noncomputable def flatEquiv (g : MetricTensor E H M n I) (x : M) :
 lemma flatEquiv_apply (g : MetricTensor E H M n I) (x : M) (v w : TangentSpace I x) :
     (g.flatEquiv x v) w = g.val x v w := rfl
 
-/-- Index raising equivalence as the inverse of `flatEquiv`. -/
+/-- Index raising equivalence as the inverse of `flatEquiv`.
+
+This is the finite-dimensional `sharp` isomorphism; in infinite dimensions one would need a
+stronger hypothesis to package index-raising in this form. -/
 noncomputable def sharpEquiv (g : MetricTensor E H M n I) (x : M) :
     (TangentSpace I x →L[ℝ] ℝ) ≃L[ℝ] TangentSpace I x :=
   (g.flatEquiv x).symm
@@ -526,6 +851,33 @@ noncomputable def sharpL (g : MetricTensor E H M n I) (x : M) :
 noncomputable def sharp (g : MetricTensor E H M n I) (x : M) :
     (TangentSpace I x →L[ℝ] ℝ) →ₗ[ℝ] TangentSpace I x :=
   (g.sharpEquiv x).toLinearEquiv.toLinearMap
+
+/-- Index raising on the total space of the cotangent bundle. -/
+noncomputable abbrev sharpBundleMap (g : MetricTensor E H M n I) :
+    Bundle.TotalSpace (E →L[ℝ] ℝ) (fun y : M ↦ TangentSpace I y →L[ℝ] ℝ) →
+      Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y)
+  | ⟨x, ω⟩ => ⟨x, g.sharpL x ω⟩
+
+lemma sharpBundleMap_apply (g : MetricTensor E H M n I) (x : M) (ω : TangentSpace I x →L[ℝ] ℝ) :
+    g.sharpBundleMap ⟨x, ω⟩ = ⟨x, g.sharpL x ω⟩ := rfl
+
+/-- Fiberwise musical isomorphism between the total spaces of the tangent and cotangent bundles. -/
+noncomputable def flatBundleEquiv (g : MetricTensor E H M n I) :
+    Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y) ≃
+      Bundle.TotalSpace (E →L[ℝ] ℝ) (fun y : M ↦ TangentSpace I y →L[ℝ] ℝ) where
+  toFun := g.flatBundleMap
+  invFun := g.sharpBundleMap
+  left_inv := by
+    rintro ⟨x, v⟩
+    change Bundle.TotalSpace.mk x (g.sharpL x (g.flatL x v)) = Bundle.TotalSpace.mk x v
+    exact congrArg (Bundle.TotalSpace.mk x) ((g.flatEquiv x).left_inv v)
+  right_inv := by
+    rintro ⟨x, ω⟩
+    change
+      (Bundle.TotalSpace.mk x (g.flatL x (g.sharpL x ω)) :
+        Bundle.TotalSpace (E →L[ℝ] ℝ) (fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)) =
+      Bundle.TotalSpace.mk x ω
+    exact congrArg (Bundle.TotalSpace.mk x) ((g.flatEquiv x).right_inv ω)
 
 @[simp]
 lemma sharpL_apply_flatL (g : MetricTensor E H M n I) (x : M) (v : TangentSpace I x) :
@@ -719,7 +1071,11 @@ structure PseudoRiemannianMetric
     [inst_tangent_findim : ∀ (x : M), FiniteDimensional ℝ (TangentSpace I x)] :
       Type _ extends toMetricTensor : MetricTensor E H M n I where
   /-- The negative index (`QuadraticForm.sigNeg`) of the metric's quadratic form is
-      locally constant. On a connected manifold, this implies it is constant globally. -/
+      locally constant. On a connected manifold, this implies it is constant globally.
+
+      TODO: mathematically, this should be derivable from smooth nondegenerate variation of the
+      metric tensor. We currently keep it as data until the requisite topological linear algebra
+      lemmas are available. -/
   sigNeg_isLocallyConstant :
     IsLocallyConstant (fun x : M =>
       have : FiniteDimensional ℝ (TangentSpace I x) := inferInstance
@@ -831,9 +1187,96 @@ lemma ContMDiffWithinAt.inner
     (MetricTensor.ContMDiffWithinAt.inner (g := g.toMetricTensor) (b := b) (v := v) (w := w)
       (s := s) (x := x) hv hw)
 
+lemma ContMDiffAt.inner
+    (g : PseudoRiemannianMetric E H M n I)
+    (hv : ContMDiffAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x)
+    (hw : ContMDiffAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    ContMDiffAt IM 𝓘(ℝ) n (fun m ↦ g.inner (b m) (v m) (w m)) x :=
+  ContMDiffWithinAt.inner (g := g) hv hw
+
+lemma ContMDiffOn.inner
+    (g : PseudoRiemannianMetric E H M n I)
+    (hv : ContMDiffOn IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s)
+    (hw : ContMDiffOn IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    ContMDiffOn IM 𝓘(ℝ) n (fun m ↦ g.inner (b m) (v m) (w m)) s :=
+  fun x hx ↦ ContMDiffWithinAt.inner (g := g) (x := x) (hv x hx) (hw x hx)
+
+lemma ContMDiff.inner
+    (g : PseudoRiemannianMetric E H M n I)
+    (hv : ContMDiff IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)))
+    (hw : ContMDiff IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    ContMDiff IM 𝓘(ℝ) n (fun m ↦ g.inner (b m) (v m) (w m)) :=
+  fun x ↦ ContMDiffAt.inner (g := g) (x := x) (hv x) (hw x)
+
 end PairingSmoothness
 
-/-! ## Flat / sharp / cotangent API (delegated to `MetricTensor`) -/
+section MDifferentiablePairing
+
+variable
+  {EM : Type*} [NormedAddCommGroup EM] [NormedSpace ℝ EM]
+  {HM : Type*} [TopologicalSpace HM] {IM : ModelWithCorners ℝ EM HM}
+  {M' : Type*} [TopologicalSpace M'] [ChartedSpace HM M']
+  {b : M' → M} {v w : ∀ x, TangentSpace I (b x)} {s : Set M'} {x : M'}
+
+lemma MDifferentiableWithinAt.inner
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x)
+    (hw : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x) :
+    MDifferentiableWithinAt IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) s x := by
+  simpa [PseudoRiemannianMetric.inner] using
+    (MetricTensor.MDifferentiableWithinAt.inner (g.toMetricTensor) (b := b) (v := v) (w := w)
+      (s := s) (x := x) hn hv hw)
+
+lemma MDifferentiableAt.inner
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x)
+    (hw : MDifferentiableAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    MDifferentiableAt IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) x :=
+  MDifferentiableWithinAt.inner (g := g) hn hv hw
+
+lemma MDifferentiableOn.inner
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableOn IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s)
+    (hw : MDifferentiableOn IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    MDifferentiableOn IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) s :=
+  fun x hx ↦ MDifferentiableWithinAt.inner (g := g) (x := x) hn (hv x hx) (hw x hx)
+
+lemma MDifferentiable.inner
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiable IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)))
+    (hw : MDifferentiable IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (w m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    MDifferentiable IM 𝓘(ℝ) (fun m ↦ g.inner (b m) (v m) (w m)) :=
+  fun x ↦ MDifferentiableAt.inner (g := g) (x := x) hn (hv x) (hw x)
+
+end MDifferentiablePairing
+
+/-! ## Flat / sharp / cotangent API (delegated to `MetricTensor`)
+
+TODO: upgrade the fiberwise bundle equivalence below to a smooth equivalence by proving that
+`sharpBundleMap` is smooth. The `flatL` family and the total-space `flatBundleMap` are already
+smooth, but the inverse direction still needs a smooth-inverse argument. -/
 
 /-- Index lowering map `v ↦ gₓ(v, -)` as a linear map. -/
 abbrev flat (g : PseudoRiemannianMetric E H M n I) (x : M) :
@@ -852,6 +1295,149 @@ lemma flat_inj (g : PseudoRiemannianMetric E H M n I) (x : M) :
 lemma flatL_inj (g : PseudoRiemannianMetric E H M n I) (x : M) :
     Function.Injective (flatL g x) := by
   simpa [flatL] using (MetricTensor.flatL_inj (g := (g.toMetricTensor : MetricTensor E H M n I)) x)
+
+/-- Index lowering on the total space of the tangent bundle. -/
+noncomputable abbrev flatBundleMap (g : PseudoRiemannianMetric E H M n I) :
+    Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y) →
+      Bundle.TotalSpace (E →L[ℝ] ℝ) (fun y : M ↦ TangentSpace I y →L[ℝ] ℝ) :=
+  MetricTensor.flatBundleMap (g := (g.toMetricTensor : MetricTensor E H M n I))
+
+lemma flatBundleMap_apply (g : PseudoRiemannianMetric E H M n I) (x : M) (v : TangentSpace I x) :
+    g.flatBundleMap ⟨x, v⟩ = ⟨x, g.flatL x v⟩ := rfl
+
+/-- The family `x ↦ g.flatL x` is a smooth section of the bundle of continuous linear maps from the
+tangent bundle to the cotangent bundle. -/
+lemma contMDiff_flatL [IsManifold I 1 M] (g : PseudoRiemannianMetric E H M n I) :
+    ContMDiff I (I.prod 𝓘(ℝ, E →L[ℝ] E →L[ℝ] ℝ)) n
+      (fun x ↦ TotalSpace.mk' (E →L[ℝ] E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] (TangentSpace I y →L[ℝ] ℝ))
+        x (g.flatL x)) := by
+  simpa [flatL] using
+    (MetricTensor.contMDiff_flatL (g := (g.toMetricTensor : MetricTensor E H M n I)))
+
+section FlatSmoothness
+
+variable
+  {EM : Type*} [NormedAddCommGroup EM] [NormedSpace ℝ EM]
+  {HM : Type*} [TopologicalSpace HM] {IM : ModelWithCorners ℝ EM HM}
+  {M' : Type*} [TopologicalSpace M'] [ChartedSpace HM M']
+  {b : M' → M} {v : ∀ x, TangentSpace I (b x)} {s : Set M'} {x : M'}
+
+lemma ContMDiffWithinAt.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hv : ContMDiffWithinAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x) :
+    ContMDiffWithinAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s x := by
+  simpa [PseudoRiemannianMetric.flatL] using
+    (MetricTensor.ContMDiffWithinAt.flatL (g := g.toMetricTensor) (b := b) (v := v)
+      (s := s) (x := x) hv)
+
+lemma ContMDiffAt.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hv : ContMDiffAt IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    ContMDiffAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) x :=
+  ContMDiffWithinAt.flatL (g := g) hv
+
+lemma ContMDiffOn.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hv : ContMDiffOn IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    ContMDiffOn IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s :=
+  fun x hx ↦ ContMDiffWithinAt.flatL (g := g) (hv x hx)
+
+lemma ContMDiff.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hv : ContMDiff IM (I.prod 𝓘(ℝ, E)) n
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    ContMDiff IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) :=
+  fun x ↦ ContMDiffAt.flatL (g := g) (hv x)
+
+section MDifferentiableFlat
+
+lemma MDifferentiableWithinAt.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s x) :
+    MDifferentiableWithinAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s x := by
+  simpa [PseudoRiemannianMetric.flatL] using
+    (MetricTensor.MDifferentiableWithinAt.flatL (g := g.toMetricTensor) (b := b) (v := v)
+      (s := s) (x := x) hn hv)
+
+lemma MDifferentiableAt.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableAt IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) x) :
+    MDifferentiableAt IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) x :=
+  MDifferentiableWithinAt.flatL (g := g) hn hv
+
+lemma MDifferentiableOn.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiableOn IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y)) s) :
+    MDifferentiableOn IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) s :=
+  fun x hx ↦ MDifferentiableWithinAt.flatL (g := g) hn (hv x hx)
+
+lemma MDifferentiable.flatL
+    [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I)
+    (hn : (1 : WithTop ℕ∞) ≤ n)
+    (hv : MDifferentiable IM (I.prod 𝓘(ℝ, E))
+      (fun m ↦ (v m : TotalSpace E fun y : M ↦ TangentSpace I y))) :
+    MDifferentiable IM (I.prod 𝓘(ℝ, E →L[ℝ] ℝ))
+      (fun m ↦ TotalSpace.mk' (E →L[ℝ] ℝ)
+        (E := fun y : M ↦ TangentSpace I y →L[ℝ] ℝ)
+        (b m) (g.flatL (b m) (v m))) :=
+  fun x ↦ MDifferentiableAt.flatL (g := g) hn (hv x)
+
+end MDifferentiableFlat
+end FlatSmoothness
+
+/-- Index lowering is smooth on the total space of the tangent bundle. -/
+lemma contMDiff_flatBundleMap [IsManifold I 1 M] (g : PseudoRiemannianMetric E H M n I) :
+    ContMDiff (I.prod 𝓘(ℝ, E)) (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) n g.flatBundleMap := by
+  simpa [PseudoRiemannianMetric.flatBundleMap] using
+    (MetricTensor.contMDiff_flatBundleMap
+      (g := (g.toMetricTensor : MetricTensor E H M n I)))
+
+/-- Index lowering is differentiable on the total space of the tangent bundle. -/
+lemma mdifferentiable_flatBundleMap [IsManifold I 1 M]
+    (g : PseudoRiemannianMetric E H M n I) (hn : (1 : WithTop ℕ∞) ≤ n) :
+    MDifferentiable (I.prod 𝓘(ℝ, E)) (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) g.flatBundleMap := by
+  simpa [PseudoRiemannianMetric.flatBundleMap] using
+    (MetricTensor.mdifferentiable_flatBundleMap
+      (g := (g.toMetricTensor : MetricTensor E H M n I)) hn)
 
 lemma flatL_surj (g : PseudoRiemannianMetric E H M n I) (x : M) :
     Function.Surjective (flatL g x) := by
@@ -876,6 +1462,22 @@ noncomputable abbrev sharpL (g : PseudoRiemannianMetric E H M n I) (x : M) :
 noncomputable abbrev sharp (g : PseudoRiemannianMetric E H M n I) (x : M) :
     (TangentSpace I x →L[ℝ] ℝ) →ₗ[ℝ] TangentSpace I x :=
   MetricTensor.sharp (g := (g.toMetricTensor : MetricTensor E H M n I)) x
+
+/-- Index raising on the total space of the cotangent bundle. -/
+noncomputable abbrev sharpBundleMap (g : PseudoRiemannianMetric E H M n I) :
+    Bundle.TotalSpace (E →L[ℝ] ℝ) (fun y : M ↦ TangentSpace I y →L[ℝ] ℝ) →
+      Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y) :=
+  MetricTensor.sharpBundleMap (g := (g.toMetricTensor : MetricTensor E H M n I))
+
+lemma sharpBundleMap_apply (g : PseudoRiemannianMetric E H M n I) (x : M)
+    (ω : TangentSpace I x →L[ℝ] ℝ) :
+    g.sharpBundleMap ⟨x, ω⟩ = ⟨x, g.sharpL x ω⟩ := rfl
+
+/-- Fiberwise musical isomorphism between the total spaces of the tangent and cotangent bundles. -/
+noncomputable def flatBundleEquiv (g : PseudoRiemannianMetric E H M n I) :
+    Bundle.TotalSpace E (fun y : M ↦ TangentSpace I y) ≃
+      Bundle.TotalSpace (E →L[ℝ] ℝ) (fun y : M ↦ TangentSpace I y →L[ℝ] ℝ) :=
+  MetricTensor.flatBundleEquiv (g := (g.toMetricTensor : MetricTensor E H M n I))
 
 lemma sharpL_apply_flatL (g : PseudoRiemannianMetric E H M n I) (x : M) (v : TangentSpace I x) :
     g.sharpL x (g.flatL x v) = v := by
