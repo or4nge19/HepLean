@@ -58,7 +58,9 @@ public import Physlib.Mathematics.FDerivCurry
 public import Physlib.Mathematics.Fin
 public import Physlib.Mathematics.Fin.Involutions
 public import Physlib.Mathematics.Geometry.Metric.Lorentzian.Defs
+public import Physlib.Mathematics.Geometry.Metric.PseudoRiemannian.Basic
 public import Physlib.Mathematics.Geometry.Metric.PseudoRiemannian.Defs
+public import Physlib.Mathematics.Geometry.Metric.PseudoRiemannian.MetricTensorCotangent
 public import Physlib.Mathematics.Geometry.Metric.Riemannian.Defs
 public import Physlib.Mathematics.InnerProductSpace.Adjoint
 public import Physlib.Mathematics.InnerProductSpace.Basic
